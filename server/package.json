@@ -1,0 +1,28 @@
+{
+	"name": "server",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node index.js",
+		"dev": "nodemon index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"dependencies": {
+		"@tanstack/react-table": "^8.21.3",
+		"cloudinary": "^2.7.0",
+		"cors": "^2.8.5",
+		"dotenv": "^17.2.0",
+		"express": "^5.1.0",
+		"firebase-admin": "^13.4.0",
+		"jsonwebtoken": "^9.0.2",
+		"mongodb": "^6.17.0",
+		"multer": "^2.0.1",
+		"streamifier": "^0.1.1",
+		"stripe": "^18.3.0"
+	}
+}

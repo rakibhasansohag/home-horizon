@@ -1,0 +1,5 @@
+node_modules
+.env
+open.bat
+text.text
+firebase-config.json
