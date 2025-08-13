@@ -330,7 +330,9 @@ Contributions are welcome! Please follow these steps:
 
 **Rakib Hasan Sohag**
 - GitHub: [@rakibhasansohag](https://github.com/rakibhasansohag)
-- Email: rakibhasansohag@gmail.com
+- Email: rakibhasansohag133@gmail.com
+- Linkedin: [@rakibhasansohag](https://www.linkedin.com/in/rakib-hasan-sohag/)
+
 
 ---
 
