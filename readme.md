@@ -281,9 +281,6 @@ home-horizon/
 | **Live Demo (Netlify)** | [https://homehorizon-by-rakib.netlify.app](https://homehorizon-by-rakib.netlify.app) |
 | **Live Demo (Surge)** | [http://HOMEHORIZON-by-rakib.surge.sh](http://HOMEHORIZON-by-rakib.surge.sh) |
 | **GitHub Repository** | [https://github.com/rakibhasansohag/home-horizon](https://github.com/rakibhasansohag/home-horizon) |
-| **Client Side Code** | [https://github.com/Programming-Hero-Web-Course4/b11a12-client-side-rakibhasansohag](https://github.com/Programming-Hero-Web-Course4/b11a12-client-side-rakibhasansohag) |
-| **Server Side Code** | [https://github.com/Programming-Hero-Web-Course4/b11a12-server-side-rakibhasansohag](https://github.com/Programming-Hero-Web-Course4/b11a12-server-side-rakibhasansohag) |
-
 ---
 
 ## 📱 Key Pages & Routes
