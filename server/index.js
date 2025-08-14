@@ -238,23 +238,31 @@ async function run() {
 		// Point:  USERS RELATED APIS
 		// create user
 		app.post('/users', async (req, res) => {
-			const users = req.body;
+			const userData = req.body;
 
-			if (!users.uid || !users.email) {
-				return res
-					.status(400)
-					.send({ error: 'UID is required OR email required' });
+			if (!userData.uid || !userData.email) {
+				return res.status(400).send({ error: 'UID and email are required' });
 			}
 
-			// for duplicated users
-			const filter = { uid: users.uid };
-			const update = {
-				$set: { ...users, location: '', bloodGroup: '', address: '' },
-			};
-			const options = { upsert: true };
+			const existingUser = await User.findOne({ uid: userData.uid });
 
-			const result = await User.updateOne(filter, update, options);
-			return res.send(result);
+			if (existingUser) {
+				// Update everything except the role
+				const { role, ...restData } = userData;
+				await User.updateOne({ uid: userData.uid }, { $set: restData });
+				return res.send({ message: 'User updated', role: existingUser.role });
+			} else {
+				// First time login → give role: "user"
+				const newUser = {
+					...userData,
+					role: 'user',
+					location: '',
+					bloodGroup: '',
+					address: '',
+				};
+				await User.create(newUser);
+				return res.send({ message: 'User created', role: 'user' });
+			}
 		});
 
 		// Get user role
