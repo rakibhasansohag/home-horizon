@@ -10,32 +10,25 @@ cloudinary.config({
 	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer config (in-memory)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.post('/upload', upload.single('file'), async (req, res) => {
 	try {
-		const streamUpload = (req) => {
-			return new Promise((resolve, reject) => {
+		const streamUpload = (fileBuffer) =>
+			new Promise((resolve, reject) => {
 				const stream = cloudinary.uploader.upload_stream(
-					{
-						folder: 'home-horizon-users',
-					},
+					{ folder: 'home-horizon-users' },
 					(error, result) => {
 						if (result) resolve(result);
 						else reject(error);
 					},
 				);
-				streamifier.createReadStream(req.file.buffer).pipe(stream);
+				streamifier.createReadStream(fileBuffer).pipe(stream);
 			});
-		};
 
-		const result = await streamUpload(req);
-		res.send({
-			url: result.secure_url,
-			public_id: result.public_id,
-		});
+		const result = await streamUpload(req.file.buffer);
+		res.send({ url: result.secure_url, public_id: result.public_id });
 	} catch (error) {
 		console.error(error);
 		res.status(500).send({ error: 'Image upload failed' });
@@ -52,6 +45,5 @@ router.post('/delete-image', async (req, res) => {
 		res.status(500).send({ error: 'Failed to delete image' });
 	}
 });
-
 
 module.exports = router;

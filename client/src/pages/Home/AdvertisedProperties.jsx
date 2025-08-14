@@ -7,7 +7,9 @@ export default function AdvertisedProperties() {
 	const { data: properties = [], isLoading } = useQuery({
 		queryKey: ['advertised-properties'],
 		queryFn: async () => {
-			const res = await axiosInstance.get('/advertised-properties?limit=6');
+			const res = await axiosInstance.get(
+				'/public/advertised-properties?limit=6',
+			);
 			return res.data;
 		},
 	});

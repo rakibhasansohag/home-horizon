@@ -27,7 +27,7 @@ export default function AdminAdvertiseProperty() {
 
 	const { data: stats } = useQuery({
 		queryKey: ['advertise‐stats'],
-		queryFn: () => axios.get('/admin/advertise‐stats').then((r) => r.data),
+		queryFn: () => axios.get('/admin/advertise-stats').then((r) => r.data),
 		staleTime: 60 * 1000,
 	});
 
@@ -36,7 +36,7 @@ export default function AdminAdvertiseProperty() {
 		onSuccess: () => {
 			toast.success('Property advertised');
 			qc.invalidateQueries({ queryKey: ['admin‐verified-properties'] });
-			qc.invalidateQueries({ queryKey: ['advertise‐stats'] });
+			qc.invalidateQueries({ queryKey: ['advertise-stats'] });
 			setSelected(null);
 		},
 		onError: () => toast.error('Failed to advertise'),

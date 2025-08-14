@@ -12,7 +12,7 @@ export default function LatestUserReviews() {
 	const { data: reviews = [], isLoading } = useQuery({
 		queryKey: ['latest-reviews'],
 		queryFn: async () => {
-			const res = await axios.get('/latest-reviews?limit=14');
+			const res = await axios.get('/public/latest-reviews?limit=14');
 			return res.data;
 		},
 	});

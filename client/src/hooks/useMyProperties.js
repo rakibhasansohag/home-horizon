@@ -10,7 +10,7 @@ export default function useMyProperties() {
 		queryKey: ['my-properties', user?.uid],
 		enabled: !!user?.uid,
 		queryFn: async () => {
-			const res = await axiosSecure.get('/my-properties');
+			const res = await axiosSecure.get('/agent/my-properties');
 			return res.data;
 		},
 	});

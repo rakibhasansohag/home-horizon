@@ -21,7 +21,7 @@ export default function MyReviews() {
 	} = useQuery({
 		queryKey: ['my-reviews', user?.uid],
 		queryFn: async () => {
-			const res = await axiosSecure.get(`/my-reviews?uid=${user?.uid}`);
+			const res = await axiosSecure.get(`/reviews/my?uid=${user?.uid}`);
 			return res.data;
 		},
 		enabled: !!user?.uid,
@@ -38,6 +38,9 @@ export default function MyReviews() {
 		onError: () => toast.error('Failed to delete review'),
 	});
 
+	console.log(user);
+	console.log(reviews);
+
 	if (isLoading) {
 		return (
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
@@ -53,7 +56,7 @@ export default function MyReviews() {
 
 	return (
 		<div className='p-6 space-y-4 max-w-7xl w-full'>
-			<h2 className='text-2xl font-bold'>My Reviews</h2>
+			<h2 className='text-2xl font-bold'>My Reviews ({reviews?.length}) </h2>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				{reviews?.map((review) => (
 					<Card key={review._id}>

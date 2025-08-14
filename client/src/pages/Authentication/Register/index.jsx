@@ -84,7 +84,7 @@ function Register() {
 		setUploading(true);
 
 		try {
-			const res = await axiosInstance.post('/api/v1/upload', formData, {
+			const res = await axiosInstance.post('/upload', formData, {
 				headers: { 'Content-Type': 'multipart/form-data' },
 			});
 			setProfilePic(res.data.url);

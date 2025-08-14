@@ -32,7 +32,7 @@ export default function PropertyBought() {
 	const { mutate: initiatePayment, isPending: isPaying } = useMutation({
 		mutationFn: async (offerId) => {
 			setCurrentPayingId(offerId);
-			const res = await axiosSecure.post('/create-checkout-session', {
+			const res = await axiosSecure.post('/payments/create-checkout-session', {
 				offerId,
 			});
 			return res.data;

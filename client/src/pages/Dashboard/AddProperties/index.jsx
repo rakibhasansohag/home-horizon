@@ -81,7 +81,7 @@ function AddProperties() {
 			formData.append('file', file);
 
 			try {
-				const res = await axiosInstance.post('/api/v1/upload', formData);
+				const res = await axiosInstance.post('/upload', formData);
 
 				urls.push({
 					url: res.data.url,
