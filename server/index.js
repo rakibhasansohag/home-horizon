@@ -15,6 +15,7 @@ const reviewsRoutes = require('./routes/reviews');
 const wishlistRoutes = require('./routes/wishlist');
 const paymentsRoutes = require('./routes/payments');
 const publicRoutesFactory = require('./routes/public');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -47,6 +48,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/reviews', reviewsRoutes);
 app.use('/api/v1/wishlist', wishlistRoutes);
 app.use('/api/v1/payments', paymentsRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 async function start() {
 	try {

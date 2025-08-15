@@ -41,6 +41,7 @@
 		"react-leaflet": "^5.0.0",
 		"react-router": "^7.6.3",
 		"react-toastify": "^11.0.5",
+		"recharts": "^3.1.2",
 		"swiper": "^11.2.10",
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.11"
