@@ -190,13 +190,13 @@ router.get(
 
 			const Properties = getCollection('properties');
 			const Offers = getCollection('offers');
-			const Transactions = getCollection('transactions'); // optional
+			const Transactions = getCollection('transactions');
 			const Reviews = getCollection('reviews');
 			const Users = getCollection('users');
 
 			// agent's profile
 			const userDoc = await findUserByUid(uid);
-			const agentId = uid; // agent uid used as agentId in your data
+			const agentId = uid;
 
 			// 1) Listings by this agent
 			const listings = await Properties.find({ agentId: agentId })
@@ -298,7 +298,6 @@ router.get(
 					null,
 			}));
 
-			// ----- Attach buyer info for leads & sold (so frontend can show buyer name/avatar) -----
 			try {
 				// collect distinct buyerIds from leads and sold
 				const buyerIds = [
@@ -345,99 +344,211 @@ router.get(
 			let earningsLifetime = 0;
 			let earningsMonth = 0;
 			try {
-				const boughtWithAmount = await Offers.aggregate([
+				// lifetime: sum amount OR offerAmount for offers with status 'bought'
+				const lifeAgg = await Offers.aggregate([
+					{ $match: { agentId: agentId, status: 'bought' } },
 					{
-						$match: {
-							agentId: agentId,
-							status: 'bought',
-							amount: { $exists: true },
+						$group: {
+							_id: null,
+							total: {
+								$sum: {
+									$toDouble: {
+										$ifNull: ['$amount', '$offerAmount', 0],
+									},
+								},
+							},
 						},
 					},
-					{ $group: { _id: null, total: { $sum: '$amount' } } },
 				]).toArray();
-				earningsLifetime = boughtWithAmount[0]?.total || 0;
+				earningsLifetime = Number(lifeAgg[0]?.total || 0);
 
+				// earnings for "this month" (last 30 days) --
 				const startMonth = new Date();
-				startMonth.setMonth(startMonth.getMonth() - 1);
-				const boughtThisMonth = await Offers.aggregate([
+				startMonth.setMonth(startMonth.getMonth() - 1); // 1 month back
+				const startIso = startMonth.toISOString();
+
+				const monthAgg = await Offers.aggregate([
 					{
 						$match: {
 							agentId: agentId,
 							status: 'bought',
-							paidAt: { $gte: startMonth },
+							// use $expr to convert stored paidAt to Date and compare
+							$expr: {
+								$gte: [
+									{
+										$toDate: {
+											$ifNull: ['$paidAt', new Date(0).toISOString()],
+										},
+									},
+									new Date(startIso),
+								],
+							},
 						},
 					},
-					{ $group: { _id: null, total: { $sum: '$amount' } } },
+					{
+						$group: {
+							_id: null,
+							total: {
+								$sum: {
+									$toDouble: {
+										$ifNull: ['$amount', '$offerAmount', 0],
+									},
+								},
+							},
+						},
+					},
 				]).toArray();
-				earningsMonth = boughtThisMonth[0]?.total || 0;
-			} catch (e) {
-				try {
-					const txLife = await Transactions.aggregate([
-						{ $match: { agentId: agentId } },
-						{ $group: { _id: null, total: { $sum: '$amount' } } },
-					]).toArray();
-					earningsLifetime = txLife[0]?.total || 0;
 
-					const startMonth = new Date();
-					startMonth.setMonth(startMonth.getMonth() - 1);
-					const txMonth = await Transactions.aggregate([
-						{ $match: { agentId: agentId, createdAt: { $gte: startMonth } } },
-						{ $group: { _id: null, total: { $sum: '$amount' } } },
-					]).toArray();
-					earningsMonth = txMonth[0]?.total || 0;
-				} catch (err) {
-					earningsLifetime = earningsLifetime || 0;
-					earningsMonth = earningsMonth || 0;
-				}
+				earningsMonth = Number(monthAgg[0]?.total || 0);
+			} catch (e) {
+				console.warn('earnings aggregation failed', e);
+				earningsLifetime = earningsLifetime || 0;
+				earningsMonth = earningsMonth || 0;
 			}
 
 			// 5) Reviews (unchanged)
 			let reviews = [];
 			let ratingAvg = null;
+			let totalReviews = 0;
+			let reviewsPreview = [];
+
 			try {
-				const propIds = listings.map((l) => l._id);
+				// property ids of agent's listings as strings
+				const propIds = listings
+					.map((l) => (l._id ? String(l._id) : l._id))
+					.filter(Boolean);
+
 				if (propIds.length) {
-					reviews = await Reviews.find({
-						propertyId: { $in: propIds.map((id) => id.toString()) },
-					}).toArray();
+					// get all reviews for those properties sorted by newest
+					reviews = await Reviews.find({ propertyId: { $in: propIds } })
+						.sort({ createdAt: -1 })
+						.toArray();
+
+					totalReviews = reviews.length;
+
+					// rating average
 					const ratings = reviews
 						.map((r) => Number(r.rating))
 						.filter((v) => !isNaN(v));
 					ratingAvg = ratings.length
 						? ratings.reduce((a, b) => a + b, 0) / ratings.length
 						: null;
+
+					// prepare preview (latest 5)
+					const latest = reviews.slice(0, 5);
+
+					// fetch property docs for those review propertyIds (to attach title/image)
+					const reviewPropertyIds = [
+						...new Set(latest.map((r) => r.propertyId)),
+					].filter(Boolean);
+
+					const reviewPropDocs = reviewPropertyIds.length
+						? await Properties.find({
+								_id: { $in: reviewPropertyIds.map((id) => new ObjectId(id)) },
+						  })
+								.project({ title: 1, images: 1 })
+								.toArray()
+						: [];
+
+					// attach property summary into each review preview
+					reviewsPreview = latest.map((r) => {
+						const prop =
+							reviewPropDocs.find(
+								(p) => String(p._id) === String(r.propertyId),
+							) || null;
+						return {
+							_id: r._id,
+							propertyId: r.propertyId,
+							property: prop
+								? {
+										title: prop.title,
+										image: prop.images?.[0]?.url || null,
+								  }
+								: null,
+							rating: Number(r.rating) || null,
+							reviewText: r.reviewText || r.review || '',
+							userName: r.userName || r.name || r.user?.name || 'User',
+							userImage: r.userImage || r.profilePic || r.user?.avatar || '',
+							createdAt: r.createdAt || r.created_at || null,
+						};
+					});
+				} else {
+					reviews = [];
+					totalReviews = 0;
+					ratingAvg = null;
+					reviewsPreview = [];
 				}
 			} catch (e) {
+				console.warn('reviews fetch failed', e);
 				reviews = [];
+				totalReviews = 0;
+				ratingAvg = null;
+				reviewsPreview = [];
 			}
 
-			// earnings sparkline (unchanged)
+			// ---------- sparkline (last 6 months robust) ----------
 			const months = [];
 			const now = new Date();
 			for (let i = 5; i >= 0; i--) {
 				const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+				const start = new Date(d.getFullYear(), d.getMonth(), 1); // 1st of month
+				const end = new Date(d.getFullYear(), d.getMonth() + 1, 1); // 1st of next month
 				const label = d.toLocaleString('default', { month: 'short' });
-				months.push({
-					month: label,
-					start: new Date(d),
-					end: new Date(d.getFullYear(), d.getMonth() + 1, 1),
-				});
+				months.push({ month: label, start, end });
 			}
+
 			const viewsByMonth = await Promise.all(
 				months.map(async (m) => {
-					const sumRes = await Offers.aggregate([
-						{
-							$match: {
-								agentId: agentId,
-								status: 'bought',
-								paidAt: { $gte: m.start, $lt: m.end },
+					try {
+						const ag = await Offers.aggregate([
+							{
+								$match: {
+									agentId: agentId,
+									status: 'bought',
+									$expr: {
+										$and: [
+											{
+												$gte: [
+													{
+														$toDate: {
+															$ifNull: ['$paidAt', new Date(0).toISOString()],
+														},
+													},
+													m.start,
+												],
+											},
+											{
+												$lt: [
+													{
+														$toDate: {
+															$ifNull: ['$paidAt', new Date(0).toISOString()],
+														},
+													},
+													m.end,
+												],
+											},
+										],
+									},
+								},
 							},
-						},
-						{ $group: { _id: null, total: { $sum: '$amount' } } },
-					])
-						.toArray()
-						.catch(() => []);
-					return { month: m.month, value: sumRes[0]?.total || 0 };
+							{
+								$group: {
+									_id: null,
+									total: {
+										$sum: {
+											$toDouble: {
+												$ifNull: ['$amount', '$offerAmount', 0],
+											},
+										},
+									},
+								},
+							},
+						]).toArray();
+
+						return { month: m.month, value: Number(ag[0]?.total || 0) };
+					} catch (err) {
+						return { month: m.month, value: 0 };
+					}
 				}),
 			);
 
@@ -467,6 +578,9 @@ router.get(
 				sold: soldEnriched,
 				soldPreview: take5(soldEnriched),
 				reviews,
+				reviewsPreview,
+				reviewsCount: totalReviews,
+				ratingAvg,
 				earningsSparkline: viewsByMonth,
 			});
 		} catch (err) {

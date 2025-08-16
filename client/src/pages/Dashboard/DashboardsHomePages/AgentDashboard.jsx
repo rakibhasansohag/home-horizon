@@ -3,12 +3,15 @@ import useAgentDashboard from '@/hooks/useAgentDashboard';
 import GlobalLoading from '@/components/Shared/GlobalLoading';
 import { toast } from 'react-toastify';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import AgentPendingCard from '../Components/AgentPendingCard';
 import AgentSoldCard from '../Components/AgentSoldCard';
 import PropertyCard from '../Components/PropertyCard';
 
 import ViewAllCard from '../Components/ViewAllCard';
+import EarningsChart from '../Components/EarningChart';
+
+import { Link } from 'react-router';
+import ReviewsCarousel from '../Components/ReviewsCarousel';
 
 export default function AgentDashboard() {
 	const { dashboard, isLoading, error, refetch } = useAgentDashboard();
@@ -107,17 +110,31 @@ export default function AgentDashboard() {
 				<div className='bg-card p-4 rounded-xl shadow'>
 					<h3 className='font-semibold mb-3'>Earnings (last 6 months)</h3>
 					<div style={{ width: '100%', height: 160 }}>
-						<ResponsiveContainer>
-							<LineChart data={earningsSparkline}>
-								<Line
-									type='monotone'
-									dataKey='value'
-									stroke='#8884d8'
-									strokeWidth={2}
-									dot={false}
-								/>
-							</LineChart>
-						</ResponsiveContainer>
+						<EarningsChart data={earningsSparkline} />
+					</div>
+					<div className='mt-4 flex items-center justify-between'>
+						<div>
+							<h4 className='text-lg font-semibold'>Reviews</h4>
+							<p className='text-sm text-muted-foreground'>
+								{dashboard.reviewsCount ?? dashboard.reviews?.length ?? 0}{' '}
+								reviews · Avg rating:{' '}
+								{dashboard.ratingAvg ? dashboard.ratingAvg.toFixed(1) : '—'}
+							</p>
+						</div>
+						<div>
+							<Link
+								to='/dashboard/manage-reviews'
+								className='text-primary text-sm'
+							>
+								Manage
+							</Link>
+						</div>
+					</div>
+
+					<div className='max-w-[450px] mx-auto mt-4'>
+						<ReviewsCarousel
+							reviews={dashboard.reviewsPreview ?? dashboard.reviews ?? []}
+						/>
 					</div>
 				</div>
 			</div>
