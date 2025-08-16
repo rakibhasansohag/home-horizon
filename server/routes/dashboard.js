@@ -178,7 +178,6 @@ router.get(
 /**
  * AGENT dashboard - only agent
  * GET /api/v1/dashboard/agent
- * (uses same pattern - will be useful later)
  */
 router.get(
 	'/agent',
@@ -189,66 +188,286 @@ router.get(
 			const uid = req.decoded?.uid;
 			if (!uid) return res.status(401).send({ error: 'Unauthorized' });
 
-			const Users = getCollection('users');
 			const Properties = getCollection('properties');
 			const Offers = getCollection('offers');
 			const Transactions = getCollection('transactions'); // optional
+			const Reviews = getCollection('reviews');
+			const Users = getCollection('users');
 
+			// agent's profile
 			const userDoc = await findUserByUid(uid);
-			const agentId = userDoc?._id || uid;
+			const agentId = uid; // agent uid used as agentId in your data
 
-			const listings = await Properties.find({
-				$or: [{ agentUid: uid }, { agentId }],
-			})
-				.project({ title: 1, minPrice: 1, maxPrice: 1, status: 1, views: 1 })
+			// 1) Listings by this agent
+			const listings = await Properties.find({ agentId: agentId })
+				.project({
+					title: 1,
+					images: 1,
+					minPrice: 1,
+					maxPrice: 1,
+					location: 1,
+					status: 1,
+					isAdvertised: 1,
+					createdAt: 1,
+					views: 1,
+				})
+				.sort({ createdAt: -1 })
+				.toArray();
+
+			const activeListingsCount = listings.filter(
+				(l) => l.status !== 'sold',
+			).length;
+			const advertisedCount = listings.filter((l) => l.isAdvertised).length;
+
+			// 2) Leads (pending offers for this agent)
+			const leads = await Offers.find({ agentId: agentId, status: 'pending' })
+				.sort({ createdAt: -1 })
 				.limit(20)
-				.toArray()
-				.catch(() => []);
+				.toArray();
 
-			// earnings (best-effort using transactions collection)
-			let earningsMonth = 0;
-			let earningsLifetime = 0;
+			// populate property details for leads
+			const leadPropertyIds = [
+				...new Set(leads.map((l) => l.propertyId)),
+			].filter(Boolean);
+			const leadPropDocs = leadPropertyIds.length
+				? await Properties.find({
+						_id: { $in: leadPropertyIds.map((id) => new ObjectId(id)) },
+				  })
+						.project({
+							title: 1,
+							images: 1,
+							location: 1,
+							minPrice: 1,
+							maxPrice: 1,
+						})
+						.toArray()
+				: [];
+
+			// enrich leads with property doc (if exists)
+			const leadsEnriched = leads.map((l) => {
+				const prop =
+					leadPropDocs.find((p) => p._id.toString() === String(l.propertyId)) ||
+					null;
+				// normalize numeric fields
+				const normalized = {
+					...l,
+					amount: l.amount
+						? Number(l.amount)
+						: l.offerAmount
+						? Number(l.offerAmount)
+						: null,
+					offerAmount: l.offerAmount
+						? Number(l.offerAmount)
+						: l.amount
+						? Number(l.amount)
+						: null,
+					property: prop,
+				};
+				return normalized;
+			});
+
+			// 3) Sold / completed (offers with status 'bought')
+			const soldOffers = await Offers.find({
+				agentId: agentId,
+				status: 'bought',
+			})
+				.sort({ paidAt: -1 })
+				.limit(20)
+				.toArray();
+
+			const soldPropertyIds = [
+				...new Set(soldOffers.map((o) => o.propertyId)),
+			].filter(Boolean);
+			const soldProps = soldPropertyIds.length
+				? await Properties.find({
+						_id: { $in: soldPropertyIds.map((id) => new ObjectId(id)) },
+				  })
+						.project({ title: 1, images: 1, location: 1 })
+						.toArray()
+				: [];
+
+			const soldEnriched = soldOffers.map((o) => ({
+				...o,
+				amount: o.amount
+					? Number(o.amount)
+					: o.offerAmount
+					? Number(o.offerAmount)
+					: 0,
+				property:
+					soldProps.find((p) => p._id.toString() === String(o.propertyId)) ||
+					null,
+			}));
+
+			// ----- Attach buyer info for leads & sold (so frontend can show buyer name/avatar) -----
 			try {
-				const startMonth = new Date();
-				startMonth.setMonth(startMonth.getMonth() - 1);
-				const aggrMonth = await Transactions.aggregate([
+				// collect distinct buyerIds from leads and sold
+				const buyerIds = [
+					...new Set([
+						...leadsEnriched.map((l) => l.buyerId).filter(Boolean),
+						...soldEnriched.map((s) => s.buyerId).filter(Boolean),
+					]),
+				];
+
+				let buyerDocs = [];
+				if (buyerIds.length) {
+					buyerDocs = await Users.find({ uid: { $in: buyerIds } })
+						.project({ uid: 1, name: 1, profilePic: 1, photoURL: 1 })
+						.toArray()
+						.catch(() => []);
+				}
+
+				// attach buyer onto each offer
+				leadsEnriched.forEach((l) => {
+					const b = buyerDocs.find((bd) => bd.uid === l.buyerId);
+					l.buyer = b
+						? {
+								name: b.name || b.displayName || l.buyerName,
+								avatar: b.profilePic || b.photoURL || '',
+						  }
+						: { name: l.buyerName || 'Buyer', avatar: l.buyerImage || '' };
+				});
+
+				soldEnriched.forEach((s) => {
+					const b = buyerDocs.find((bd) => bd.uid === s.buyerId);
+					s.buyer = b
+						? {
+								name: b.name || s.buyerName,
+								avatar: b.profilePic || b.photoURL || '',
+						  }
+						: { name: s.buyerName || 'Buyer', avatar: s.buyerImage || '' };
+				});
+			} catch (e) {
+				// if users collection doesn't exist or query fails, keep going:
+				console.warn('attach buyer info failed', e);
+			}
+
+			// 4) Earnings (unchanged): compute earningsLifetime, earningsMonth
+			let earningsLifetime = 0;
+			let earningsMonth = 0;
+			try {
+				const boughtWithAmount = await Offers.aggregate([
 					{
 						$match: {
-							$or: [{ agentUid: uid }, { agentId }],
-							createdAt: { $gte: startMonth },
+							agentId: agentId,
+							status: 'bought',
+							amount: { $exists: true },
 						},
 					},
 					{ $group: { _id: null, total: { $sum: '$amount' } } },
 				]).toArray();
-				earningsMonth = aggrMonth[0]?.total || 0;
+				earningsLifetime = boughtWithAmount[0]?.total || 0;
 
-				const aggrLife = await Transactions.aggregate([
-					{ $match: { $or: [{ agentUid: uid }, { agentId }] } },
+				const startMonth = new Date();
+				startMonth.setMonth(startMonth.getMonth() - 1);
+				const boughtThisMonth = await Offers.aggregate([
+					{
+						$match: {
+							agentId: agentId,
+							status: 'bought',
+							paidAt: { $gte: startMonth },
+						},
+					},
 					{ $group: { _id: null, total: { $sum: '$amount' } } },
 				]).toArray();
-				earningsLifetime = aggrLife[0]?.total || 0;
+				earningsMonth = boughtThisMonth[0]?.total || 0;
 			} catch (e) {
-				/* ignore if transactions missing */
+				try {
+					const txLife = await Transactions.aggregate([
+						{ $match: { agentId: agentId } },
+						{ $group: { _id: null, total: { $sum: '$amount' } } },
+					]).toArray();
+					earningsLifetime = txLife[0]?.total || 0;
+
+					const startMonth = new Date();
+					startMonth.setMonth(startMonth.getMonth() - 1);
+					const txMonth = await Transactions.aggregate([
+						{ $match: { agentId: agentId, createdAt: { $gte: startMonth } } },
+						{ $group: { _id: null, total: { $sum: '$amount' } } },
+					]).toArray();
+					earningsMonth = txMonth[0]?.total || 0;
+				} catch (err) {
+					earningsLifetime = earningsLifetime || 0;
+					earningsMonth = earningsMonth || 0;
+				}
 			}
 
-			const leads = await Offers.find({ $or: [{ agentUid: uid }, { agentId }] })
-				.sort({ createdAt: -1 })
-				.limit(20)
-				.toArray()
-				.catch(() => []);
+			// 5) Reviews (unchanged)
+			let reviews = [];
+			let ratingAvg = null;
+			try {
+				const propIds = listings.map((l) => l._id);
+				if (propIds.length) {
+					reviews = await Reviews.find({
+						propertyId: { $in: propIds.map((id) => id.toString()) },
+					}).toArray();
+					const ratings = reviews
+						.map((r) => Number(r.rating))
+						.filter((v) => !isNaN(v));
+					ratingAvg = ratings.length
+						? ratings.reduce((a, b) => a + b, 0) / ratings.length
+						: null;
+				}
+			} catch (e) {
+				reviews = [];
+			}
+
+			// earnings sparkline (unchanged)
+			const months = [];
+			const now = new Date();
+			for (let i = 5; i >= 0; i--) {
+				const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+				const label = d.toLocaleString('default', { month: 'short' });
+				months.push({
+					month: label,
+					start: new Date(d),
+					end: new Date(d.getFullYear(), d.getMonth() + 1, 1),
+				});
+			}
+			const viewsByMonth = await Promise.all(
+				months.map(async (m) => {
+					const sumRes = await Offers.aggregate([
+						{
+							$match: {
+								agentId: agentId,
+								status: 'bought',
+								paidAt: { $gte: m.start, $lt: m.end },
+							},
+						},
+						{ $group: { _id: null, total: { $sum: '$amount' } } },
+					])
+						.toArray()
+						.catch(() => []);
+					return { month: m.month, value: sumRes[0]?.total || 0 };
+				}),
+			);
+
+			// previews limited to 5 (frontend-friendly)
+			const take5 = (arr) => (Array.isArray(arr) ? arr.slice(0, 5) : []);
 
 			return res.json({
 				agent: {
-					id: agentId,
-					name: userDoc?.name || userDoc?.displayName || 'Agent',
+					id: userDoc?._id || uid,
+					name: userDoc?.name || req.decoded?.name || 'Agent',
+					avatar: userDoc?.profilePic || userDoc?.photoURL || '',
+					role: 'agent',
 				},
 				stats: {
 					earningsMonth,
 					earningsLifetime,
-					listingsCount: listings.length,
+					activeListingsCount,
+					advertisedCount,
+					leadsCount: leads.length,
+					soldCount: soldOffers.length,
+					ratingAvg,
 				},
 				listings,
-				leads,
+				listingsPreview: take5(listings),
+				leads: leadsEnriched,
+				leadsPreview: take5(leadsEnriched),
+				sold: soldEnriched,
+				soldPreview: take5(soldEnriched),
+				reviews,
+				earningsSparkline: viewsByMonth,
 			});
 		} catch (err) {
 			console.error('dashboard.agent error', err);
@@ -256,6 +475,8 @@ router.get(
 		}
 	},
 );
+
+
 
 /**
  * ADMIN dashboard - only admin

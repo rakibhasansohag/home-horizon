@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 
 export default function PropertyCard({ property }) {
+	console.log(property);
 	return (
 		<div className='group relative bg-card rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-border/50 flex flex-col h-full'>
 			{/* Image */}
@@ -40,8 +41,8 @@ export default function PropertyCard({ property }) {
 				{/* Price */}
 				<p className='text-xs text-muted-foreground'>
 					<span className='font-semibold'>Price Range:</span> $
-					{property.minPrice.toLocaleString()} - $
-					{property.maxPrice.toLocaleString()}
+					{property?.minPrice?.toLocaleString()} - $
+					{property?.maxPrice?.toLocaleString()}
 				</p>
 			</div>
 		</div>

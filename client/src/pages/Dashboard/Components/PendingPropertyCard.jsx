@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { FaMapMarkerAlt, FaUser, FaDollarSign, FaClock } from 'react-icons/fa';
 
 export default function PendingPropertyCard({ property }) {
+	console.log(property);
 	return (
 		<div className='group relative bg-card rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-border/50 flex flex-col h-full'>
 			{/* Image */}
