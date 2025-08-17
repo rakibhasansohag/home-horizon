@@ -12,6 +12,7 @@ import EarningsChart from '../Components/EarningChart';
 
 import { Link } from 'react-router';
 import ReviewsCarousel from '../Components/ReviewsCarousel';
+import { Separator } from '../../../components/ui/separator';
 
 export default function AgentDashboard() {
 	const { dashboard, isLoading, error, refetch } = useAgentDashboard();
@@ -44,7 +45,7 @@ export default function AgentDashboard() {
 
 	return (
 		<div className='p-6 space-y-6'>
-			<div className='flex items-center justify-between'>
+			<div className='flex items-center justify-between w-full'>
 				<div>
 					<h1 className='text-2xl font-bold'>Welcome back, {agent.name}</h1>
 					<p className='text-sm text-muted-foreground'>
@@ -56,7 +57,7 @@ export default function AgentDashboard() {
 					className='w-12 h-12 rounded-full'
 				/>
 			</div>
-			<div className='grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4'>
+			<div className='grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full '>
 				<div className='col-span-1 sm:col-span-1 lg:col-span-2 p-4 bg-card rounded-xl'>
 					<div className='text-sm text-muted-foreground'>
 						Earnings (This month)
@@ -80,8 +81,8 @@ export default function AgentDashboard() {
 			</div>
 
 			{/* All Active Listing */}
-			<div className='grid lg:grid-cols-[2fr_1fr] gap-6'>
-				<div className='bg-card p-4 rounded-xl shadow'>
+			<div className='grid  xl:grid-cols-[2fr_1fr] gap-6'>
+				<div className='bg-card p-4 rounded-xl shadow order-1 xl:order-none'>
 					<h3 className='font-semibold mb-3'>
 						Active Listings{' '}
 						{totalCount ? `(Showing ${previews.length} of ${totalCount})` : ''}
@@ -112,6 +113,8 @@ export default function AgentDashboard() {
 					<div style={{ width: '100%', height: 160 }}>
 						<EarningsChart data={earningsSparkline} />
 					</div>
+
+					<Separator className='my-4' />
 					<div className='mt-4 flex items-center justify-between'>
 						<div>
 							<h4 className='text-lg font-semibold'>Reviews</h4>
@@ -131,7 +134,7 @@ export default function AgentDashboard() {
 						</div>
 					</div>
 
-					<div className='max-w-[450px] mx-auto mt-4'>
+					<div className='max-w-[320px] sm:max-w-[450px] mx-auto mt-4'>
 						<ReviewsCarousel
 							reviews={dashboard.reviewsPreview ?? dashboard.reviews ?? []}
 						/>
