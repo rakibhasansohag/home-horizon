@@ -114,6 +114,7 @@ const items = [
 		url: '/auth/logout',
 		icon: Settings,
 		allowedRoles: ['user', 'agent', 'admin'],
+		action: 'logout',
 	},
 ];
 
@@ -122,6 +123,11 @@ export function AppSidebar() {
 
 	const { logOut } = useAuth();
 
+	if (isLoading) return <GlobalLoading />;
+
+	const filteredItems = items.filter((item) =>
+		item.allowedRoles.includes(role),
+	);
 	const handleLogOut = () => {
 		logOut()
 			.then(() => {
@@ -132,13 +138,6 @@ export function AppSidebar() {
 				toast.error(err.message || 'Something went wrong');
 			});
 	};
-
-	if (isLoading) return <GlobalLoading />;
-
-	const filteredItems = items.filter((item) =>
-		item.allowedRoles.includes(role),
-	);
-
 	return (
 		<Sidebar>
 			<SidebarContent className='pt-20'>
@@ -153,10 +152,22 @@ export function AppSidebar() {
 							{filteredItems.map((item) => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton asChild>
-										<NavLink to={item.url} end={item.url === '/dashboard'}>
-											<item.icon />
-											<span onClick={handleLogOut}>{item.title}</span>
-										</NavLink>
+										{item.action === 'logout' ? (
+											<button
+												type='button'
+												onClick={handleLogOut}
+												aria-label='Logout'
+												className='flex items-center gap-3 w-full text-left'
+											>
+												<item.icon />
+												<span>{item.title}</span>
+											</button>
+										) : (
+											<NavLink to={item.url} end={item.url === '/dashboard'}>
+												<item.icon />
+												<span>{item.title}</span>
+											</NavLink>
+										)}
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							))}
