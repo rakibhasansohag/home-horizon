@@ -27,6 +27,7 @@ import Forbidden from '../components/Shared/NotFound/Forbidden';
 import Login from '../pages/Authentication/Login';
 import NotFoundPage from '../components/Shared/NotFound/NotFoundPage';
 import AdminAdvertiseProperty from '../pages/Dashboard/AdminAdvertiseProperty';
+import ComingSoonPaymentPage from '../components/Shared/NotFound/ComingSoonPayment';
 
 const router = createBrowserRouter([
 	{
@@ -142,6 +143,10 @@ const router = createBrowserRouter([
 					{
 						path: 'advertise-property',
 						Component: AdminAdvertiseProperty,
+					},
+					{
+						path: 'payments',
+						Component: ComingSoonPaymentPage,
 					},
 				],
 			},

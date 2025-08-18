@@ -8,9 +8,7 @@ export default function DashboardLayout() {
 	useDynamicTitle();
 	return (
 		<section>
-			<div>
-				<Header />
-			</div>
+			<div>{/* <Header /> */}</div>
 			<main>
 				<SidebarProvider className={'relative'}>
 					<AppSidebar />

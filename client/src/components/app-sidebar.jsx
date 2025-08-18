@@ -20,6 +20,8 @@ import {
 import { Link, NavLink } from 'react-router';
 import useUserRole from '../hooks/useUserRole';
 import GlobalLoading from './Shared/GlobalLoading';
+import useAuth from '../hooks/useAuth';
+import { toast } from 'react-toastify';
 
 const items = [
 	// Shared "Home" for all roles
@@ -107,10 +109,29 @@ const items = [
 		icon: MdRealEstateAgent,
 		allowedRoles: ['admin'],
 	},
+	{
+		title: 'Logout',
+		url: '/auth/logout',
+		icon: Settings,
+		allowedRoles: ['user', 'agent', 'admin'],
+	},
 ];
 
 export function AppSidebar() {
 	const { role, isLoading } = useUserRole();
+
+	const { logOut } = useAuth();
+
+	const handleLogOut = () => {
+		logOut()
+			.then(() => {
+				toast.success('Successfully logged out');
+			})
+			.catch((err) => {
+				console.log(err);
+				toast.error(err.message || 'Something went wrong');
+			});
+	};
 
 	if (isLoading) return <GlobalLoading />;
 
@@ -134,7 +155,7 @@ export function AppSidebar() {
 									<SidebarMenuButton asChild>
 										<NavLink to={item.url} end={item.url === '/dashboard'}>
 											<item.icon />
-											<span>{item.title}</span>
+											<span onClick={handleLogOut}>{item.title}</span>
 										</NavLink>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
