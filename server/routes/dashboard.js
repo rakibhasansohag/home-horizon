@@ -593,55 +593,257 @@ router.get(
 
 
 /**
- * ADMIN dashboard - only admin
+ * Admin dashboard summary endpoint
  * GET /api/v1/dashboard/admin
+ *
+ * Protected: verifyFireBaseToken + verifyRole(['admin','super-admin'])
+ *
+ * Returns:
+ * {
+ *   totals: { users, agents, properties, verifiedProperties, advertised, revenue },
+ *   recentUsers: [...],
+ *   recentProperties: [...],
+ *   recentTransactions: [...],
+ *   pendingAgentApprovals: [...],
+ *   topAgents: [...],
+ *   revenueSparkline: [{month, value}, ...6],
+ *   counts: {...}
+ * }
  */
+
 router.get(
-	'/admin',
-	verifyFireBaseToken,
-	verifyRole(['admin', 'super-admin']),
-	async (req, res) => {
+  '/admin',
+  verifyFireBaseToken,
+  verifyRole(['admin', 'super-admin']),
+  async (req, res) => {
+    try {
+      const Users = getCollection('users');
+      const Properties = getCollection('properties');
+      const Offers = getCollection('offers');
+      const Transactions = getCollection('transactions'); 
+      const Reviews = getCollection('reviews');
+
+      // totals (best-effort - catches missing collections)
+      const totals = {
+        users: await Users.countDocuments().catch(() => 0),
+        agents: await Users.countDocuments({ role: 'agent' }).catch(() => 0),
+        properties: await Properties.countDocuments().catch(() => 0),
+        verifiedProperties: await Properties.countDocuments({ verificationStatus: 'verified' }).catch(() => 0),
+        advertised: await Properties.countDocuments({ isAdvertised: true }).catch(() => 0),
+        reviews: await Reviews.countDocuments().catch(() => 0),
+        revenue: 0,
+      };
+
+      // revenue (try Offers first, fallback to Transactions)
+      try {
+        const rev = await Offers.aggregate([
+          { $match: { status: 'bought', amount: { $exists: true } } },
+          { $group: { _id: null, total: { $sum: '$amount' } } },
+        ]).toArray();
+        totals.revenue = rev[0]?.total || 0;
+      } catch (e) {
+        try {
+          const revTx = await Transactions.aggregate([
+            { $group: { _id: null, total: { $sum: '$amount' } } },
+          ]).toArray();
+          totals.revenue = revTx[0]?.total || 0;
+        } catch (e2) {
+          totals.revenue = 0;
+        }
+      }
+
+      // recent users (last 6)
+      const recentUsers = await Users.find({})
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .project({ name: 1, email: 1, role: 1, profilePic: 1, createdAt: 1 })
+        .toArray()
+        .catch(() => []);
+
+      // recent properties (last 6)
+      const recentProperties = await Properties.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .project({ title: 1, images: 1, minPrice: 1, maxPrice: 1, location: 1, verificationStatus: 1, isAdvertised: 1, createdAt: 1, agentName: 1 })
+        .toArray()
+        .catch(() => []);
+
+      // recent transactions (from Offers with isPaid / bought OR Transactions)
+    let recentTransactions = [];
 		try {
-			const Users = getCollection('users');
-			const Properties = getCollection('properties');
-			const Transactions = getCollection('transactions');
-			const Reports = getCollection('reports');
+			// Try to use Offers collection (preferred in your app)
+			recentTransactions = await Offers.find({ status: 'bought' })
+				.sort({ paidAt: -1 })
+				.limit(8)
+				.project({
+					propertyId: 1,
+					propertyTitle: 1,
+					buyerName: 1,
+					buyerId: 1,
+					amount: 1,
+					offerAmount: 1,
+					transactionId: 1,
+					paidAt: 1,
+					createdAt: 1,
+				})
+				.toArray();
 
-			const totals = {
-				users: await Users.countDocuments().catch(() => 0),
-				agents: await Users.countDocuments({ role: 'agent' }).catch(() => 0),
-				properties: await Properties.countDocuments().catch(() => 0),
-				revenue: 0,
-			};
-
+			// normalize: ensure amount is a Number using offerAmount fallback
+			recentTransactions = recentTransactions.map((t) => {
+				const amount =
+					t.amount != null
+						? Number(t.amount)
+						: t.offerAmount != null
+						? Number(t.offerAmount)
+						: 0;
+				return { ...t, amount: Number.isFinite(amount) ? amount : 0 };
+			});
+		} catch (e) {
+			// fallback to transactions collection (if Offers not present or query failed)
 			try {
-				const rev = await Transactions.aggregate([
-					{ $group: { _id: null, total: { $sum: '$amount' } } },
-				]).toArray();
-				totals.revenue = rev[0]?.total || 0;
-			} catch (e) {
-				totals.revenue = 0;
+				recentTransactions = await Transactions.find({})
+					.sort({ createdAt: -1 })
+					.limit(8)
+					.project({
+						amount: 1,
+						agentId: 1,
+						propertyId: 1,
+						createdAt: 1,
+						transactionId: 1,
+					})
+					.toArray();
+				recentTransactions = recentTransactions.map((t) => ({
+					...t,
+					amount: Number(t.amount || 0),
+				}));
+			} catch (e2) {
+				recentTransactions = [];
+			}
+		}
+
+      // pending agent approvals (agent role + verified flag false)
+      const pendingAgentApprovals = await Users.find({ role: 'agent', verified: { $ne: true } })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .project({ name: 1, email: 1, uid: 1, createdAt: 1 })
+        .toArray()
+        .catch(() => []);
+
+      // top agents by revenue (aggregate offers)
+      let topAgents = [];
+      try {
+        const agg = await Offers.aggregate([
+          { $match: { status: 'bought', amount: { $exists: true } } },
+          { $group: { _id: '$agentId', total: { $sum: '$amount' }, count: { $sum: 1 } } },
+          { $sort: { total: -1 } },
+          { $limit: 6 },
+        ]).toArray();
+        // attach agent info
+        const agentIds = agg.map((a) => a._id).filter(Boolean);
+        const agentDocs = agentIds.length ? await Users.find({ uid: { $in: agentIds } }).project({ uid: 1, name: 1, profilePic: 1 }).toArray() : [];
+        topAgents = agg.map((a) => {
+          const doc = agentDocs.find((d) => d.uid === a._id);
+          return { id: a._id, total: a.total, count: a.count, name: doc?.name || a._id, avatar: doc?.profilePic || '' };
+        });
+      } catch (e) {
+        topAgents = [];
+      }
+
+      // revenue sparkline: last 6 months (safe JS loop + aggregate per month)
+      const months = [];
+			const now = new Date();
+			for (let i = 5; i >= 0; i--) {
+				const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+				const start = new Date(d.getFullYear(), d.getMonth(), 1); // first day of month
+				const end = new Date(d.getFullYear(), d.getMonth() + 1, 1); // first day of next month
+				const label = d.toLocaleString('default', { month: 'short' });
+				months.push({ label, start, end });
 			}
 
-			const pendingApprovals = await Users.find({
-				role: 'agent',
-				verified: false,
-			})
-				.limit(20)
-				.toArray()
-				.catch(() => []);
-			const reports = await Reports.find({})
-				.sort({ createdAt: -1 })
-				.limit(10)
-				.toArray()
-				.catch(() => []);
+			const revenueSparkline = await Promise.all(
+				months.map(async (m) => {
+					try {
+						// Aggregation is defensive: $ifNull, $toDate, $toDouble
+						const ag = await Offers.aggregate([
+							{
+								$match: {
+									status: 'bought',
+									$expr: {
+										$and: [
+											{
+												$gte: [
+													{
+														$toDate: {
+															$ifNull: ['$paidAt', new Date(0).toISOString()],
+														},
+													},
+													m.start,
+												],
+											},
+											{
+												$lt: [
+													{
+														$toDate: {
+															$ifNull: ['$paidAt', new Date(0).toISOString()],
+														},
+													},
+													m.end,
+												],
+											},
+										],
+									},
+								},
+							},
+							{
+								$group: {
+									_id: null,
+									total: {
+										$sum: {
+											$toDouble: {
+												$ifNull: ['$amount', '$offerAmount', 0],
+											},
+										},
+									},
+								},
+							},
+						]).toArray();
 
-			return res.json({ totals, pendingApprovals, reports });
-		} catch (err) {
-			console.error('dashboard.admin error', err);
-			return res.status(500).send({ error: 'Internal server error' });
-		}
-	},
+						return { month: m.label, value: Number(ag[0]?.total || 0) };
+					} catch (err) {
+						// In case the server's Mongo version lacks $toDate/$toDouble, return 0 for safety
+						console.warn(
+							'sparkline aggregation error for month',
+							m.label,
+							err.message,
+						);
+						return { month: m.label, value: 0 };
+					}
+				}),
+			);
+
+      // final counts we might want separately
+      const counts = {
+        pendingProperties: await Properties.countDocuments({ verificationStatus: 'pending' }).catch(() => 0),
+        advertised: totals.advertised,
+        users: totals.users,
+      };
+
+      return res.json({
+        totals,
+        counts,
+        recentUsers,
+        recentProperties,
+        recentTransactions,
+        pendingAgentApprovals,
+        topAgents,
+        revenueSparkline,
+      });
+    } catch (err) {
+      console.error('adminDashboard.error', err);
+      return res.status(500).send({ error: 'Internal server error' });
+    }
+  },
 );
+
 
 module.exports = router;

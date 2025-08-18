@@ -1,84 +1,129 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
+import useAdminDashboard from '@/hooks/useAdminDashboard';
+import GlobalLoading from '@/components/Shared/GlobalLoading';
+import StatCard from '@/pages/Dashboard/Components/StatCard';
+import RevenueChart from '@/pages/Dashboard/Components/RevenueChart';
+import SmallListCard from '@/pages/Dashboard/Components/SmallListCard';
+import ViewAllCard from '@/pages/Dashboard/Components/ViewAllCard';
+import { Link } from 'react-router';
 import PropertyCard from '../Components/PropertyCard';
-import GlobalLoading from '../../../components/Shared/GlobalLoading';
 
-const AdminDashboard = () => {
-	const [data, setData] = useState(null);
-	const [loading, setLoading] = useState(true);
+export default function AdminDashboard() {
+	const { dashboard, isLoading, error } = useAdminDashboard();
 
-	useEffect(() => {
-		axios
-			.get('/api/v1/dashboard/user', { withCredentials: true })
-			.then((res) => {
-				setData(res.data);
-			})
-			.catch((err) => {
-				console.error('Failed to fetch dashboard data', err);
-			})
-			.finally(() => setLoading(false));
-	}, []);
+	if (isLoading) return <GlobalLoading />;
+	if (error)
+		return (
+			<div className='p-6 text-destructive'>Failed to load admin dashboard</div>
+		);
+	if (!dashboard) return null;
 
-	if (loading) return <GlobalLoading />;
+	const {
+		totals,
+
+		recentUsers,
+		recentProperties,
+		recentTransactions,
+		pendingAgentApprovals,
+		topAgents,
+		revenueSparkline,
+	} = dashboard;
 
 	return (
-		<div className='space-y-6'>
-			{/* User Info */}
-			<div className='bg-white shadow rounded-lg p-4 flex items-center gap-4'>
-				<img
-					src={data.user.avatar || '/default-avatar.png'}
-					alt='avatar'
-					className='w-16 h-16 rounded-full object-cover'
+		<div className='p-6 space-y-6'>
+			<div className='grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-6 gap-4'>
+				<StatCard title='Users' value={totals.users} subtitle='Total users' />
+				<StatCard
+					title='Agents'
+					value={totals.agents}
+					subtitle='Registered agents'
 				/>
-				<div>
-					<h2 className='text-xl font-semibold'>{data.user.name}</h2>
-					<p className='text-gray-500'>Role: {data.user.role}</p>
+				<StatCard
+					title='Properties'
+					value={totals.properties}
+					subtitle='Total properties'
+				/>
+				<StatCard
+					title='Verified'
+					value={totals.verifiedProperties}
+					subtitle='Verified properties'
+				/>
+				<StatCard
+					title='Advertised'
+					value={totals.advertised}
+					subtitle='Advertised'
+				/>
+				<StatCard
+					title='Revenue'
+					value={`$${(totals.revenue || 0).toLocaleString()}`}
+					subtitle='Lifetime'
+				/>
+			</div>
+
+			<div className='grid lg:grid-cols-[2fr_1fr] gap-6'>
+				<div className='bg-card p-4 rounded-xl shadow'>
+					<h3 className='font-semibold mb-3'>Earnings (last 6 months)</h3>
+					<div style={{ width: '100%', height: 200 }}>
+						<RevenueChart data={revenueSparkline} />
+					</div>
+
+					<div className='mt-4'>
+						<h4 className='font-semibold mb-2'>Recent Transactions</h4>
+						<SmallListCard items={recentTransactions} type='transactions' />
+						<div className='mt-2'>
+							<Link to='/dashboard/payments' className='text-primary'>
+								View all transactions
+							</Link>
+						</div>
+					</div>
+				</div>
+
+				<div className='bg-card p-4 rounded-xl shadow space-y-4'>
+					<div>
+						<h4 className='font-semibold'>Top Agents</h4>
+						<SmallListCard items={topAgents} type='agents' />
+					</div>
+
+					<div>
+						<h4 className='font-semibold'>Pending Agent Approvals</h4>
+						<SmallListCard items={pendingAgentApprovals} type='pendingAgents' />
+						<div className='mt-2'>
+							<Link to='/dashboard/manage-users' className='text-primary'>
+								Review agents
+							</Link>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			{/* Stats */}
-			<div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-				<StatBox title='Total Views' value={data.stats.totalViewed} />
-				<StatBox title='Offers Made' value={data.stats.offersMade} />
-				<StatBox title='Offers Accepted' value={data.stats.offersAccepted} />
-			</div>
-
-			{/* Wishlist / Bought / Pending */}
-			<div>
-				<h3 className='text-lg font-semibold mb-3'>My Properties</h3>
-				{data.myProperties?.length > 0 ? (
-					<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-						{data.myProperties.map((property) => (
-							<PropertyCard key={property._id} property={property} />
-						))}
+			<div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
+				<div className='bg-card p-4 rounded-xl shadow'>
+					<h4 className='font-semibold mb-3'>Recent Users</h4>
+					<SmallListCard items={recentUsers} type='users' />
+					<div className='mt-2'>
+						<Link to='/dashboard/manage-users' className='text-primary'>
+							View all users
+						</Link>
 					</div>
-				) : (
-					<p className='text-gray-500'>You don’t have any properties yet.</p>
-				)}
-			</div>
+				</div>
 
-			{/* Recommended */}
-			<div>
-				<h3 className='text-lg font-semibold mb-3'>Recommended for You</h3>
-				{data.recommended?.length > 0 ? (
-					<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-						{data.recommended.map((property) => (
-							<PropertyCard key={property._id} property={property} />
+				<div className='bg-card p-4 rounded-xl shadow col-span-2'>
+					<h4 className='font-semibold mb-3'>Recent Properties</h4>
+					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+						{recentProperties.map((p) => (
+							<PropertyCard property={p} key={p._id} />
 						))}
+						<div>
+							<ViewAllCard
+								to='/dashboard/manage-properties'
+								count={totals.properties}
+								label='View all properties'
+								showCount={recentProperties.length}
+							/>
+						</div>
 					</div>
-				) : (
-					<p className='text-gray-500'>No recommendations right now.</p>
-				)}
+				</div>
 			</div>
 		</div>
 	);
-};
-
-const StatBox = ({ title, value }) => (
-	<div className='bg-white shadow rounded-lg p-4 text-center'>
-		<p className='text-sm text-gray-500'>{title}</p>
-		<p className='text-2xl font-bold'>{value}</p>
-	</div>
-);
-
-export default AdminDashboard;
+}
