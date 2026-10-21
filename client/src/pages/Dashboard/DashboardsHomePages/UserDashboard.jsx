@@ -7,6 +7,7 @@ import { Link } from 'react-router';
 import BoughtPropertyCard from '../Components/BoughtPropertyCard';
 import PendingPropertyCard from '../Components/PendingPropertyCard';
 import MonthlyBarChart from '../Components/MonthlyBarChart';
+import ChartFallback from '../Components/ChartFallback';
 import {
 	FilterSection,
 	ShowMore,
@@ -97,7 +98,14 @@ const UserDashboard = () => {
 			<section className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='mb-3 text-xl font-semibold'>Your activity</h3>
 				<div className='h-56'>
-					<MonthlyBarChart money={false} data={activity} />
+					{activity.some((item) => Number(item.value) > 0) ? (
+						<MonthlyBarChart money={false} data={activity} />
+					) : (
+						<ChartFallback
+							title='No activity yet'
+							message='Bought homes, wishlist saves, and offers will show up here.'
+						/>
+					)}
 				</div>
 			</section>
 

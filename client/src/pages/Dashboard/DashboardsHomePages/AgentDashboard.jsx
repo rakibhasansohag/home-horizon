@@ -8,8 +8,8 @@ import AgentSoldCard from '../Components/AgentSoldCard';
 import PropertyCard from '../Components/PropertyCard';
 
 import ViewAllCard from '../Components/ViewAllCard';
-import EarningsChart from '../Components/EarningChart';
-import MonthlyBarChart from '../Components/MonthlyBarChart';
+import RevenueChart from '../Components/RevenueChart';
+import ChartFallback from '../Components/ChartFallback';
 
 import { Link } from 'react-router';
 import ReviewsCarousel from '../Components/ReviewsCarousel';
@@ -46,6 +46,10 @@ export default function AgentDashboard() {
 	const showListings = focus === 'all' || focus === 'listings';
 	const showLeads = focus === 'all' || focus === 'leads';
 	const showSold = focus === 'all' || focus === 'sold';
+	const monthlyEarnings = (earningsSparkline || []).reduce(
+		(sum, item) => sum + Number(item.value || 0),
+		0,
+	);
 	const totalCount = listings?.length ?? 0;
 
 	return (
@@ -146,20 +150,19 @@ export default function AgentDashboard() {
 				) : null}
 
 				{focus === 'all' ? (
-				<div className='space-y-6'>
-					<section className='rounded-lg border border-border bg-surface p-4'>
-						<h3 className='mb-3 font-semibold'>Monthly earnings</h3>
-						<div className='h-52'>
-							<MonthlyBarChart data={earningsSparkline} />
-						</div>
-					</section>
-					<section className='rounded-lg border border-border bg-surface p-4'>
-						<h3 className='mb-3 font-semibold'>Earnings trend</h3>
-						<div className='h-40'>
-							<EarningsChart data={earningsSparkline} />
-						</div>
-					</section>
-				</div>
+				<section className='rounded-lg border border-border bg-surface p-4'>
+					<h3 className='mb-3 font-semibold'>Monthly earnings</h3>
+					<div className='h-52'>
+						{monthlyEarnings > 0 ? (
+							<RevenueChart data={earningsSparkline} />
+						) : (
+							<ChartFallback
+								title='No dated earnings'
+								message='None of the last 6 months has a payment date, so there is no earnings trend to draw.'
+							/>
+						)}
+					</div>
+				</section>
 				) : null}
 			</div>
 

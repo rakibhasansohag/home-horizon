@@ -6,7 +6,7 @@ export default function useUserRole() {
 	const { user, loading } = useAuth();
 	const axiosSecure = useAxiosSecure();
 
-	const { data, isLoading, error } = useQuery({
+	const { data, isPending, isFetching, error } = useQuery({
 		queryKey: ['user-role', user?.email || user?.uid],
 		queryFn: async () => {
 			if (!user?.email && !user?.uid) return null;
@@ -21,5 +21,9 @@ export default function useUserRole() {
 		enabled: !loading && !!user,
 	});
 
-	return { role: data, isLoading, error };
+	return {
+		role: data,
+		isLoading: !data && (isPending || isFetching),
+		error,
+	};
 }

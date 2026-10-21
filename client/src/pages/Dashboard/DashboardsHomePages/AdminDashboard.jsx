@@ -1,27 +1,35 @@
 import { useState } from 'react';
 import useAdminDashboard from '@/hooks/useAdminDashboard';
-import GlobalLoading from '@/components/Shared/GlobalLoading';
 import StatCard from '@/pages/Dashboard/Components/StatCard';
 import RevenueChart from '@/pages/Dashboard/Components/RevenueChart';
-import MonthlyBarChart from '@/pages/Dashboard/Components/MonthlyBarChart';
+import SaleAmountChart from '@/pages/Dashboard/Components/SaleAmountChart';
+import ChartFallback from '@/pages/Dashboard/Components/ChartFallback';
 import SmallListCard from '@/pages/Dashboard/Components/SmallListCard';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
 import ViewAllCard from '@/pages/Dashboard/Components/ViewAllCard';
 import { FilterSection } from '@/pages/Dashboard/Components/DashboardFilter';
 import { Link } from 'react-router';
 import PropertyCard from '../Components/PropertyCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const PREVIEW = 6;
 
 export default function AdminDashboard() {
-	const { dashboard, isLoading, error } = useAdminDashboard();
+	const { dashboard, isLoading } = useAdminDashboard();
 	const [focus, setFocus] = useState('all');
 
-	if (isLoading) return <GlobalLoading />;
-	if (error)
+	if (!dashboard && isLoading) return <AdminDashboardSkeleton />;
+	if (!dashboard)
 		return (
 			<div className='p-6 text-destructive'>Failed to load admin dashboard</div>
 		);
-	if (!dashboard) return null;
 
 	const {
 		totals,
@@ -38,12 +46,6 @@ export default function AdminDashboard() {
 		(sum, item) => sum + Number(item.value || 0),
 		0,
 	);
-	const agentBars = (topAgents || []).map((agent) => ({
-		label: agent.name || 'Agent',
-		value: Number(agent.total || 0),
-	}));
-	const barData = monthlyTotal > 0 ? revenueSparkline : agentBars;
-	const barTitle = monthlyTotal > 0 ? 'Monthly revenue' : 'Earnings by agent';
 	const sales = (recentTransactions || []).slice(0, PREVIEW);
 	const agents = (topAgents || []).slice(0, PREVIEW);
 	const pending = (pendingAgentApprovals || []).slice(0, PREVIEW);
@@ -151,31 +153,29 @@ export default function AdminDashboard() {
 
 			{showSales ? (
 				<section className='rounded-lg border border-border bg-surface p-4'>
-					<div className='grid gap-6 lg:grid-cols-2'>
-						<div>
-							<h3 className='mb-3 font-semibold'>{barTitle}</h3>
-							<div className='h-56'>
-								{barData.length > 0 ? (
-									<MonthlyBarChart data={barData} />
-								) : (
-									<p className='py-16 text-sm text-muted-foreground'>
-										No earnings to chart yet.
-									</p>
-								)}
+					<h3 className='mb-3 font-semibold'>Latest sale amounts</h3>
+					<div className='h-72'>
+						{sales.some((sale) => Number(sale.amount) > 0) ? (
+							<SaleAmountChart sales={sales} />
+						) : (
+							<ChartFallback
+								title='No sale amounts yet'
+								message='This chart fills in once a purchase has a price.'
+							/>
+						)}
+					</div>
+					<div className='mt-6'>
+						<h3 className='mb-3 font-semibold'>Monthly revenue</h3>
+						{monthlyTotal > 0 ? (
+							<div className='h-48'>
+								<RevenueChart data={revenueSparkline} />
 							</div>
-						</div>
-						<div>
-							<h3 className='mb-3 font-semibold'>Earnings trend</h3>
-							<div className='h-56'>
-								{monthlyTotal > 0 ? (
-									<RevenueChart data={revenueSparkline} />
-								) : (
-									<p className='py-16 text-sm text-muted-foreground'>
-										No dated sales in the last 6 months.
-									</p>
-								)}
-							</div>
-						</div>
+						) : (
+							<ChartFallback
+								title='No dated sales'
+								message='None of the last 6 months has a sale with a payment date, so there is no monthly trend to draw.'
+							/>
+						)}
 					</div>
 				</section>
 			) : null}
@@ -183,7 +183,46 @@ export default function AdminDashboard() {
 			{showSales ? (
 				<section className='rounded-lg border border-border bg-surface p-4'>
 					<h3 className='mb-3 font-semibold'>Recent sales</h3>
-					<SmallListCard items={sales} type='transactions' />
+					{sales.length === 0 ? (
+						<p className='text-sm text-muted-foreground'>No sales yet.</p>
+					) : (
+						<Table>
+							<TableHeader>
+								<TableRow className='bg-muted hover:bg-muted'>
+									<TableHead>Property</TableHead>
+									<TableHead>Buyer</TableHead>
+									<TableHead className='text-right'>Amount</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{sales.map((sale, index) => (
+									<TableRow
+										key={sale._id || sale.transactionId || index}
+										className={
+											index % 2 === 0
+												? 'bg-surface hover:bg-muted'
+												: 'bg-muted hover:bg-muted'
+										}
+									>
+										<TableCell className='max-w-xs font-medium'>
+											<Link
+												to={`/all-properties/${sale.propertyId}`}
+												className='block truncate hover:text-brand hover:underline'
+											>
+												{sale.propertyTitle || 'Property'}
+											</Link>
+										</TableCell>
+										<TableCell className='text-muted-foreground'>
+											{sale.buyerName || 'Buyer'}
+										</TableCell>
+										<TableCell className='text-right font-semibold tabular-nums'>
+											৳{Number(sale.amount || 0).toLocaleString()}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					)}
 					<div className='mt-3'>
 						<Link to='/dashboard/payments' className='text-brand'>
 							View all transactions
@@ -213,7 +252,41 @@ export default function AdminDashboard() {
 			{showPeople ? (
 				<section className='rounded-lg border border-border bg-surface p-4'>
 					<h3 className='mb-3 font-semibold'>Recent users</h3>
-					<SmallListCard items={users} type='users' />
+					{users.length === 0 ? (
+						<p className='text-sm text-muted-foreground'>No users yet.</p>
+					) : (
+						<Table>
+							<TableHeader>
+								<TableRow className='bg-muted hover:bg-muted'>
+									<TableHead>Name</TableHead>
+									<TableHead>Email</TableHead>
+									<TableHead>Role</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{users.map((person, index) => (
+									<TableRow
+										key={person._id || person.uid || index}
+										className={
+											index % 2 === 0
+												? 'bg-surface hover:bg-muted'
+												: 'bg-muted hover:bg-muted'
+										}
+									>
+										<TableCell className='font-medium'>
+											{person.name || 'User'}
+										</TableCell>
+										<TableCell className='text-muted-foreground'>
+											{person.email}
+										</TableCell>
+										<TableCell className='capitalize'>
+											{person.role || 'user'}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					)}
 					<div className='mt-3'>
 						<Link to='/dashboard/manage-users' className='text-brand'>
 							View all users
@@ -240,6 +313,22 @@ export default function AdminDashboard() {
 					</div>
 				</section>
 			) : null}
+		</div>
+	);
+}
+
+function AdminDashboardSkeleton() {
+	return (
+		<div className='space-y-6' aria-busy='true'>
+			<span className='sr-only'>Loading dashboard</span>
+			<Skeleton className='h-20 w-full' />
+			<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3'>
+				{Array.from({ length: 6 }, (_, index) => (
+					<Skeleton key={index} className='h-24' />
+				))}
+			</div>
+			<Skeleton className='h-72 w-full' />
+			<Skeleton className='h-48 w-full' />
 		</div>
 	);
 }

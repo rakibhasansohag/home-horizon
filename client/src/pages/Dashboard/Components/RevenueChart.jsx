@@ -1,8 +1,7 @@
-import React from 'react';
 import {
 	ResponsiveContainer,
-	LineChart,
-	Line,
+	AreaChart,
+	Area,
 	XAxis,
 	Tooltip,
 	YAxis,
@@ -10,11 +9,10 @@ import {
 } from 'recharts';
 
 export default function RevenueChart({ data = [] }) {
-	// ensure data shape [{month, value}]
 	return (
 		<ResponsiveContainer width='100%' height='100%'>
-			<LineChart data={data}>
-				<CartesianGrid strokeDasharray='3 3' opacity={0.06} />
+			<AreaChart data={data}>
+				<CartesianGrid vertical={false} stroke='var(--line)' />
 				<XAxis
 					dataKey='month'
 					tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
@@ -25,17 +23,20 @@ export default function RevenueChart({ data = [] }) {
 					axisLine={false}
 					tickLine={false}
 					tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-					tickFormatter={(v) => (v ? (v / 1000).toFixed(0) + 'k' : '0')}
+					tickFormatter={(value) =>
+						value >= 1000 ? `${Math.round(value / 1000)}k` : value
+					}
 				/>
-				<Tooltip formatter={(v) => `৳${Number(v || 0).toLocaleString()}`} />
-				<Line
+				<Tooltip formatter={(value) => `৳${Number(value || 0).toLocaleString()}`} />
+				<Area
 					type='monotone'
 					dataKey='value'
 					stroke='var(--brand)'
+					fill='var(--brand)'
+					fillOpacity={0.18}
 					strokeWidth={2}
-					dot={false}
 				/>
-			</LineChart>
+			</AreaChart>
 		</ResponsiveContainer>
 	);
 }
