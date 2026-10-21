@@ -28,6 +28,7 @@ import Login from '../pages/Authentication/Login';
 import NotFoundPage from '../components/Shared/NotFound/NotFoundPage';
 import AdminAdvertiseProperty from '../pages/Dashboard/AdminAdvertiseProperty';
 import ComingSoonPaymentPage from '../components/Shared/NotFound/ComingSoonPayment';
+import ComingSoon from '../components/Shared/NotFound/ComingSoon';
 
 const router = createBrowserRouter([
 	{
@@ -50,6 +51,26 @@ const router = createBrowserRouter([
 						<PropertyDetails />
 					</PrivateRoute>
 				),
+			},
+			{
+				path: 'legal/terms-of-service',
+				Component: ComingSoon,
+			},
+			{
+				path: 'legal/privacy-policy',
+				Component: ComingSoon,
+			},
+			{
+				path: 'legal/cookie-policy',
+				Component: ComingSoon,
+			},
+			{
+				path: 'about-us',
+				Component: ComingSoon,
+			},
+			{
+				path: 'contact',
+				Component: ComingSoon,
 			},
 		],
 	},

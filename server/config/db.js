@@ -11,6 +11,7 @@ const client = new MongoClient(process.env.MONGODBURL, {
 let db;
 
 async function connectToDB() {
+	// TODO : ALways stop the client.connect() for server relase
 	await client.connect();
 	db = client.db('homeHorizonDB');
 	console.log('Connected to MongoDB');

@@ -14,7 +14,7 @@ const Footer = () => {
 		{ name: 'WhatsApp: 01760169982', to: 'https://wa.me/8801760169982' },
 	];
 
-	const terms = ['Terms of Service', 'Privacy Policy', 'Disclaimer'];
+	const terms = ['Terms of Service', 'Privacy Policy'];
 
 	return (
 		<footer className='bg-background text-foreground py-12 border-t border-muted'>
