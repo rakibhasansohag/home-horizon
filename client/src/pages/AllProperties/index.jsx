@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect, useRef } from 'react';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/components/Shared/PropertyCard';
@@ -9,31 +9,54 @@ import { cn } from '@/lib/utils';
 import useAxios from '../../hooks/useAxios';
 import MapView from './MapView';
 
-const bangladeshBounds = {
-	swLat: 20.34,
-	swLng: 88.02,
-	neLat: 26.38,
-	neLng: 92.67,
+const compactView = {
+	swLat: 23.7,
+	swLng: 90.32,
+	neLat: 23.9,
+	neLng: 90.5,
 };
+
+function inView(property, bounds) {
+	const lat = Number(property?.coordinates?.lat);
+	const lng = Number(property?.coordinates?.lng);
+	if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+	return (
+		lat >= bounds.swLat &&
+		lat <= bounds.neLat &&
+		lng >= bounds.swLng &&
+		lng <= bounds.neLng
+	);
+}
+
+function byPrice(sort) {
+	return (a, b) => {
+		const delta = Number(a.minPrice) - Number(b.minPrice);
+		return sort === 'asc' ? delta : -delta;
+	};
+}
 
 export default function AllProperties() {
 	const axiosInstance = useAxios();
+	const queryClient = useQueryClient();
 	const [search, setSearch] = useState('');
 	const [sort, setSort] = useState('desc');
-	const [bounds, setBounds] = useState(bangladeshBounds);
+	const [bounds, setBounds] = useState(null);
 	const [activeId, setActiveId] = useState(null);
 	const [forceFetch, setForceFetch] = useState(false);
 
 	const cardRefs = useRef({});
 	const selectFromMap = useRef(false);
 
-	const { data: properties = [], isLoading } = useQuery({
+	const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
 		queryKey: ['all-properties', search, sort, bounds, forceFetch],
 		queryFn: async () => {
 			const params = new URLSearchParams({
 				search: search.toLowerCase(),
 				sort,
-				...(bounds ? bounds : {}),
+				swLat: bounds.swLat,
+				swLng: bounds.swLng,
+				neLat: bounds.neLat,
+				neLng: bounds.neLng,
 			});
 			const res = await axiosInstance.get(
 				`/properties/verified?${params.toString()}`,
@@ -41,7 +64,27 @@ export default function AllProperties() {
 			return res.data;
 		},
 		enabled: !!bounds,
+		placeholderData: keepPreviousData,
+		staleTime: 5 * 60 * 1000,
+		gcTime: 30 * 60 * 1000,
 	});
+
+	const shown = useMemo(() => {
+		if (!bounds) return [];
+		if (Array.isArray(data) && !isPlaceholderData && !isFetching) return data;
+
+		const cached = new Map();
+		for (const [, value] of queryClient.getQueriesData({
+			queryKey: ['all-properties', search, sort],
+		})) {
+			if (!Array.isArray(value)) continue;
+			for (const property of value) {
+				if (inView(property, bounds)) cached.set(property._id, property);
+			}
+		}
+		if (cached.size > 0) return [...cached.values()].sort(byPrice(sort));
+		return Array.isArray(data) ? data : [];
+	}, [bounds, data, isFetching, isPlaceholderData, queryClient, search, sort]);
 
 	const handleSearchChange = (e) => {
 		setSearch(e.target.value);
@@ -51,9 +94,32 @@ export default function AllProperties() {
 		setSort((prev) => (prev === 'asc' ? 'desc' : 'asc'));
 	};
 
+	const updateBounds = useCallback((next) => {
+		const round = (value) => Math.round(Number(value) * 1000) / 1000;
+		const rounded = {
+			swLat: round(next.swLat),
+			swLng: round(next.swLng),
+			neLat: round(next.neLat),
+			neLng: round(next.neLng),
+		};
+		if (Object.values(rounded).some((value) => !Number.isFinite(value))) return;
+		setBounds((current) => {
+			if (
+				current &&
+				current.swLat === rounded.swLat &&
+				current.swLng === rounded.swLng &&
+				current.neLat === rounded.neLat &&
+				current.neLng === rounded.neLng
+			) {
+				return current;
+			}
+			return rounded;
+		});
+	}, []);
+
 	const selectProperty = (id, fromMap = false) => {
 		selectFromMap.current = fromMap;
-		setActiveId(id);
+		setActiveId((current) => (current === id ? current : id));
 	};
 
 	useEffect(() => {
@@ -67,10 +133,8 @@ export default function AllProperties() {
 
 	useEffect(() => {
 		const handleResize = () => {
-			const isDesktop = window.innerWidth >= 1024;
-			if (!isDesktop) {
-				setBounds(bangladeshBounds);
-			}
+			if (window.innerWidth >= 1024) return;
+			setBounds((current) => current ?? compactView);
 		};
 
 		handleResize(); // run once
@@ -79,12 +143,12 @@ export default function AllProperties() {
 	}, []);
 
 	return (
-		<div className='section space-y-6 py-10'>
-			<h1 className='font-display text-3xl text-foreground'>
+		<div className='section flex flex-col gap-6 py-6 lg:h-[calc(100dvh-4rem)] lg:overflow-hidden'>
+			<h1 className='shrink-0 font-display text-3xl text-foreground'>
 				All Verified Properties
 			</h1>
 
-			<div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+			<div className='flex shrink-0 flex-col gap-4 md:flex-row md:items-center md:justify-between'>
 				<Input
 					placeholder='Search by location...'
 					value={search}
@@ -96,13 +160,13 @@ export default function AllProperties() {
 				</Button>
 			</div>
 
-			<div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]'>
-				<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1'>
-					{isLoading
+			<div className='grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]'>
+				<div className='grid content-start grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:overflow-y-auto lg:pr-1'>
+					{shown.length === 0 && (!bounds || isLoading || isFetching)
 						? [...Array(6)].map((_, i) => (
 								<Skeleton key={i} className='h-28 w-full rounded-lg' />
 						  ))
-						: properties.map((prop) => {
+						: shown.map((prop) => {
 								const selected = activeId === prop._id;
 								const image = prop.images?.[0]?.url;
 								const price = `${formatMoney(prop.minPrice)}${
@@ -159,7 +223,7 @@ export default function AllProperties() {
 									</article>
 								);
 						  })}
-					{!isLoading && properties.length === 0 && (
+					{bounds && !isLoading && !isFetching && shown.length === 0 && (
 						<div className='col-span-full text-center text-muted-foreground py-10'>
 							<p className='text-lg'>No properties found in this location.</p>
 							<p className='text-sm'>
@@ -168,23 +232,19 @@ export default function AllProperties() {
 							<Button
 								type='button'
 								className={'mt-4'}
-								onClick={() =>
-									properties.length === 0
-										? window.location.reload()
-										: setForceFetch((p) => !p)
-								}
+								onClick={() => setForceFetch((p) => !p)}
 							>
-								{properties.length === 0 ? 'Reload Page' : 'Retry'}
+								Retry
 							</Button>
 						</div>
 					)}
 				</div>
 
 				{/* Right: Map (hidden on small screens) */}
-				<div className='sticky top-20 hidden h-[32rem] overflow-hidden rounded-lg border border-border lg:block'>
+				<div className='hidden min-h-0 overflow-hidden rounded-lg border border-border lg:block'>
 					<MapView
-						properties={properties}
-						onBoundsChange={setBounds}
+						properties={shown}
+						onBoundsChange={updateBounds}
 						onMarkerClick={(id) => selectProperty(id, true)}
 						activeId={activeId}
 					/>

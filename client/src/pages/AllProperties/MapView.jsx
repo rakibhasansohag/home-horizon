@@ -25,13 +25,31 @@ function pin(active) {
 const defaultIcon = pin(false);
 const activeIcon = pin(true);
 
-const MapEvents = ({ onBoundsChange, ignoreMove }) => {
+function ReportView({ onBoundsChange, ignoreUntil }) {
+	const map = useMap();
+
+	useEffect(() => {
+		const report = () => {
+			if (Date.now() < ignoreUntil.current) return;
+			if (map.getSize().y < 50) return;
+			const bounds = map.getBounds();
+			onBoundsChange({
+				swLat: bounds.getSouthWest().lat,
+				swLng: bounds.getSouthWest().lng,
+				neLat: bounds.getNorthEast().lat,
+				neLng: bounds.getNorthEast().lng,
+			});
+		};
+		map.whenReady(report);
+	}, [ignoreUntil, map, onBoundsChange]);
+
+	return null;
+}
+
+const MapEvents = ({ onBoundsChange, ignoreUntil }) => {
 	useMapEvents({
 		moveend: (event) => {
-			if (ignoreMove.current) {
-				ignoreMove.current = false;
-				return;
-			}
+			if (Date.now() < ignoreUntil.current) return;
 			const bounds = event.target.getBounds();
 			onBoundsChange({
 				swLat: bounds.getSouthWest().lat,
@@ -44,6 +62,28 @@ const MapEvents = ({ onBoundsChange, ignoreMove }) => {
 	return null;
 };
 
+function FitContainer() {
+	const map = useMap();
+
+	useEffect(() => {
+		const container = map.getContainer();
+		let frame = 0;
+		const fit = () => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() => map.invalidateSize());
+		};
+		const observer = new ResizeObserver(fit);
+		observer.observe(container);
+		fit();
+		return () => {
+			cancelAnimationFrame(frame);
+			observer.disconnect();
+		};
+	}, [map]);
+
+	return null;
+}
+
 function ThemeTiles({ theme }) {
 	const map = useMap();
 
@@ -54,17 +94,18 @@ function ThemeTiles({ theme }) {
 	return null;
 }
 
-function FocusMarker({ activeId, propertiesRef, ignoreMove }) {
+function FocusMarker({ activeId, propertiesRef, ignoreUntil }) {
 	const map = useMap();
 
 	useEffect(() => {
+		if (!activeId) return;
+		ignoreUntil.current = Date.now() + 900;
 		const property = propertiesRef.current.find((item) => item._id === activeId);
 		if (!property?.coordinates) return;
 		const latlng = L.latLng(property.coordinates.lat, property.coordinates.lng);
 		if (map.getBounds().contains(latlng)) return;
-		ignoreMove.current = true;
 		map.flyTo(latlng, Math.max(map.getZoom(), 12), { duration: 0.45 });
-	}, [activeId, ignoreMove, map, propertiesRef]);
+	}, [activeId, ignoreUntil, map, propertiesRef]);
 
 	return null;
 }
@@ -92,7 +133,7 @@ function PropertyMarker({ property, active, onMarkerClick }) {
 			icon={active ? activeIcon : defaultIcon}
 			zIndexOffset={active ? 500 : 0}
 		>
-			<Popup>
+			<Popup autoPan={false}>
 				<strong>{property.title}</strong>
 				<br />
 				{property.location}
@@ -108,7 +149,7 @@ export default function MapView({
 	activeId,
 }) {
 	const { theme } = useContext(ThemeContext);
-	const ignoreMove = useRef(false);
+	const ignoreUntil = useRef(0);
 	const propertiesRef = useRef(properties);
 	propertiesRef.current = properties;
 
@@ -125,11 +166,13 @@ export default function MapView({
 				attribution='&copy; OpenStreetMap'
 			/>
 			<ThemeTiles theme={theme} />
-			<MapEvents onBoundsChange={onBoundsChange} ignoreMove={ignoreMove} />
+			<FitContainer />
+			<ReportView onBoundsChange={onBoundsChange} ignoreUntil={ignoreUntil} />
+			<MapEvents onBoundsChange={onBoundsChange} ignoreUntil={ignoreUntil} />
 			<FocusMarker
 				activeId={activeId}
 				propertiesRef={propertiesRef}
-				ignoreMove={ignoreMove}
+				ignoreUntil={ignoreUntil}
 			/>
 			{properties.map((property) => (
 				<PropertyMarker
