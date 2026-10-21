@@ -54,7 +54,6 @@ export default function AdminManageReviews() {
 
 	return (
 		<div className='p-6 w-full space-y-4 max-w-7xl'>
-			<h2 className='text-2xl font-semibold'>Manage Reviews</h2>
 			<div className='grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'>
 				{reviews.map((review) => (
 					<Card

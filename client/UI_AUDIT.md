@@ -1,5 +1,7 @@
 # HomeHorizon UI audit
 
+Phase 3 shells: public header is a sticky paper bar (desktop links, solid mobile panel, account menu, theme toggle). Footer is four columns of text links; All Properties points at `/all-properties`. Auth layout is a two-column split from 768px up, photo hidden below that. Dashboard sidebar is grouped by role (Account, Buying, Listings, Administration), logout sits in the footer, and the layout header shows the page title. Menu rows and the sidebar trigger are 44px. Checked live as admin at 390 (drawer opens, closes after Manage Users, no document scroll) and at a wide desktop (groups, active item, no document scroll). Auth login checked at 390, 768, and wide: form stays on screen, photo only from 768 up. Tables inside dashboard pages still scroll; that stays for the page pass.
+
 Phase 2 primitives are restyled: buttons, fields, cards, badges, tables, dialogs, and one `PropertyCard` for home, all properties, wishlist, my properties, advertise, and dashboard lists. Checkbox, tabs, and pagination components are not in the app.
 
 Phase 1 tokens are in `src/index.css` and `index.html`. Ink, paper, line, and one green accent drive the shadcn variables. Instrument Sans is the UI face. Fraunces is loaded for later display titles (`font-display`). Palette utilities (`blue`, `gray`, `green`, `red`, `yellow`) in components now point at those tokens. Layout, type size misuse, and table overflow are still open.

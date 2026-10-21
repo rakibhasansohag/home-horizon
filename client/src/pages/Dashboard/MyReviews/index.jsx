@@ -56,7 +56,9 @@ export default function MyReviews() {
 
 	return (
 		<div className='p-6 space-y-4 max-w-7xl w-full'>
-			<h2 className='text-2xl font-bold'>My Reviews ({reviews?.length}) </h2>
+			<p className='text-base text-muted-foreground'>
+				{reviews?.length || 0} reviews
+			</p>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				{reviews?.map((review) => (
 					<Card key={review._id}>

@@ -71,8 +71,6 @@ export default function PropertyBought() {
 
 	return (
 		<div className='p-6 space-y-4 w-full max-w-7xl'>
-			<h2 className='text-2xl font-bold'>Your Property Offers</h2>
-
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				{offers?.map((offer) => (
 					<Card key={offer._id} className='overflow-hidden pt-0'>

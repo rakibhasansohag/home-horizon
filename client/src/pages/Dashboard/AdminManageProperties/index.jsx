@@ -66,9 +66,6 @@ export default function AdminManageProperties() {
 
 	return (
 		<div className='overflow-x-auto bg-background p-6 space-y-4  w-full '>
-			<h2 className='text-2xl font-semibold mb-6 text-foreground'>
-				Manage Properties
-			</h2>
 			<Table className='!w-full !max-w-7xl shadow-md '>
 				<TableHeader>
 					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>

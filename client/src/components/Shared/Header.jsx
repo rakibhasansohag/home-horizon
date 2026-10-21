@@ -1,11 +1,7 @@
 import { Moon, Sun, Menu, X } from 'lucide-react';
-import { Link, NavLink, useNavigate } from 'react-router';
-import { useContext, useState } from 'react';
-
-// eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from 'motion/react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,11 +14,11 @@ import {
 import { AuthContext } from '@/context/AuthContext';
 import { Button } from '../ui/button';
 import { ThemeContext } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 
 const navItems = [
 	{ path: '/', label: 'Home' },
 	{ path: '/all-properties', label: 'All Properties' },
-
 	{ path: '/dashboard', label: 'Dashboard', auth: true },
 	{ path: '/auth/login', label: 'Login', guestOnly: true },
 	{ path: '/auth/register', label: 'Register', guestOnly: true },
@@ -31,11 +27,16 @@ const navItems = [
 export default function Header() {
 	const [open, setOpen] = useState(false);
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { toggleTheme, theme } = useContext(ThemeContext);
-
 	const { user, logOut } = useContext(AuthContext);
 
+	useEffect(() => {
+		setOpen(false);
+	}, [location.pathname]);
+
 	const handleLogOut = () => {
+		setOpen(false);
 		logOut()
 			.then(() => {
 				toast.success('Successfully logged out');
@@ -46,119 +47,109 @@ export default function Header() {
 			});
 	};
 
-	const NavLinks = () =>
-		navItems
-			.filter((item) => {
-				if (item.auth && !user) return false;
-				if (item.guestOnly && user) return false;
-				return true;
-			})
-			.map((item) => (
-				<NavLink
-					to={item.path}
-					key={item.label}
-					className='relative transition-all duration-300 hover:text-brand text-sm font-medium  before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-all before:duration-300 hover:before:w-full'
-				>
-					{item.label}
-				</NavLink>
-			));
+	const links = navItems.filter((item) => {
+		if (item.auth && !user) return false;
+		if (item.guestOnly && user) return false;
+		return true;
+	});
 
-	// TODO : STICKY NOT WORKING will fix after fixing most of the project bug
+	const renderLinks = (stacked) =>
+		links.map((item) => (
+			<NavLink
+				to={item.path}
+				key={item.label}
+				end={item.path === '/'}
+				onClick={() => setOpen(false)}
+				className={({ isActive }) =>
+					cn(
+						'inline-flex min-h-11 items-center rounded-md px-3 text-base transition-colors duration-200',
+						stacked && 'w-full',
+						isActive
+							? 'bg-brand-soft font-medium text-brand'
+							: 'text-foreground hover:text-brand',
+					)
+				}
+			>
+				{item.label}
+			</NavLink>
+		));
 
 	return (
-		<header className='sticky w-full top-0 z-50 '>
-			<div className='section flex items-center justify-between py-4 relative'>
-				{/* Left - Logo */}
-				<Link to='/' className='text-xl font-bold text-brand'>
-					HomeHorizon
+		<header className='sticky top-0 z-50 border-b border-border bg-paper'>
+			<div className='section flex h-16 items-center justify-between gap-4'>
+				<Link to='/' className='text-xl font-semibold text-foreground'>
+					Home<span className='text-brand'>Horizon</span>
 				</Link>
 
-				{/* Center - Nav links (desktop only) */}
-				<nav className='hidden md:flex gap-6 absolute left-1/2 -translate-x-1/2'>
-					<NavLinks />
+				<nav className='hidden items-center gap-1 md:flex' aria-label='Primary'>
+					{renderLinks(false)}
 				</nav>
 
-				{/* Right - Theme + Auth */}
-				<div className='flex items-center gap-3'>
-					<Button variant='outline' size='icon' onClick={toggleTheme}>
+				<div className='flex items-center gap-2'>
+					<Button
+						variant='outline'
+						size='icon'
+						onClick={toggleTheme}
+						aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
+					>
 						{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
 					</Button>
 
 					{user && (
-						<div>
-							<DropdownMenu>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<DropdownMenuTrigger asChild>
-											<img
-												src={user?.avatar || user?.photoURL}
-												alt='avatar'
-												className='w-8 h-8 rounded-full object-cover ring-2 ring-brand cursor-pointer'
-											/>
-										</DropdownMenuTrigger>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>Open Menu</p>
-									</TooltipContent>
-								</Tooltip>
-
-								<DropdownMenuContent align='end'>
-									<DropdownMenuLabel>Account</DropdownMenuLabel>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem
-										onClick={() => navigate('/dashboard/profile')}
-										className='cursor-pointer'
-									>
-										View Profile
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										onClick={handleLogOut}
-										className='text-danger cursor-pointer'
-									>
-										Logout
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button
+									type='button'
+									className='inline-flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none'
+									aria-label='Account menu'
+								>
+									<img
+										src={user?.avatar || user?.photoURL}
+										alt=''
+										className='size-8 rounded-full object-cover'
+									/>
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end'>
+								<DropdownMenuLabel>Account</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									onClick={() => navigate('/dashboard/profile')}
+									className='min-h-11 cursor-pointer'
+								>
+									View Profile
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={handleLogOut}
+									className='min-h-11 cursor-pointer text-danger'
+								>
+									Logout
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					)}
 
-					{/* Mobile toggle */}
 					<Button
 						variant='ghost'
 						size='icon'
-						className={`md:hidden transition-transform duration-300 ${
-							open ? 'rotate-90 text-brand' : ''
-						}`}
-						onClick={() => setOpen(!open)}
+						className='md:hidden'
+						aria-expanded={open}
+						aria-label={open ? 'Close menu' : 'Open menu'}
+						onClick={() => setOpen((value) => !value)}
 					>
 						{open ? <X /> : <Menu />}
 					</Button>
 				</div>
 			</div>
 
-			{/* Mobile Nav */}
-			<AnimatePresence>
-				{open && (
-					<motion.div
-						initial={{ height: 0, opacity: 0 }}
-						animate={{ height: 'auto', opacity: 1 }}
-						exit={{ height: 0, opacity: 0 }}
-						transition={{ duration: 0.3 }}
-						className='md:hidden px-6 pb-4 flex flex-col gap-3 text-sm'
-					>
-						<NavLinks />
-						{user && (
-							<Button
-								variant='ghost'
-								className='text-left text-sm w-fit'
-								onClick={handleLogOut}
-							>
-								Logout
-							</Button>
-						)}
-					</motion.div>
-				)}
-			</AnimatePresence>
+			{open && (
+				<nav
+					className='border-t border-border bg-paper px-4 py-2 md:hidden'
+					aria-label='Mobile'
+				>
+					<div className='flex flex-col'>{renderLinks(true)}</div>
+				</nav>
+			)}
 		</header>
 	);
 }

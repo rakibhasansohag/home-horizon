@@ -58,9 +58,6 @@ export default function AdminAdvertiseProperty() {
 
 	return (
 		<div className='p-6 space-y-6 bg-background w-full max-w-7xl'>
-			<h2 className='text-2xl font-semibold'>Advertise Property</h2>
-
-			{/* stats card */}
 			<div className='p-4 bg-surface rounded-lg border flex items-center justify-between'>
 				<div>
 					<p className='text-sm text-muted-foreground'>Total Advertised</p>

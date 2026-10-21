@@ -41,10 +41,6 @@ export default function AgentSoldProperties() {
 
 	return (
 		<div className='overflow-x-auto bg-background p-6 space-y-4 w-full'>
-			<h2 className='text-2xl font-semibold text-foreground'>
-				My Sold Properties
-			</h2>
-
 			<div className='bg-success-soft dark:bg-success-soft border border-success dark:border-success rounded-lg shadow p-5 max-w-sm'>
 				<p className='text-muted-foreground text-sm'>Total Sold Amount</p>
 				<h3 className='text-3xl font-bold text-success dark:text-success'>

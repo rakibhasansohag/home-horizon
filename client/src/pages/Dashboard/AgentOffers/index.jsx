@@ -73,9 +73,6 @@ export default function AgentOffersPage() {
 
 	return (
 		<div className='overflow-x-auto bg-background p-6 rounded-md shadow-md w-full'>
-			<h2 className='text-2xl font-semibold mb-4'>
-				Requested / Offered Properties
-			</h2>
 			<Table className='!w-full !max-w-full'>
 				<TableHeader>
 					<TableRow className='bg-muted hover:bg-muted'>

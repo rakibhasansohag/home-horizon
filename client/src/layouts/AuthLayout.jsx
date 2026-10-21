@@ -5,21 +5,18 @@ import useDynamicTitle from '../hooks/useDynamicTitle';
 function AuthLayout() {
 	useDynamicTitle();
 	return (
-		<div className='bg-background  flex items-center justify-center'>
-			<div className='grid grid-cols-1 md:grid-cols-[550px_1fr] w-full mx-auto h-screen'>
-				{/* Outlet Section */}
-				<div className='w-full  flex justify-center items-center px-4 sm:px-8 md:px-12 py-8'>
+		<div className='min-h-screen bg-paper'>
+			<div className='grid min-h-screen grid-cols-1 md:grid-cols-2'>
+				<div className='flex items-center justify-center overflow-y-auto px-4 py-10 sm:px-8'>
 					<div className='w-full max-w-md'>
 						<Outlet />
 					</div>
 				</div>
-
-				{/* Image Section */}
-				<div className='hidden md:block h-full max-h-screen overflow-hidden'>
+				<div className='hidden md:block'>
 					<img
 						src={AuthImage}
-						className='w-full h-full object-cover mx-auto'
-						alt='Authentication background'
+						className='h-full min-h-screen w-full object-cover'
+						alt='Brick house with a white porch'
 					/>
 				</div>
 			</div>

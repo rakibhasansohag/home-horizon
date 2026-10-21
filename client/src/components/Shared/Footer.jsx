@@ -1,8 +1,4 @@
 import { Link, NavLink } from 'react-router';
-import { BsGithub, BsInstagram, BsLinkedin } from 'react-icons/bs';
-import { FaFacebook } from 'react-icons/fa';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
 const Footer = () => {
 	const contactUs = [
@@ -14,141 +10,104 @@ const Footer = () => {
 		{ name: 'WhatsApp: 01760169982', to: 'https://wa.me/8801760169982' },
 	];
 
-	const terms = ['Terms of Service', 'Privacy Policy'];
+	const pages = [
+		{ label: 'Home', to: '/' },
+		{ label: 'All Properties', to: '/all-properties' },
+		{ label: 'About Us', to: '/about-us' },
+		{ label: 'Contact', to: '/contact' },
+	];
+
+	const terms = [
+		{ label: 'Terms of Service', to: '/legal/terms-of-service' },
+		{ label: 'Privacy Policy', to: '/legal/privacy-policy' },
+	];
+
+	const socials = [
+		{ label: 'Facebook', to: 'https://www.facebook.com/rakibhasansohag133/' },
+		{ label: 'Instagram', to: 'https://www.instagram.com/rakibhasansohag133' },
+		{ label: 'LinkedIn', to: 'https://www.linkedin.com/in/rakib-hasan-sohag/' },
+		{ label: 'GitHub', to: 'https://github.com/rakibhasansohag' },
+	];
 
 	return (
-		<footer className='bg-background text-foreground py-12 border-t border-muted'>
-			<div className='section grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8'>
-				<Card className='shadow-none bg-transparent border-none p-0'>
-					<CardContent className='p-0'>
-						<Link to='/' className='inline-flex items-center gap-2'>
-							<span className='text-2xl font-bold text-brand'>
-								HomeHorizon
-							</span>
-						</Link>
-						<p className='mt-4 text-muted-foreground'>
-							Discover your next home with confidence. Verified listings,
-							interactive maps, secure transactions, and user-driven reviews —
-							all in one place.
-						</p>
-					</CardContent>
-				</Card>
+		<footer className='border-t border-border bg-paper text-foreground'>
+			<div className='section grid grid-cols-1 gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4'>
+				<div>
+					<Link to='/' className='text-xl font-semibold'>
+						Home<span className='text-brand'>Horizon</span>
+					</Link>
+					<p className='mt-4 max-w-[36ch] text-base text-muted-foreground'>
+						Verified listings, maps, and reviews for buying and selling homes.
+					</p>
+				</div>
 
-				<Card className='shadow-none bg-transparent border-none p-0'>
-					<CardContent className='p-0'>
-						<h4 className='font-semibold text-lg text-brand mb-2'>
-							Quick Links
-						</h4>
-						<ul className='space-y-1'>
-							{['Home', 'Properties', 'About Us', 'Contact'].map((page) => (
-								<li key={page}>
-									<NavLink
-										to={
-											page === 'Home'
-												? '/'
-												: `/${page.toLowerCase().replace(/\s/g, '-')}`
-										}
-										className='block text-sm transition-transform hover:scale-105 hover:text-brand'
-									>
-										{page}
-									</NavLink>
-								</li>
-							))}
-						</ul>
-					</CardContent>
-				</Card>
+				<nav aria-label='Footer'>
+					<h2 className='text-base font-semibold'>Explore</h2>
+					<ul className='mt-3 space-y-1'>
+						{pages.map((page) => (
+							<li key={page.to}>
+								<NavLink
+									to={page.to}
+									className='inline-flex min-h-11 items-center text-base text-muted-foreground hover:text-brand'
+								>
+									{page.label}
+								</NavLink>
+							</li>
+						))}
+					</ul>
+				</nav>
 
-				<Card className='shadow-none bg-transparent border-none p-0'>
-					<CardContent className='p-0'>
-						<h4 className='font-semibold text-lg text-brand mb-2'>
-							Contact Us
-						</h4>
-						<ul className='space-y-1'>
-							{contactUs.map((info, index) => (
-								<li key={index}>
-									<Link
-										to={info.to}
-										target='_blank'
-										className='block text-sm transition-transform hover:scale-105 hover:text-brand'
-									>
-										{info.name}
-									</Link>
-								</li>
-							))}
-						</ul>
-					</CardContent>
-				</Card>
+				<div>
+					<h2 className='text-base font-semibold'>Contact</h2>
+					<ul className='mt-3 space-y-1'>
+						{contactUs.map((info) => (
+							<li key={info.name}>
+								<a
+									href={info.to}
+									className='inline-flex min-h-11 items-center text-base text-muted-foreground hover:text-brand'
+								>
+									{info.name}
+								</a>
+							</li>
+						))}
+					</ul>
+				</div>
 
-				<Card className='shadow-none bg-transparent border-none p-0'>
-					<CardContent className='p-0'>
-						<h4 className='font-semibold text-lg text-brand mb-2'>Legal</h4>
-						<ul className='space-y-1'>
-							{terms.map((topic, index) => (
-								<li key={index}>
-									<Link
-										to={`/legal/${topic.toLowerCase().replace(/\s/g, '-')}`}
-										className='block text-sm transition-transform hover:scale-105 hover:text-brand'
-									>
-										{topic}
-									</Link>
-								</li>
-							))}
-						</ul>
-					</CardContent>
-				</Card>
+				<div>
+					<h2 className='text-base font-semibold'>Legal</h2>
+					<ul className='mt-3 space-y-1'>
+						{terms.map((topic) => (
+							<li key={topic.to}>
+								<Link
+									to={topic.to}
+									className='inline-flex min-h-11 items-center text-base text-muted-foreground hover:text-brand'
+								>
+									{topic.label}
+								</Link>
+							</li>
+						))}
+					</ul>
+				</div>
 			</div>
 
-			<Separator className='my-8' />
-
-			<div className='flex flex-col items-center gap-4'>
-				<div className='flex gap-6 text-brand'>
-					<Link
-						to='https://www.facebook.com/rakibhasansohag133/'
-						target='_blank'
-					>
-						<FaFacebook
-							size={22}
-							className='hover:scale-110 transition-transform'
-						/>
-					</Link>
-					<Link
-						to='https://www.instagram.com/rakibhasansohag133'
-						target='_blank'
-					>
-						<BsInstagram
-							size={22}
-							className='hover:scale-110 transition-transform'
-						/>
-					</Link>
-					<Link
-						to='https://www.linkedin.com/in/rakib-hasan-sohag/'
-						target='_blank'
-					>
-						<BsLinkedin
-							size={22}
-							className='hover:scale-110 transition-transform'
-						/>
-					</Link>
-					<Link to='https://github.com/rakibhasansohag' target='_blank'>
-						<BsGithub
-							size={22}
-							className='hover:scale-110 transition-transform'
-						/>
-					</Link>
-				</div>
-
-				<div className='text-sm text-muted-foreground text-center'>
-					© {new Date().getFullYear()} HomeHorizon. All rights reserved.
-					<br />
-					Crafted with ❤️ by{' '}
-					<Link
-						to='https://github.com/rakibhasansohag'
-						target='_blank'
-						className='text-brand font-semibold underline-offset-4 hover:underline'
-					>
-						Rakib Hasan Sohag
-					</Link>
-				</div>
+			<div className='section flex flex-col gap-3 border-t border-border py-6 sm:flex-row sm:items-center sm:justify-between'>
+				<p className='text-sm text-muted-foreground'>
+					© {new Date().getFullYear()} HomeHorizon
+				</p>
+				<ul className='flex flex-wrap gap-x-4'>
+					{socials.map((item) => (
+						<li key={item.label}>
+							<a
+								href={item.to}
+								target='_blank'
+								rel='noreferrer'
+								className='inline-flex min-h-11 items-center text-base text-muted-foreground hover:text-brand'
+							>
+								{item.label}
+							</a>
+						</li>
+					))}
+				</ul>
 			</div>
 		</footer>
 	);
