@@ -1,5 +1,7 @@
 # HomeHorizon UI audit
 
+Home hero: the photograph sits beside the title on paper. There is no darkened full-bleed photo and no floating card.
+
 Home follow-up: advertised listings request 4 compact cards, not the full catalog. Reviews request 8 and run in a marquee, without email addresses. Cards and service rows use a 200ms border transition.
 
 Phase 4, all properties: title is Fraunces, the list uses the compact card beside a fixed-height map, and pins are the green accent. Search, sort, and View Details still work. No document scroll at a wide desktop.
