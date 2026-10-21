@@ -25,7 +25,7 @@ export default function BoughtPropertyCard({ property }) {
 				<div>
 					<Link
 						to={`/all-properties/${property._id}`}
-						className='font-bold text-xl text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-2'
+						className='font-bold text-xl text-foreground group-hover:text-brand transition-colors duration-300 line-clamp-2'
 					>
 						{property.title}
 					</Link>
@@ -34,11 +34,11 @@ export default function BoughtPropertyCard({ property }) {
 				{/* Location & Agent */}
 				<div className='space-y-1 text-muted-foreground text-sm'>
 					<p className='flex items-center gap-2'>
-						<FaMapMarkerAlt className='text-primary/70' />
+						<FaMapMarkerAlt className='text-brand/70' />
 						{property.location}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaUser className='text-primary/70' />
+						<FaUser className='text-brand/70' />
 						<span className='font-medium'>Agent:</span> {property.agentName}
 					</p>
 				</div>
@@ -46,12 +46,12 @@ export default function BoughtPropertyCard({ property }) {
 				{/* Offer Info */}
 				<div className='space-y-1 text-sm text-foreground/80 mt-auto'>
 					<p className='flex items-center gap-2'>
-						<FaDollarSign className='text-green-500' />
+						<FaDollarSign className='text-success' />
 						<span className='font-medium'>Offer Amount:</span> $
 						{property.offerAmount?.toLocaleString()}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaCalendarAlt className='text-blue-500' />
+						<FaCalendarAlt className='text-brand' />
 						<span className='font-medium'>Buying Date:</span>{' '}
 						{new Date(property.buyingDate).toLocaleDateString()}
 					</p>

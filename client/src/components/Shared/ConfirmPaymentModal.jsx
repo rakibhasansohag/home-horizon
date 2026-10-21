@@ -25,7 +25,7 @@ export default function ConfirmPaymentModal({
 					<p className='font-bold'>{propertyTitle}</p>
 					<p>
 						Offer Amount:{' '}
-						<span className='text-primary font-semibold'>৳{offerAmount}</span>
+						<span className='text-brand font-semibold'>৳{offerAmount}</span>
 					</p>
 				</div>
 				<DialogFooter className='mt-4'>

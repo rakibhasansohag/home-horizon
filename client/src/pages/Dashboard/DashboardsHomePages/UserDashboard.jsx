@@ -23,7 +23,7 @@ const UserDashboard = () => {
 				<img
 					src={dashboard.user.avatar || '/default-avatar.png'}
 					alt='avatar'
-					className='w-24 h-24 rounded-full object-cover ring-2 ring-primary ring-offset-4 ring-offset-background'
+					className='w-24 h-24 rounded-full object-cover ring-2 ring-brand ring-offset-4 ring-offset-background'
 				/>
 				<div className='text-center sm:text-left'>
 					<h2 className='text-3xl font-bold tracking-tight text-foreground'>
@@ -82,11 +82,11 @@ const UserDashboard = () => {
 const StatBox = ({ title, value, icon: Icon }) => (
 	<div className='relative overflow-hidden bg-card rounded-xl p-6 shadow-md transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl group'>
 		{/* Animated Gradient Border */}
-		<div className='absolute inset-0 bg-gradient-to-br from-primary via-accent to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
+		<div className='absolute inset-0 bg-brand-soft opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
 
 		<div className='relative z-10'>
 			<div className='flex items-center gap-3'>
-				{Icon && <Icon className='w-8 h-8 text-primary' />}
+				{Icon && <Icon className='w-8 h-8 text-brand' />}
 				<p className='text-sm text-muted-foreground uppercase tracking-wide font-medium'>
 					{title}
 				</p>
@@ -99,7 +99,7 @@ const StatBox = ({ title, value, icon: Icon }) => (
 // eslint-disable-next-line no-unused-vars
 const Section = ({ title, properties, CardComponent = PropertyCard }) => (
 	<div>
-		<h3 className='text-2xl font-bold mb-3 border-b-2 border-primary/20 pb-2'>
+		<h3 className='text-2xl font-bold mb-3 border-b-2 border-brand/20 pb-2'>
 			{title}
 		</h3>
 		{properties?.length > 0 ? (

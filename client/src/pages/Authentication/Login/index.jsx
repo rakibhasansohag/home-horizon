@@ -66,7 +66,7 @@ function Login() {
 				<div className='space-y-4'>
 					<h1 className='text-2xl font-extrabold'>
 						<Link to='/'>
-							Home <span className='text-primary'>Horizon</span>
+							Home <span className='text-brand'>Horizon</span>
 						</Link>
 					</h1>
 
@@ -158,7 +158,7 @@ function Login() {
 							<Link
 								state={{ from }}
 								to='/auth/register'
-								className='text-primary font-medium hover:underline'
+								className='text-brand font-medium hover:underline'
 							>
 								Create account
 							</Link>

@@ -28,7 +28,7 @@ export default function ComingSoon() {
 				{/* LEFT: copy + form */}
 				<section className='p-6 rounded-2xl bg-card shadow-xl border border-border/60'>
 					<div className='flex items-start gap-4'>
-						<div className='w-14 h-14 rounded-lg flex items-center justify-center bg-primary/10 text-primary text-2xl'>
+						<div className='w-14 h-14 rounded-lg flex items-center justify-center bg-primary/10 text-brand text-2xl'>
 							🚧
 						</div>
 						<div className='flex-1'>
@@ -51,7 +51,7 @@ export default function ComingSoon() {
 										placeholder='you@company.com'
 										value={email}
 										onChange={(e) => setEmail(e.target.value)}
-										className='flex-1 px-4 py-3 rounded-lg border border-border/30 bg-input focus:outline-none focus:ring-2 focus:ring-primary'
+										className='flex-1 px-4 py-3 rounded-lg border border-border/30 bg-input focus:outline-none focus:ring-2 focus:ring-brand'
 										aria-label='Email for notification'
 										disabled={busy || sent}
 									/>
@@ -73,7 +73,7 @@ export default function ComingSoon() {
 									</button>
 									<Link
 										to='/dashboard'
-										className='text-sm text-primary hover:underline'
+										className='text-sm text-brand hover:underline'
 									>
 										Go to Dashboard
 									</Link>

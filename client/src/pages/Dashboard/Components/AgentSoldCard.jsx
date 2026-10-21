@@ -43,13 +43,13 @@ export default function AgentSoldCard({ sale }) {
 					<div>
 						<h4 className='text-lg font-semibold line-clamp-2'>{title}</h4>
 						<div className='text-sm text-muted-foreground mt-1 flex items-center gap-2'>
-							<FaMapMarkerAlt className='w-4 h-4 text-primary/80' />
+							<FaMapMarkerAlt className='w-4 h-4 text-brand/80' />
 							{loc}
 						</div>
 					</div>
 					<Link
 						to={id ? `/all-properties/${id}` : '#'}
-						className='ml-3 text-foreground/80 hover:text-primary'
+						className='ml-3 text-foreground/80 hover:text-brand'
 					>
 						<FaChevronRight className='w-5 h-5' />
 					</Link>
@@ -70,7 +70,7 @@ export default function AgentSoldCard({ sale }) {
 				<div className='mt-4 text-sm'>
 					<div className='flex justify-between'>
 						<span className='font-medium'>Amount</span>
-						<span className='font-semibold text-primary'>${fmt(amount)}</span>
+						<span className='font-semibold text-brand'>${fmt(amount)}</span>
 					</div>
 
 					{soldDate && (

@@ -59,13 +59,13 @@ export default function PropertyBought() {
 	const getStatusColor = (status) => {
 		switch (status) {
 			case 'pending':
-				return 'bg-yellow-100 text-yellow-700';
+				return 'bg-warning-soft text-warning';
 			case 'accepted':
-				return 'bg-blue-100 text-blue-700';
+				return 'bg-brand-soft text-brand';
 			case 'bought':
-				return 'bg-green-100 text-green-700';
+				return 'bg-success-soft text-success';
 			default:
-				return 'bg-red-500 text-red-50';
+				return 'bg-danger-fill text-surface';
 		}
 	};
 
@@ -119,7 +119,7 @@ export default function PropertyBought() {
 							)}
 
 							{offer?.status === 'bought' && (
-								<p className='text-green-600 font-semibold mt-2'>
+								<p className='text-success font-semibold mt-2'>
 									Transaction ID: {offer.transactionId}
 								</p>
 							)}

@@ -22,7 +22,7 @@ const Footer = () => {
 				<Card className='shadow-none bg-transparent border-none p-0'>
 					<CardContent className='p-0'>
 						<Link to='/' className='inline-flex items-center gap-2'>
-							<span className='text-2xl font-bold text-primary'>
+							<span className='text-2xl font-bold text-brand'>
 								HomeHorizon
 							</span>
 						</Link>
@@ -36,7 +36,7 @@ const Footer = () => {
 
 				<Card className='shadow-none bg-transparent border-none p-0'>
 					<CardContent className='p-0'>
-						<h4 className='font-semibold text-lg text-primary mb-2'>
+						<h4 className='font-semibold text-lg text-brand mb-2'>
 							Quick Links
 						</h4>
 						<ul className='space-y-1'>
@@ -48,7 +48,7 @@ const Footer = () => {
 												? '/'
 												: `/${page.toLowerCase().replace(/\s/g, '-')}`
 										}
-										className='block text-sm transition-transform hover:scale-105 hover:text-primary'
+										className='block text-sm transition-transform hover:scale-105 hover:text-brand'
 									>
 										{page}
 									</NavLink>
@@ -60,7 +60,7 @@ const Footer = () => {
 
 				<Card className='shadow-none bg-transparent border-none p-0'>
 					<CardContent className='p-0'>
-						<h4 className='font-semibold text-lg text-primary mb-2'>
+						<h4 className='font-semibold text-lg text-brand mb-2'>
 							Contact Us
 						</h4>
 						<ul className='space-y-1'>
@@ -69,7 +69,7 @@ const Footer = () => {
 									<Link
 										to={info.to}
 										target='_blank'
-										className='block text-sm transition-transform hover:scale-105 hover:text-primary'
+										className='block text-sm transition-transform hover:scale-105 hover:text-brand'
 									>
 										{info.name}
 									</Link>
@@ -81,13 +81,13 @@ const Footer = () => {
 
 				<Card className='shadow-none bg-transparent border-none p-0'>
 					<CardContent className='p-0'>
-						<h4 className='font-semibold text-lg text-primary mb-2'>Legal</h4>
+						<h4 className='font-semibold text-lg text-brand mb-2'>Legal</h4>
 						<ul className='space-y-1'>
 							{terms.map((topic, index) => (
 								<li key={index}>
 									<Link
 										to={`/legal/${topic.toLowerCase().replace(/\s/g, '-')}`}
-										className='block text-sm transition-transform hover:scale-105 hover:text-primary'
+										className='block text-sm transition-transform hover:scale-105 hover:text-brand'
 									>
 										{topic}
 									</Link>
@@ -101,7 +101,7 @@ const Footer = () => {
 			<Separator className='my-8' />
 
 			<div className='flex flex-col items-center gap-4'>
-				<div className='flex gap-6 text-primary'>
+				<div className='flex gap-6 text-brand'>
 					<Link
 						to='https://www.facebook.com/rakibhasansohag133/'
 						target='_blank'
@@ -144,7 +144,7 @@ const Footer = () => {
 					<Link
 						to='https://github.com/rakibhasansohag'
 						target='_blank'
-						className='text-primary font-semibold underline-offset-4 hover:underline'
+						className='text-brand font-semibold underline-offset-4 hover:underline'
 					>
 						Rakib Hasan Sohag
 					</Link>

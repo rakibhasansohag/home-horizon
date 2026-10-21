@@ -91,10 +91,10 @@ export default function MyProperties() {
 									<span
 										className={`px-2 py-1 rounded text-white ${
 											isVerified
-												? 'bg-green-500'
+												? 'bg-success-soft0'
 												: isRejected
-												? 'bg-red-500'
-												: 'bg-yellow-500'
+												? 'bg-danger-fill'
+												: 'bg-warning'
 										}`}
 									>
 										{property.verificationStatus || 'pending'}

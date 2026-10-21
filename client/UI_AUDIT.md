@@ -1,6 +1,8 @@
 # HomeHorizon UI audit
 
-Phase 0 only. No visual redesign yet.
+Phase 1 tokens are in `src/index.css` and `index.html`. Ink, paper, line, and one green accent drive the shadcn variables. Instrument Sans is the UI face. Fraunces is loaded for later display titles (`font-display`). Palette utilities (`blue`, `gray`, `green`, `red`, `yellow`) in components now point at those tokens. Layout, type size misuse, and table overflow are still open.
+
+Phase 0 notes follow.
 
 Reviewed in the browser on 21 Oct 2026 against the running Vite app (`http://localhost:5173`). Viewports checked: 390, 768, 1280, and 1440. The local Express process could not resolve its MongoDB host, but the client is pointed at a working API, so listings, admin data, and auth all loaded.
 

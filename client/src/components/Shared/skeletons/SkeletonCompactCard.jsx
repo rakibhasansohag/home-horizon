@@ -1,6 +1,6 @@
 export default function SkeletonCompactCard() {
 	return (
-		<div className='flex gap-4 p-4 rounded-lg shadow bg-white dark:bg-slate-800 animate-pulse'>
+		<div className='flex gap-4 p-4 rounded-lg shadow bg-surface dark:bg-muted animate-pulse'>
 			<div className='h-24 w-24 bg-muted rounded-md flex-shrink-0' />
 			<div className='flex flex-col gap-2 w-full'>
 				<div className='h-4 bg-muted rounded w-2/3' />

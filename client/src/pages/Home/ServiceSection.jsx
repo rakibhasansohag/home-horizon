@@ -9,7 +9,7 @@ const services = [
 		title: 'Buy a Home',
 		description:
 			'Explore listings, virtual tours, and tools to find your perfect home easily.',
-		icon: <FaHome className='text-4xl text-primary ' />,
+		icon: <FaHome className='text-4xl text-brand ' />,
 		button: 'Browse Homes',
 		link: '/buy',
 	},
@@ -17,7 +17,7 @@ const services = [
 		title: 'Sell Your Property',
 		description:
 			'Get expert tips and valuation support to sell your property successfully.',
-		icon: <FaDollarSign className='text-4xl text-primary ' />,
+		icon: <FaDollarSign className='text-4xl text-brand ' />,
 		button: 'Sell Now',
 		link: '/sell',
 	},
@@ -25,14 +25,14 @@ const services = [
 		title: 'Rent a Place',
 		description:
 			'Browse thousands of rental listings and apply online with ease.',
-		icon: <FaBuilding className='text-4xl text-primary ' />,
+		icon: <FaBuilding className='text-4xl text-brand ' />,
 		button: 'Find Rentals',
 		link: '/rent',
 	},
 	{
 		title: 'Invest Smartly',
 		description: 'Discover profitable investment opportunities in real estate.',
-		icon: <FaChartLine className='text-4xl text-primary' />,
+		icon: <FaChartLine className='text-4xl text-brand' />,
 		button: 'Start Investing',
 		link: '/invest',
 	},
@@ -51,7 +51,7 @@ function ServicesSection() {
 							whileInView={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.8, delay: idx * 0.1 }}
 							viewport={{ once: true }}
-							className='bg-white dark:bg-input rounded-2xl shadow-md p-6 hover:shadow-xl transition-all text-center flex flex-col justify-center items-center'
+							className='bg-surface dark:bg-input rounded-2xl shadow-md p-6 hover:shadow-xl transition-all text-center flex flex-col justify-center items-center'
 						>
 							<span className='bg-background rounded-full p-5 flex justify-center items-center mb-4'>
 								{item.icon}

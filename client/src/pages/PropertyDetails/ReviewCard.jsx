@@ -8,7 +8,7 @@ export default function ReviewCard({ review }) {
 		<Star
 			key={i}
 			className={`w-4 h-4 ${
-				i < review.rating ? 'text-yellow-500 fill-yellow-400' : 'text-muted'
+				i < review.rating ? 'text-warning fill-warning' : 'text-muted'
 			}`}
 		/>
 	));

@@ -141,7 +141,7 @@ export default function ProfilePage() {
 						<CardContent className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 max-w-4xl px-0 md:px-6'>
 							{firebaseInfo.concat(userInfo).map((item, idx) => (
 								<div key={idx} className='flex items-center gap-2 text-sm'>
-									<span className='text-primary'>{item.icon}</span>
+									<span className='text-brand'>{item.icon}</span>
 									<span className='font-medium'>{item.label}:</span>
 									<span>{item.value || 'Not set'}</span>
 								</div>

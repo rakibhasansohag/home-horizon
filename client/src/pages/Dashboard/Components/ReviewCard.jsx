@@ -25,7 +25,7 @@ export default function ReviewCard({ review }) {
 						to={
 							review?.propertyId ? `/all-properties/${review.propertyId}` : '#'
 						}
-						className='font-semibold text-sm text-foreground hover:text-primary'
+						className='font-semibold text-sm text-foreground hover:text-brand'
 					>
 						{prop.title || 'Property'}
 					</Link>
@@ -59,7 +59,7 @@ export default function ReviewCard({ review }) {
 						<FaStar
 							key={i}
 							className={`w-3 h-3 ${
-								i < (review.rating || 0) ? 'text-yellow-400' : 'text-border/40'
+								i < (review.rating || 0) ? 'text-warning' : 'text-border/40'
 							}`}
 						/>
 					))}

@@ -127,7 +127,7 @@ export default function AgentDashboard() {
 						<div>
 							<Link
 								to='/dashboard/manage-reviews'
-								className='text-primary text-sm'
+								className='text-brand text-sm'
 							>
 								Manage
 							</Link>

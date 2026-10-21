@@ -17,7 +17,7 @@ export default function KpiCard({ title, value, delta, children }) {
 				{typeof delta !== 'undefined' && (
 					<div
 						className={`text-sm ${
-							delta >= 0 ? 'text-green-600' : 'text-red-600'
+							delta >= 0 ? 'text-success' : 'text-danger'
 						}`}
 					>
 						{delta >= 0 ? `+${delta}%` : `${delta}%`}

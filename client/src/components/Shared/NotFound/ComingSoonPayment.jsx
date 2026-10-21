@@ -37,12 +37,12 @@ export default function ComingSoonPaymentPage() {
 					initial={{ opacity: 0, x: -30 }}
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 0.6 }}
-					className='relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/6 border border-border/40 p-6'
+					className='relative rounded-2xl overflow-hidden bg-surface border border-border/40 p-6'
 				>
-					<div className='absolute -right-16 -top-16 w-48 h-48 rounded-full bg-gradient-to-tr from-primary to-secondary opacity-20 blur-xl' />
+					<div className='absolute -right-16 -top-16 w-48 h-48 rounded-full bg-brand-soft' />
 
 					<div className='flex items-center gap-3 mb-4'>
-						<div className='bg-primary/10 text-primary w-12 h-12 rounded-lg flex items-center justify-center shadow-sm'>
+						<div className='bg-primary/10 text-brand w-12 h-12 rounded-lg flex items-center justify-center shadow-sm'>
 							<FiClock className='w-6 h-6' />
 						</div>
 						<div>
@@ -113,7 +113,7 @@ export default function ComingSoonPaymentPage() {
 					className='rounded-2xl p-6 bg-background border border-border/40'
 				>
 					<div className='flex items-center gap-3 mb-4'>
-						<div className='w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary'>
+						<div className='w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-brand'>
 							<FiCreditCard className='w-5 h-5' />
 						</div>
 						<div>
@@ -135,7 +135,7 @@ export default function ComingSoonPaymentPage() {
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									placeholder='you@company.com'
-									className='w-full px-4 py-3 rounded-lg border border-border/30 bg-card text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30'
+									className='w-full px-4 py-3 rounded-lg border border-border/30 bg-card text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-brand/30'
 									type='email'
 								/>
 							</div>

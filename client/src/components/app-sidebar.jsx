@@ -142,7 +142,7 @@ export function AppSidebar() {
 		<Sidebar>
 			<SidebarContent className='pt-20'>
 				<SidebarGroup>
-					<SidebarGroupLabel className='text-primary text-2xl font-bold mb-2'>
+					<SidebarGroupLabel className='text-brand text-2xl font-bold mb-2'>
 						<Link to='/' className='w-full'>
 							Home Horizon
 						</Link>

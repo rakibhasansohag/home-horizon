@@ -3,18 +3,18 @@ import { Link } from 'react-router';
 
 function Forbidden() {
 	return (
-		<div className='flex items-center justify-center min-h-screen bg-gray-100'>
+		<div className='flex items-center justify-center min-h-screen bg-muted'>
 			<div className='text-center'>
-				<h1 className='text-6xl font-bold text-red-600 mb-4'>403</h1>
-				<h2 className='text-2xl font-semibold text-gray-800'>
+				<h1 className='text-6xl font-bold text-danger mb-4'>403</h1>
+				<h2 className='text-2xl font-semibold text-ink'>
 					Access Forbidden
 				</h2>
-				<p className='text-gray-600 mt-2'>
+				<p className='text-ink-muted mt-2'>
 					You do not have permission to view this page.
 				</p>
 				<Link
 					to='/'
-					className=' block mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
+					className=' block mt-6 px-4 py-2 bg-brand text-white rounded hover:bg-brand/90'
 				>
 					Go Back Home
 				</Link>

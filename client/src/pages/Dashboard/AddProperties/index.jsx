@@ -211,7 +211,7 @@ function AddProperties() {
 							})}
 						/>
 						{errors.title && (
-							<p className='text-red-500 text-sm'>This field is required</p>
+							<p className='text-surface0 text-sm'>This field is required</p>
 						)}
 					</div>
 
@@ -219,7 +219,7 @@ function AddProperties() {
 						<Label>Location</Label>
 						<Input {...register('location', { required: true })} />
 						{errors.location && (
-							<p className='text-red-500 text-sm'>This field is required</p>
+							<p className='text-surface0 text-sm'>This field is required</p>
 						)}
 					</div>
 
@@ -273,7 +273,7 @@ function AddProperties() {
 							{categories.map((cat, idx) => (
 								<span
 									key={idx}
-									className='px-2 py-1 text-sm bg-slate-100 dark:bg-slate-800 rounded cursor-pointer'
+									className='px-2 py-1 text-sm bg-muted dark:bg-muted rounded cursor-pointer'
 									onClick={() => removeCategory(cat)}
 								>
 									{cat} ✕
@@ -293,7 +293,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.minPrice && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.minPrice.message}
 								</p>
 							)}
@@ -311,7 +311,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.maxPrice && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.maxPrice.message}
 								</p>
 							)}
@@ -329,7 +329,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.bedrooms && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.bedrooms.message}
 								</p>
 							)}
@@ -344,7 +344,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.bathrooms && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.bathrooms.message}
 								</p>
 							)}
@@ -364,7 +364,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.squareMeters && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.squareMeters.message}
 								</p>
 							)}
@@ -379,7 +379,7 @@ function AddProperties() {
 								placeholder='https://maps.google.com/maps?q=...'
 							/>
 							{errors.googleMap && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.googleMap.message}
 								</p>
 							)}
@@ -396,7 +396,7 @@ function AddProperties() {
 								{...register('lat', { required: 'Latitude is required' })}
 							/>
 							{errors.lat && (
-								<p className='text-red-500 text-sm'>{errors.lat.message}</p>
+								<p className='text-surface0 text-sm'>{errors.lat.message}</p>
 							)}
 						</div>
 
@@ -409,7 +409,7 @@ function AddProperties() {
 								{...register('lng', { required: 'Longitude is required' })}
 							/>
 							{errors.lng && (
-								<p className='text-red-500 text-sm'>{errors.lng.message}</p>
+								<p className='text-surface0 text-sm'>{errors.lng.message}</p>
 							)}
 						</div>
 
@@ -419,7 +419,7 @@ function AddProperties() {
 								to='https://www.latlong.net'
 								target='_blank'
 								rel='noopener noreferrer'
-								className='text-primary underline'
+								className='text-brand underline'
 							>
 								latlong.net
 							</Link>{' '}
@@ -471,7 +471,7 @@ function AddProperties() {
 								</SelectContent>
 							</Select>
 							{errors.propertyType && (
-								<p className='text-sm text-red-500'>
+								<p className='text-sm text-surface0'>
 									{errors.propertyType.message}
 								</p>
 							)}
@@ -510,7 +510,7 @@ function AddProperties() {
 							})}
 						/>
 						{errors.description && (
-							<p className='text-red-500 text-sm'>
+							<p className='text-surface0 text-sm'>
 								{errors.description.message}
 							</p>
 						)}

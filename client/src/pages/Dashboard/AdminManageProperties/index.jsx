@@ -71,7 +71,7 @@ export default function AdminManageProperties() {
 			</h2>
 			<Table className='!w-full !max-w-7xl shadow-md '>
 				<TableHeader>
-					<TableRow className='bg-gray-100 dark:bg-gray-800 hover:bg-gray-200'>
+					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
 						<TableHead>Image</TableHead>
 						<TableHead>Title</TableHead>
 						<TableHead>Location</TableHead>
@@ -88,10 +88,10 @@ export default function AdminManageProperties() {
 							key={prop._id}
 							className={`${
 								idx % 2 === 0
-									? 'bg-white dark:bg-background'
-									: 'bg-gray-50 dark:bg-muted'
+									? 'bg-surface dark:bg-background'
+									: 'bg-muted dark:bg-muted'
 							} rounded-md shadow-sm transition-colors duration-200
-              hover:bg-slate-200 dark:hover:bg-slate-700`}
+              hover:bg-muted dark:hover:bg-muted`}
 						>
 							<TableCell>
 								<img
@@ -136,21 +136,21 @@ export default function AdminManageProperties() {
 								{prop.verificationStatus === 'verified' ? (
 									<Badge
 										variant='outline'
-										className='flex items-center gap-1 text-green-600 border-green-600'
+										className='flex items-center gap-1 text-success border-success'
 									>
 										<MdVerified /> Verified
 									</Badge>
 								) : prop.verificationStatus === 'rejected' ? (
 									<Badge
 										variant='outline'
-										className='flex items-center gap-1 text-red-600 border-red-600'
+										className='flex items-center gap-1 text-danger border-red-600'
 									>
 										<MdClose /> Rejected
 									</Badge>
 								) : (
 									<Badge
 										variant='outline'
-										className='flex items-center gap-1 text-yellow-600 border-yellow-600'
+										className='flex items-center gap-1 text-warning border-yellow-600'
 									>
 										<MdHourglassEmpty /> Pending
 									</Badge>
@@ -179,11 +179,11 @@ export default function AdminManageProperties() {
 								) : (
 									<div className='flex items-center gap-2 text-sm font-semibold'>
 										{prop.verificationStatus === 'verified' ? (
-											<span className='text-green-600 flex items-center gap-1'>
+											<span className='text-success flex items-center gap-1'>
 												<AiOutlineCheckCircle /> Done
 											</span>
 										) : (
-											<span className='text-red-600 flex items-center gap-1'>
+											<span className='text-danger flex items-center gap-1'>
 												<AiOutlineStop /> Done
 											</span>
 										)}

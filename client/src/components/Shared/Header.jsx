@@ -57,7 +57,7 @@ export default function Header() {
 				<NavLink
 					to={item.path}
 					key={item.label}
-					className='relative transition-all duration-300 hover:text-primary text-sm font-medium  before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-all before:duration-300 hover:before:w-full'
+					className='relative transition-all duration-300 hover:text-brand text-sm font-medium  before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-all before:duration-300 hover:before:w-full'
 				>
 					{item.label}
 				</NavLink>
@@ -69,7 +69,7 @@ export default function Header() {
 		<header className='sticky w-full top-0 z-50 '>
 			<div className='section flex items-center justify-between py-4 relative'>
 				{/* Left - Logo */}
-				<Link to='/' className='text-xl font-bold text-primary'>
+				<Link to='/' className='text-xl font-bold text-brand'>
 					HomeHorizon
 				</Link>
 
@@ -93,7 +93,7 @@ export default function Header() {
 											<img
 												src={user?.avatar || user?.photoURL}
 												alt='avatar'
-												className='w-8 h-8 rounded-full object-cover ring-2 ring-primary cursor-pointer'
+												className='w-8 h-8 rounded-full object-cover ring-2 ring-brand cursor-pointer'
 											/>
 										</DropdownMenuTrigger>
 									</TooltipTrigger>
@@ -113,7 +113,7 @@ export default function Header() {
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={handleLogOut}
-										className='text-red-600 cursor-pointer'
+										className='text-danger cursor-pointer'
 									>
 										Logout
 									</DropdownMenuItem>
@@ -127,7 +127,7 @@ export default function Header() {
 						variant='ghost'
 						size='icon'
 						className={`md:hidden transition-transform duration-300 ${
-							open ? 'rotate-90 text-primary' : ''
+							open ? 'rotate-90 text-brand' : ''
 						}`}
 						onClick={() => setOpen(!open)}
 					>

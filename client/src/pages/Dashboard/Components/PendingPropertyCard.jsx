@@ -24,7 +24,7 @@ export default function PendingPropertyCard({ property }) {
 				<div>
 					<Link
 						to={`/all-properties/${property.property._id}`}
-						className='font-bold text-lg text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-2'
+						className='font-bold text-lg text-foreground group-hover:text-brand transition-colors duration-300 line-clamp-2'
 					>
 						{property.property.title}
 					</Link>
@@ -33,20 +33,20 @@ export default function PendingPropertyCard({ property }) {
 				{/* Location & Agent */}
 				<div className='space-y-1 text-muted-foreground text-sm mt-2 mb-4'>
 					<p className='flex items-center gap-2'>
-						<FaMapMarkerAlt className='text-primary/70' />
+						<FaMapMarkerAlt className='text-brand/70' />
 						{property.property.location}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaUser className='text-primary/70' />
+						<FaUser className='text-brand/70' />
 						<span className='font-medium'>Agent:</span> {property.agentName}
 					</p>
 				</div>
 
 				{/* Offer Info */}
-				<div className='mt-auto pt-4 border-t border-primary/20'>
+				<div className='mt-auto pt-4 border-t border-brand/20'>
 					<div className='flex items-center justify-between'>
 						<span className='font-medium text-sm'>Offer Amount</span>
-						<span className='font-bold text-lg text-primary'>
+						<span className='font-bold text-lg text-brand'>
 							${property.offerAmount?.toLocaleString()}
 						</span>
 					</div>
@@ -55,8 +55,8 @@ export default function PendingPropertyCard({ property }) {
 						<span
 							className={`px-2 py-1 rounded-full text-xs font-semibold ${
 								property?.status?.toLowerCase() === 'pending'
-									? 'bg-yellow-500/20 text-yellow-500'
-									: 'bg-green-500/20 text-green-500'
+									? 'bg-warning-soft text-warning'
+									: 'bg-success-soft text-success'
 							}`}
 						>
 							{property?.status}

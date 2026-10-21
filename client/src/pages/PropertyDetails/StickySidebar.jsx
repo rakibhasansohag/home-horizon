@@ -90,7 +90,7 @@ export default function StickySidebar({ propertyId, dealStatus }) {
 		${
 			dealStatus === 'sold' || dealStatus === 'accepted'
 				? 'bg-muted text-muted-foreground cursor-not-allowed border-muted hover:shadow-none'
-				: 'bg-white text-primary border-primary hover:bg-primary hover:text-white hover:shadow-md'
+				: 'bg-surface text-brand border-brand hover:bg-primary hover:text-white hover:shadow-md'
 		}
 		disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale
 	`}

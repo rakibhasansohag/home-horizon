@@ -37,7 +37,7 @@ export default function PaymentSuccess() {
 				initial={{ scale: 0 }}
 				animate={{ scale: 1 }}
 				transition={{ duration: 0.5, type: 'spring' }}
-				className='text-green-500'
+				className='text-success'
 			>
 				<svg
 					xmlns='http://www.w3.org/2000/svg'
@@ -54,7 +54,7 @@ export default function PaymentSuccess() {
 					/>
 				</svg>
 			</motion.div>
-			<p className='text-2xl font-bold text-center text-green-600'>
+			<p className='text-2xl font-bold text-center text-success'>
 				Payment Successful!
 			</p>
 		</div>

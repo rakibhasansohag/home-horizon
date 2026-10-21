@@ -50,7 +50,7 @@ export default function AgentOffersPage() {
 				))}
 				<Table className='!w-full !max-w-full'>
 					<TableBody>
-						<TableRow className='bg-gray-100'>
+						<TableRow className='bg-muted'>
 							{[...Array(6)].map((_, i) => (
 								<TableCell key={i}>
 									<Skeleton className='h-4 w-32' />
@@ -65,9 +65,9 @@ export default function AgentOffersPage() {
 	const renderStatus = (status) => {
 		if (status === 'pending') return <Badge variant='outline'>Pending</Badge>;
 		if (status === 'accepted')
-			return <Badge className='bg-green-100 text-green-600'>Accepted</Badge>;
+			return <Badge className='bg-success-soft text-success'>Accepted</Badge>;
 		if (status === 'rejected')
-			return <Badge className='bg-red-100 text-red-600'>Rejected</Badge>;
+			return <Badge className='bg-danger-soft text-danger'>Rejected</Badge>;
 		return null;
 	};
 
@@ -78,7 +78,7 @@ export default function AgentOffersPage() {
 			</h2>
 			<Table className='!w-full !max-w-full'>
 				<TableHeader>
-					<TableRow className='bg-gray-100 hover:bg-slate-200'>
+					<TableRow className='bg-muted hover:bg-muted'>
 						<TableHead>Image</TableHead>
 						<TableHead>Title</TableHead>
 						<TableHead>Location</TableHead>
@@ -93,7 +93,7 @@ export default function AgentOffersPage() {
 					{offers.map((offer) => (
 						<TableRow
 							key={offer._id}
-							className='even:bg-gray-50 hover:bg-slate-200 transition'
+							className='even:bg-muted hover:bg-muted transition'
 						>
 							<TableCell>
 								<img

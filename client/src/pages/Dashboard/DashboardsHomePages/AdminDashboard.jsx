@@ -71,7 +71,7 @@ export default function AdminDashboard() {
 						<h4 className='font-semibold mb-2'>Recent Transactions</h4>
 						<SmallListCard items={recentTransactions} type='transactions' />
 						<div className='mt-2'>
-							<Link to='/dashboard/payments' className='text-primary'>
+							<Link to='/dashboard/payments' className='text-brand'>
 								View all transactions
 							</Link>
 						</div>
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
 						<h4 className='font-semibold'>Pending Agent Approvals</h4>
 						<SmallListCard items={pendingAgentApprovals} type='pendingAgents' />
 						<div className='mt-2'>
-							<Link to='/dashboard/manage-users' className='text-primary'>
+							<Link to='/dashboard/manage-users' className='text-brand'>
 								Review agents
 							</Link>
 						</div>
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
 					<h4 className='font-semibold mb-3'>Recent Users</h4>
 					<SmallListCard items={recentUsers} type='users' />
 					<div className='mt-2'>
-						<Link to='/dashboard/manage-users' className='text-primary'>
+						<Link to='/dashboard/manage-users' className='text-brand'>
 							View all users
 						</Link>
 					</div>

@@ -24,7 +24,7 @@ export default function GlobalLoading() {
 					{/* Roof */}
 					<motion.path
 						d='M10 50 L50 10 L90 50 Z'
-						stroke='hsl(var(--primary))'
+						stroke='var(--brand)'
 						fill='none'
 						strokeWidth='4'
 					/>
@@ -34,7 +34,7 @@ export default function GlobalLoading() {
 						y='50'
 						width='50'
 						height='40'
-						stroke='hsl(var(--primary))'
+						stroke='var(--brand)'
 						fill='none'
 						strokeWidth='4'
 						initial={{ opacity: 0 }}
@@ -47,7 +47,7 @@ export default function GlobalLoading() {
 						y='70'
 						width='10'
 						height='20'
-						fill='hsl(var(--primary))'
+						fill='var(--brand)'
 						initial={{ scaleY: 0 }}
 						animate={{ scaleY: [0, 1] }}
 						transformOrigin='center bottom'

@@ -35,7 +35,7 @@ export default function SortableImage({ id, url, onRemove, isDeleting }) {
 						type='button'
 						onClick={() => onRemove(id)}
 						onPointerDown={(e) => e.stopPropagation()}
-						className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center z-10'
+						className='absolute -top-2 -right-2 bg-danger-fill text-white rounded-full w-5 h-5 text-xs flex items-center justify-center z-10'
 					>
 						<X />
 					</button>

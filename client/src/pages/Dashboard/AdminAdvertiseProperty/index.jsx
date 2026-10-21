@@ -68,7 +68,7 @@ export default function AdminAdvertiseProperty() {
 			<h2 className='text-2xl font-semibold'>Advertise Property</h2>
 
 			{/* stats card */}
-			<div className='p-4 bg-white rounded shadow flex items-center justify-between'>
+			<div className='p-4 bg-surface rounded shadow flex items-center justify-between'>
 				<div>
 					<p className='text-sm text-muted-foreground'>Total Advertised</p>
 					<p className='text-3xl font-bold'>{stats?.total ?? 0}</p>
@@ -77,7 +77,7 @@ export default function AdminAdvertiseProperty() {
 
 			<Table className='shadow-md'>
 				<TableHeader>
-					<TableRow className='bg-gray-100 dark:bg-gray-800 hover:bg-gray-200'>
+					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
 						<TableHead>Image</TableHead>
 						<TableHead>Title</TableHead>
 						<TableHead>Price</TableHead>
@@ -91,10 +91,10 @@ export default function AdminAdvertiseProperty() {
 							key={p._id}
 							className={`${
 								i % 2 === 0
-									? 'bg-white dark:bg-background'
-									: 'bg-gray-50 dark:bg-muted'
+									? 'bg-surface dark:bg-background'
+									: 'bg-muted dark:bg-muted'
 							} rounded-md shadow-sm transition-colors duration-200
-              hover:bg-slate-200 dark:hover:bg-slate-700`}
+              hover:bg-muted dark:hover:bg-muted`}
 						>
 							<TableCell>
 								<img

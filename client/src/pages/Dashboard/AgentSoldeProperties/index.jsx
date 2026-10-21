@@ -45,16 +45,16 @@ export default function AgentSoldProperties() {
 				My Sold Properties
 			</h2>
 
-			<div className='bg-green-50 dark:bg-green-900 border border-green-400 dark:border-green-600 rounded-lg shadow p-5 max-w-sm'>
+			<div className='bg-success-soft dark:bg-success-soft border border-success dark:border-success rounded-lg shadow p-5 max-w-sm'>
 				<p className='text-muted-foreground text-sm'>Total Sold Amount</p>
-				<h3 className='text-3xl font-bold text-green-700 dark:text-green-300'>
+				<h3 className='text-3xl font-bold text-success dark:text-success'>
 					৳ {totalSold.toLocaleString()}
 				</h3>
 			</div>
 
 			<Table className='!w-full !max-w-7xl shadow-md'>
 				<TableHeader>
-					<TableRow className='bg-gray-100 dark:bg-gray-800 hover:bg-gray-200'>
+					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
 						<TableHead>Property</TableHead>
 						<TableHead>Title</TableHead>
 						<TableHead>Location</TableHead>
@@ -70,9 +70,9 @@ export default function AgentSoldProperties() {
 							key={item._id}
 							className={`${
 								idx % 2 === 0
-									? 'bg-white dark:bg-background'
-									: 'bg-gray-50 dark:bg-muted'
-							} hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors`}
+									? 'bg-surface dark:bg-background'
+									: 'bg-muted dark:bg-muted'
+							} hover:bg-muted dark:hover:bg-muted transition-colors`}
 						>
 							<TableCell>
 								<img
@@ -109,7 +109,7 @@ export default function AgentSoldProperties() {
 								</div>
 							</TableCell>
 
-							<TableCell className='text-green-600 font-semibold'>
+							<TableCell className='text-success font-semibold'>
 								৳{parseInt(item.offerAmount).toLocaleString()}
 							</TableCell>
 							<TableCell className='text-muted-foreground text-sm'>

@@ -63,7 +63,7 @@ export default function MyReviews() {
 						<CardHeader>
 							<CardTitle className='text-lg'>
 								Property:{' '}
-								<span className='font-medium text-primary'>
+								<span className='font-medium text-brand'>
 									{review.propertyTitle || 'N/A'}
 								</span>
 							</CardTitle>
@@ -79,7 +79,7 @@ export default function MyReviews() {
 							<p className='text-base'>{review.reviewText}</p>
 
 							<div className='flex items-center justify-between'>
-								<p className='text-sm text-yellow-600'>
+								<p className='text-sm text-warning'>
 									⭐ Rating: {review.rating}/5
 								</p>
 								<div className='flex gap-2'>

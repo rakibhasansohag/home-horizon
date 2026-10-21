@@ -59,7 +59,7 @@ export default function AdminManageUsers() {
 				))}
 				<Table className='!w-full !max-w-full'>
 					<TableBody>
-						<TableRow className='bg-gray-100'>
+						<TableRow className='bg-muted'>
 							<TableCell>
 								<Skeleton className='h-4 w-32' />
 							</TableCell>
@@ -83,7 +83,7 @@ export default function AdminManageUsers() {
 			<h2 className='text-2xl font-semibold mb-4'>Manage Users</h2>
 			<Table className='!w-full !max-w-full'>
 				<TableHeader>
-					<TableRow className='bg-gray-100 hover:bg-slate-200'>
+					<TableRow className='bg-muted hover:bg-muted'>
 						<TableHead>Name</TableHead>
 						<TableHead>Email</TableHead>
 						<TableHead>Role</TableHead>
@@ -94,7 +94,7 @@ export default function AdminManageUsers() {
 					{users.map((user) => (
 						<TableRow
 							key={user._id}
-							className='even:bg-gray-50 hover:bg-slate-200 transition'
+							className='even:bg-muted hover:bg-muted transition'
 						>
 							<TableCell>{user.name}</TableCell>
 							<TableCell>{user.email}</TableCell>

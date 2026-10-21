@@ -49,14 +49,14 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 						<h4 className='text-lg font-semibold line-clamp-2'>{title}</h4>
 						<div className='text-sm text-muted-foreground mt-1 flex items-center gap-3'>
 							<span className='inline-flex items-center gap-2'>
-								<FaMapMarkerAlt className='w-4 h-4 text-primary/80' /> {loc}
+								<FaMapMarkerAlt className='w-4 h-4 text-brand/80' /> {loc}
 							</span>
 						</div>
 					</div>
 
 					<Link
 						to={id ? `/all-properties/${id}` : '#'}
-						className='ml-3 text-foreground/80 hover:text-primary'
+						className='ml-3 text-foreground/80 hover:text-brand'
 					>
 						<FaChevronRight className='w-5 h-5' />
 					</Link>
@@ -79,7 +79,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 				<div className='mt-4 text-sm text-muted-foreground'>
 					<div className='flex items-center justify-between'>
 						<span className='font-medium'>Offer Amount</span>
-						<span className='font-semibold text-primary'>
+						<span className='font-semibold text-brand'>
 							${fmtCurrency(amount)}
 						</span>
 					</div>
@@ -98,10 +98,10 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 						<span
 							className={`px-2 py-1 rounded-full text-xs font-semibold ${
 								status.toLowerCase() === 'pending'
-									? 'bg-yellow-500/20 text-yellow-500'
+									? 'bg-warning-soft text-warning'
 									: status.toLowerCase() === 'accepted'
-									? 'bg-green-500/20 text-green-500'
-									: 'bg-red-500/20 text-red-500'
+									? 'bg-success-soft text-success'
+									: 'bg-danger-soft text-surface0'
 							}`}
 						>
 							{status}
@@ -113,13 +113,13 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 				<div className='mt-4 flex gap-2'>
 					<button
 						onClick={() => onAccept && onAccept(offer._id, offer.propertyId)}
-						className='flex-1 rounded-xl py-2 text-sm bg-green-600 text-white hover:bg-green-700 transition'
+						className='flex-1 rounded-xl py-2 text-sm bg-success-fill text-white hover:bg-success-fill/90 transition'
 					>
 						Accept
 					</button>
 					<button
 						onClick={() => onReject && onReject(offer._id, offer.propertyId)}
-						className='flex-1 rounded-xl py-2 text-sm border border-border text-foreground hover:bg-red-600/5 transition'
+						className='flex-1 rounded-xl py-2 text-sm border border-border text-foreground hover:bg-danger-soft transition'
 					>
 						Reject
 					</button>

@@ -22,7 +22,7 @@ function Recommendations({ searchQuery = '' }) {
 	const { user } = useAuth();
 
 	return (
-		<div className='bg-white dark:bg-background py-10'>
+		<div className='bg-surface dark:bg-background py-10'>
 			<div className='section flex gap-6 justify-between md:flex-row flex-col items-center'>
 				<div className='w-full md:w-1/2'>
 					{/* Not logged in */}

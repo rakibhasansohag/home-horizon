@@ -1,6 +1,6 @@
 export default function PropertyCard({ property, children }) {
 	return (
-		<div className='bg-white dark:bg-slate-800 rounded-xl shadow p-5 space-y-2'>
+		<div className='bg-surface dark:bg-muted rounded-xl shadow p-5 space-y-2'>
 			<img
 				src={property.images?.[0]?.url}
 				alt={property.title}
@@ -29,8 +29,8 @@ export default function PropertyCard({ property, children }) {
 				<span
 					className={
 						property.verificationStatus === 'verified'
-							? 'text-green-500'
-							: 'text-yellow-500'
+							? 'text-success'
+							: 'text-warning'
 					}
 				>
 					{property.verificationStatus}

@@ -101,7 +101,7 @@ function Register() {
 		<div className='w-full max-w-md mx-auto px-4 py-6 space-y-4'>
 			<h1 className='text-2xl font-extrabold'>
 				<Link to='/'>
-					Home <span className='text-primary'>Horizon</span>
+					Home <span className='text-brand'>Horizon</span>
 				</Link>
 			</h1>
 
@@ -175,7 +175,7 @@ function Register() {
 					<button
 						type='button'
 						onClick={() => setShowPassword((prev) => !prev)}
-						className='absolute right-3 top-[35px] text-sm text-muted-foreground hover:text-primary'
+						className='absolute right-3 top-[35px] text-sm text-muted-foreground hover:text-brand'
 					>
 						{showPassword ? <EyeClosed /> : <Eye />}
 					</button>
@@ -189,7 +189,7 @@ function Register() {
 
 				<p className='text-sm'>
 					Have A Horizon Account?{' '}
-					<Link to='/auth/login' className='text-primary underline'>
+					<Link to='/auth/login' className='text-brand underline'>
 						Login
 					</Link>
 				</p>

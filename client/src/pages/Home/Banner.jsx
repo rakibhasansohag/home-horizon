@@ -19,13 +19,13 @@ export default function Banner() {
 				</h1>
 
 				<div className='mt-8 w-full max-w-xl'>
-					<div className='flex rounded-lg overflow-hidden shadow-lg bg-white text-black'>
+					<div className='flex rounded-lg overflow-hidden shadow-lg bg-surface text-ink'>
 						<input
 							type='text'
 							placeholder='Enter an address, neighborhood, city, or ZIP code'
 							className='w-full px-4 py-5 outline-none text-sm'
 						/>
-						<button className='px-4 hover:bg-primary/90 text-black text-base font-semibold  transition-all cursor-pointer'>
+						<button className='px-4 hover:bg-primary/90 text-ink text-base font-semibold  transition-all cursor-pointer'>
 							<FaMagnifyingGlass />
 						</button>
 					</div>

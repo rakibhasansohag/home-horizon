@@ -28,7 +28,7 @@ export default function AdvertisedProperties() {
 					{properties.map((p) => (
 						<div
 							key={p._id}
-							className='bg-white border rounded-md shadow hover:shadow-lg transition'
+							className='bg-surface border rounded-md shadow hover:shadow-lg transition'
 						>
 							<img
 								src={p.images?.[0]?.url}
@@ -44,8 +44,8 @@ export default function AdvertisedProperties() {
 								<p
 									className={`inline-block text-xs font-medium rounded-full px-2 py-1 ${
 										p.verificationStatus === 'verified'
-											? 'bg-green-100 text-green-700'
-											: 'bg-yellow-100 text-yellow-700'
+											? 'bg-success-soft text-success'
+											: 'bg-warning-soft text-warning'
 									}`}
 								>
 									{p.verificationStatus}
@@ -53,7 +53,7 @@ export default function AdvertisedProperties() {
 								<div className='pt-2'>
 									<Link
 										to={`/all-properties/${p._id}`}
-										className='text-blue-500 text-sm underline'
+										className='text-brand text-sm underline'
 									>
 										View Details
 									</Link>

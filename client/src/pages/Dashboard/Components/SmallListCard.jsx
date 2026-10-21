@@ -75,7 +75,7 @@ export default function SmallListCard({ items = [], type = 'generic' }) {
 							<Link
 								// to={`/dashboard/manage-users/${it._id}`}
 								to={`/dashboard/manage-users`}
-								className='text-primary'
+								className='text-brand'
 							>
 								Review
 							</Link>

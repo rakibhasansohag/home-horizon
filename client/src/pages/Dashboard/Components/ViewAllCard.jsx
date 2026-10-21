@@ -14,7 +14,7 @@ export default function ViewAllCard({
 			aria-label={label}
 		>
 			<div className='p-6 h-full flex flex-col items-center justify-center text-center'>
-				<div className='flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 transition-transform duration-300 group-hover:scale-105'>
+				<div className='flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-brand mb-4 transition-transform duration-300 group-hover:scale-105'>
 					<FaTh className='w-6 h-6' />
 				</div>
 
@@ -26,7 +26,7 @@ export default function ViewAllCard({
 						: 'No more items'}
 				</p>
 
-				<div className='mt-4 inline-flex items-center gap-2 text-primary font-medium'>
+				<div className='mt-4 inline-flex items-center gap-2 text-brand font-medium'>
 					<span>Open</span>
 					<FaArrowRight />
 				</div>

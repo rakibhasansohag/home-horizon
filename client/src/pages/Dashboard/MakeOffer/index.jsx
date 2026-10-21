@@ -131,7 +131,7 @@ export default function MakeOffer() {
 					alt='sold'
 					className='w-24 h-24 mb-4 animate-pulse'
 				/>
-				<h2 className='text-2xl font-semibold text-red-600 mb-2'>
+				<h2 className='text-2xl font-semibold text-danger mb-2'>
 					{isSoldGlobally
 						? 'This property has already been sold'
 						: 'You have already bought this property'}
@@ -198,7 +198,7 @@ export default function MakeOffer() {
 								{...register('offerAmount', { required: true })}
 							/>
 							{errors.amount && (
-								<p className='text-sm text-red-500 mt-1'>
+								<p className='text-sm text-surface0 mt-1'>
 									Offer amount is required
 								</p>
 							)}
@@ -211,7 +211,7 @@ export default function MakeOffer() {
 								{...register('buyingDate', { required: true })}
 							/>
 							{errors.buyingDate && (
-								<p className='text-sm text-red-500 mt-1'>
+								<p className='text-sm text-surface0 mt-1'>
 									Buying date is required
 								</p>
 							)}

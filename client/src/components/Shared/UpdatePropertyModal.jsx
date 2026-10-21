@@ -119,7 +119,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.title && (
-								<p className='text-red-500 text-sm'>{errors.title.message}</p>
+								<p className='text-surface0 text-sm'>{errors.title.message}</p>
 							)}
 						</div>
 
@@ -131,7 +131,7 @@ export default function UpdatePropertyModal({
 								{...register('location', { required: 'Location is required' })}
 							/>
 							{errors.location && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.location.message}
 								</p>
 							)}
@@ -149,7 +149,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.minPrice && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.minPrice.message}
 								</p>
 							)}
@@ -168,7 +168,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.maxPrice && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.maxPrice.message}
 								</p>
 							)}
@@ -188,7 +188,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.bedrooms && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.bedrooms.message}
 								</p>
 							)}
@@ -206,7 +206,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.bathrooms && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.bathrooms.message}
 								</p>
 							)}
@@ -229,7 +229,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.squareMeters && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.squareMeters.message}
 								</p>
 							)}
@@ -247,7 +247,7 @@ export default function UpdatePropertyModal({
 								placeholder='https://maps.google.com/maps?q=...'
 							/>
 							{errors.googleMap && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.googleMap.message}
 								</p>
 							)}
@@ -269,7 +269,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.description && (
-								<p className='text-red-500 text-sm'>
+								<p className='text-surface0 text-sm'>
 									{errors.description.message}
 								</p>
 							)}
@@ -288,7 +288,7 @@ export default function UpdatePropertyModal({
 								{fields.map((field, index) => (
 									<span
 										key={field.id}
-										className='px-2 py-1 text-sm bg-slate-100 dark:bg-slate-800 rounded cursor-pointer flex justify-center items-center'
+										className='px-2 py-1 text-sm bg-muted dark:bg-muted rounded cursor-pointer flex justify-center items-center'
 										onClick={() => handleRemoveCategory(index)}
 									>
 										{field.value} <X />

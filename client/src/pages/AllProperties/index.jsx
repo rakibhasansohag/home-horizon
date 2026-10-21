@@ -110,7 +110,7 @@ export default function AllProperties() {
 									transition={{ duration: 0.3 }}
 									className={`rounded-xl shadow hover:shadow-lg transition-all bg-card text-card-foreground ${
 										activeId === prop._id
-											? 'ring-4 ring-primary scale-105'
+											? 'ring-4 ring-brand scale-105'
 											: 'hover:shadow-lg'
 									}`}
 									onClick={() => setActiveId(prop._id)}
@@ -136,17 +136,17 @@ export default function AllProperties() {
 											<span>{prop.agentName}</span>
 										</div>
 										<div className='flex justify-between items-center text-sm'>
-											<span className='text-primary font-medium'>
+											<span className='text-brand font-medium'>
 												{parseInt(prop.minPrice).toLocaleString()} -{' '}
 												{parseInt(prop.maxPrice).toLocaleString()} BDT
 											</span>
-											<span className='flex items-center text-green-600'>
+											<span className='flex items-center text-success'>
 												<MdVerified /> Verified
 											</span>
 										</div>
 										<Link
 											to={`/all-properties/${prop._id}`}
-											className='inline-block mt-2 text-sm font-medium text-blue-600 hover:underline'
+											className='inline-block mt-2 text-sm font-medium text-brand hover:underline'
 											onClick={(e) => e.stopPropagation()}
 										>
 											View Details

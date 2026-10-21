@@ -5,7 +5,7 @@ export default function SkeletonInput({
 }) {
 	return (
 		<div
-			className={`animate-pulse bg-gray-300 dark:bg-gray-700 rounded ${className}`}
+			className={`animate-pulse bg-line dark:bg-muted rounded ${className}`}
 			style={{ width, height }}
 		/>
 	);

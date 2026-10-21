@@ -58,12 +58,12 @@ export default function LatestUserReviews() {
 						</div>
 
 						{/* Star Rating */}
-						<div className='flex gap-1 text-yellow-400'>
+						<div className='flex gap-1 text-warning'>
 							{[...Array(5)].map((_, i) =>
 								i < review.rating ? (
 									<FaStar key={i} className='w-4 h-4' />
 								) : (
-									<FaRegStar key={i} className='w-4 h-4 text-gray-300' />
+									<FaRegStar key={i} className='w-4 h-4 text-line' />
 								),
 							)}
 						</div>
