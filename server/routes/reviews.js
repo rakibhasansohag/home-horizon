@@ -7,9 +7,35 @@ const { ObjectId } = require('mongodb');
 // POST /api/v1/reviews
 router.post('/', verifyFireBaseToken, async (req, res) => {
 	try {
+		const rating = Number(req.body.rating);
+		const reviewText = String(req.body.reviewText || '').trim();
+		if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+			return res
+				.status(400)
+				.send({ error: 'Choose a rating from 1 to 5 stars.' });
+		}
+		if (reviewText.length < 10 || !/[A-Za-z]/.test(reviewText)) {
+			return res.status(400).send({
+				error: 'Write a review of at least 10 characters.',
+			});
+		}
+		const propertyId = String(req.body.propertyId || '');
+		const Offers = getCollection('offers');
+		const purchase = await Offers.findOne({
+			buyerId: req.decoded.uid,
+			propertyId,
+			status: 'bought',
+		});
+		if (!purchase) {
+			return res
+				.status(400)
+				.send({ error: 'You can review this home after you buy it.' });
+		}
 		const Review = getCollection('reviews');
 		const result = await Review.insertOne({
 			...req.body,
+			rating,
+			reviewText,
 			createdAt: new Date().toISOString(),
 		});
 		res.status(201).send(result);

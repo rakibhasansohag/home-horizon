@@ -53,17 +53,17 @@ export default function ImageGallery({ images }) {
 
 	return (
 		<div className='section pt-6'>
-			<div className='grid gap-2 md:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.8fr)] md:items-stretch'>
+			<div className='grid gap-2 md:grid-cols-[minmax(0,1.6fr)_minmax(16rem,0.9fr)] md:items-stretch'>
 				<button
 					type='button'
 					onClick={() => openAt(0)}
-					className='overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand'
+					className='relative aspect-[4/3] overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand md:aspect-auto md:h-full'
 					aria-label='Open photo'
 				>
 					<img
 						src={preview[0].url}
 						alt='Property photo'
-						className='aspect-[4/3] max-h-72 w-full object-cover md:max-h-80'
+						className='absolute inset-0 h-full w-full object-cover'
 					/>
 				</button>
 
@@ -78,7 +78,7 @@ export default function ImageGallery({ images }) {
 									key={`${img.url}-${imageIndex}`}
 									type='button'
 									onClick={() => openAt(imageIndex)}
-									className='relative overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand'
+									className='relative aspect-[4/3] overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand'
 									aria-label={
 										isOverflowTile
 											? `Open all ${photos.length} photos`
@@ -89,7 +89,7 @@ export default function ImageGallery({ images }) {
 										src={img.url}
 										alt=''
 										loading='lazy'
-										className='aspect-[4/3] h-full w-full object-cover'
+										className='absolute inset-0 h-full w-full object-cover'
 									/>
 									{isOverflowTile ? (
 										<span className='absolute inset-0 flex items-center justify-center bg-ink/60 text-lg font-semibold text-surface'>

@@ -26,6 +26,18 @@ export default function PropertyDetails() {
 	const axiosSecure = useAxiosSecure();
 	const [showReviewModal, setShowReviewModal] = useState(false);
 
+	const { data: offer } = useQuery({
+		queryKey: ['property-offer', user?.email, id],
+		enabled: !!user?.email && !!id,
+		queryFn: async () => {
+			const res = await axiosSecure.get('/offers/user', {
+				params: { email: user.email, propertyId: id },
+			});
+			return res.data;
+		},
+	});
+	const hasBought = offer?.status === 'bought';
+
 	const {
 		data: property,
 		isLoading: LoadingProperty,
@@ -157,10 +169,16 @@ export default function PropertyDetails() {
 									))
 							)}
 						</div>
-						<Button className='mt-4' onClick={() => setShowReviewModal(true)}>
-							Add a Review
-						</Button>
-						{showReviewModal && (
+						{hasBought ? (
+							<Button className='mt-4' onClick={() => setShowReviewModal(true)}>
+								Add a Review
+							</Button>
+						) : (
+							<p className='mt-4 text-sm text-muted-foreground'>
+								You can write a review after you buy this home.
+							</p>
+						)}
+						{hasBought && showReviewModal && (
 							<ReviewModal
 								user={user}
 								propertyId={property._id}
