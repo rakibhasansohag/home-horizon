@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import useUserProfile from '@/hooks/useUserProfile';
 import useAuth from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { gateQuery } from '@/lib/queryWait';
 
 export default function ProfilePage() {
@@ -145,10 +146,10 @@ export default function ProfilePage() {
 				<Card className='w-full border border-border bg-surface p-6 shadow-none'>
 					<CardHeader className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
 						<div className='flex items-center gap-4'>
-							<img
-								src={profilePic || '/user.png'}
-								alt=''
-								className='size-16 rounded-full object-cover'
+							<PersonAvatar
+								name={name}
+								src={profilePic}
+								className='size-16'
 							/>
 							<div>
 								<h2 className='font-display text-3xl'>{name}</h2>

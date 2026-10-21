@@ -1,19 +1,13 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { useState } from 'react';
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import useAxiosSecure from '@/hooks/useAxiosSecure';
 import ConfirmActionModal from '@/components/Shared/ConfirmActionModal';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
+import { gateQuery } from '@/lib/queryWait';
+import { cn } from '@/lib/utils';
 import {
 	FilterSection,
 	ResultSummary,
@@ -29,6 +23,13 @@ const ROLE_LABEL = {
 	fraud: 'Fraud',
 };
 
+const ROLE_TONE = {
+	admin: 'text-brand',
+	agent: 'text-foreground',
+	fraud: 'text-destructive',
+	user: 'text-muted-foreground',
+};
+
 export default function AdminManageUsers() {
 	const axios = useAxiosSecure();
 	const { filter, choose, visible, showMore } = usePreview('all');
@@ -36,14 +37,13 @@ export default function AdminManageUsers() {
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [modalType, setModalType] = useState(null); // 'admin' | 'agent' | 'fraud' | 'delete'
 
-	const {
-		data: users = [],
-		refetch,
-		isLoading,
-	} = useQuery({
+	const usersQuery = useQuery({
 		queryKey: ['admin-users'],
 		queryFn: () => axios.get('/admin/users').then((r) => r.data),
+		placeholderData: keepPreviousData,
 	});
+	const { data: users = [], refetch } = usersQuery;
+	const gate = gateQuery(usersQuery);
 
 	const roleMutation = useMutation({
 		mutationFn: ({ id, role }) =>
@@ -66,32 +66,11 @@ export default function AdminManageUsers() {
 		roleMutation.isLoading ||
 		fraudMutation.isLoading ||
 		deleteMutation.isLoading;
-	if (isLoading)
-		return (
-			<div className='p-4 space-y-2 max-w-full w-full mt-10'>
-				{[...Array(6)].map((_, i) => (
-					<Skeleton key={i} className='h-10 rounded-md w-full' />
-				))}
-				<Table className='!w-full !max-w-full'>
-					<TableBody>
-						<TableRow className='bg-muted'>
-							<TableCell>
-								<Skeleton className='h-4 w-32' />
-							</TableCell>
-							<TableCell>
-								<Skeleton className='h-4 w-32' />
-							</TableCell>
-							<TableCell>
-								<Skeleton className='h-4 w-16' />
-							</TableCell>
-							<TableCell>
-								<Skeleton className='h-4 w-16' />
-							</TableCell>
-						</TableRow>
-					</TableBody>
-				</Table>
-			</div>
-		);
+
+	const openAction = (person, type) => {
+		setSelectedUser(person);
+		setModalType(type);
+	};
 
 	const filtered =
 		filter === 'all' ? users : users.filter((person) => person.role === filter);
@@ -111,154 +90,64 @@ export default function AdminManageUsers() {
 					{ value: 'fraud', label: 'Fraud' },
 				]}
 			/>
-			<ResultSummary label={ROLE_LABEL[filter]} value={filtered.length} />
-			{rows.length === 0 ? (
-				<p className='text-base text-muted-foreground'>No people in this role.</p>
+			{gate === 'error' ? (
+				<div className='space-y-3'>
+					<p className='text-destructive'>Could not load people.</p>
+					<Button type='button' variant='outline' onClick={() => refetch()}>
+						Try again
+					</Button>
+				</div>
+			) : gate === 'loading' ? (
+				<PeopleSkeleton />
 			) : (
-			<div className='space-y-6'>
-			<div className='space-y-3 md:hidden'>
-				{rows.map((user) => (
-					<article
-						key={user._id}
-						className='space-y-3 rounded-lg border border-border bg-surface p-4'
-					>
-						<div className='flex items-start justify-between gap-3'>
-							<div>
-								<p className='font-medium'>{user.name}</p>
-								<p className='text-sm text-muted-foreground'>{user.email}</p>
-							</div>
-							<Badge variant='outline' className='capitalize'>
-								{user.role}
-							</Badge>
+				<>
+					<ResultSummary label={ROLE_LABEL[filter]} value={filtered.length} />
+					{rows.length === 0 ? (
+						<p className='text-base text-muted-foreground'>
+							No people in this role.
+						</p>
+					) : (
+						<div className='space-y-6'>
+							<ul className='overflow-hidden rounded-lg border border-border bg-surface'>
+								{rows.map((person) => (
+									<li
+										key={person._id}
+										className='flex flex-col gap-3 border-b border-border p-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between'
+									>
+										<div className='flex min-w-0 items-center gap-3'>
+											<PersonAvatar
+												name={person.name}
+												src={person.profilePic || person.photoURL}
+											/>
+											<div className='min-w-0'>
+												<p className='truncate font-medium'>{person.name}</p>
+												<p className='truncate text-sm text-muted-foreground'>
+													{person.email}
+												</p>
+											</div>
+										</div>
+										<div className='flex flex-wrap items-center gap-2 sm:justify-end'>
+											<p
+												className={cn(
+													'px-1 text-sm capitalize',
+													ROLE_TONE[person.role] || 'text-muted-foreground',
+												)}
+											>
+												{person.role}
+											</p>
+											<PersonActions person={person} onAction={openAction} />
+										</div>
+									</li>
+								))}
+							</ul>
+							<ShowMore
+								shown={rows.length}
+								total={filtered.length}
+								onMore={showMore}
+							/>
 						</div>
-						<div className='flex flex-wrap gap-2'>
-							{user.role === 'user' && (
-								<>
-									<Button
-										size='sm'
-										onClick={() => {
-											setSelectedUser(user);
-											setModalType('admin');
-										}}
-									>
-										Make Admin
-									</Button>
-									<Button
-										size='sm'
-										onClick={() => {
-											setSelectedUser(user);
-											setModalType('agent');
-										}}
-									>
-										Make Agent
-									</Button>
-								</>
-							)}
-							{user.role === 'agent' && (
-								<Button
-									size='sm'
-									variant='destructive'
-									onClick={() => {
-										setSelectedUser(user);
-										setModalType('fraud');
-									}}
-								>
-									Mark as Fraud
-								</Button>
-							)}
-							<Button
-								size='sm'
-								variant='destructive'
-								onClick={() => {
-									setSelectedUser(user);
-									setModalType('delete');
-								}}
-							>
-								Delete User
-							</Button>
-						</div>
-					</article>
-				))}
-			</div>
-			<div className='hidden md:block'>
-			<Table className='w-full'>
-				<TableHeader>
-					<TableRow className='bg-muted hover:bg-muted'>
-						<TableHead>Name</TableHead>
-						<TableHead>Email</TableHead>
-						<TableHead>Role</TableHead>
-						<TableHead>Actions</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{rows.map((user) => (
-						<TableRow
-							key={user._id}
-							className='even:bg-muted hover:bg-muted transition'
-						>
-							<TableCell>{user.name}</TableCell>
-							<TableCell>{user.email}</TableCell>
-							<TableCell>
-								<Badge variant='outline' className='capitalize'>
-									{user.role}
-								</Badge>
-							</TableCell>
-							<TableCell className='flex gap-2'>
-								{user.role === 'user' && (
-									<>
-										<Button
-											size='sm'
-											onClick={() => {
-												setSelectedUser(user);
-												setModalType('admin');
-											}}
-										>
-											Make Admin
-										</Button>
-
-										<Button
-											size='sm'
-											onClick={() => {
-												setSelectedUser(user);
-												setModalType('agent');
-											}}
-										>
-											Make Agent
-										</Button>
-									</>
-								)}
-
-								{user.role === 'agent' && (
-									<Button
-										size='sm'
-										variant='destructive'
-										onClick={() => {
-											setSelectedUser(user);
-											setModalType('fraud');
-										}}
-									>
-										Mark as Fraud
-									</Button>
-								)}
-
-								<Button
-									size='sm'
-									variant='destructive'
-									onClick={() => {
-										setSelectedUser(user);
-										setModalType('delete');
-									}}
-								>
-									Delete User
-								</Button>
-							</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-			</div>
-			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
-			</div>
+					)}
+				</>
 			)}
 			<ConfirmActionModal
 				isOpen={!!selectedUser}
@@ -267,20 +156,24 @@ export default function AdminManageUsers() {
 					modalType === 'admin'
 						? 'Make this user an admin?'
 						: modalType === 'agent'
-						? 'Make this user an agent?'
-						: modalType === 'fraud'
-						? 'Mark agent as fraud?'
-						: 'Delete this user?'
+							? 'Make this user an agent?'
+							: modalType === 'fraud'
+								? 'Mark agent as fraud?'
+								: 'Delete this user?'
 				}
-				description={`This action cannot be undone.`}
+				description={
+					selectedUser
+						? `${selectedUser.name}, ${selectedUser.email}`
+						: 'This action cannot be undone.'
+				}
 				actionLabel={
 					modalType === 'admin'
-						? 'Make Admin'
+						? 'Make admin'
 						: modalType === 'agent'
-						? 'Make Agent'
-						: modalType === 'fraud'
-						? 'Mark as Fraud'
-						: 'Delete'
+							? 'Make agent'
+							: modalType === 'fraud'
+								? 'Mark as fraud'
+								: 'Delete'
 				}
 				variant={
 					modalType === 'delete' || modalType === 'fraud'
@@ -303,6 +196,72 @@ export default function AdminManageUsers() {
 					toast.success('User updated');
 				}}
 			/>
+		</div>
+	);
+}
+
+function PersonActions({ person, onAction }) {
+	return (
+		<div className='flex flex-wrap gap-2'>
+			{person.role === 'user' && (
+				<>
+					<Button
+						size='sm'
+						variant='accent'
+						onClick={() => onAction(person, 'agent')}
+					>
+						Make agent
+					</Button>
+					<Button
+						size='sm'
+						variant='outline'
+						onClick={() => onAction(person, 'admin')}
+					>
+						Make admin
+					</Button>
+				</>
+			)}
+			{person.role === 'agent' && (
+				<Button
+					size='sm'
+					variant='outline'
+					className='text-destructive'
+					onClick={() => onAction(person, 'fraud')}
+				>
+					Mark as fraud
+				</Button>
+			)}
+			<Button
+				size='sm'
+				variant='ghost'
+				className='text-destructive'
+				onClick={() => onAction(person, 'delete')}
+			>
+				Delete
+			</Button>
+		</div>
+	);
+}
+
+function PeopleSkeleton() {
+	return (
+		<div
+			className='overflow-hidden rounded-lg border border-border bg-surface'
+			aria-busy='true'
+		>
+			<span className='sr-only'>Loading people</span>
+			{Array.from({ length: 6 }, (_, index) => (
+				<div
+					key={index}
+					className='flex items-center gap-3 border-b border-border p-4 last:border-b-0'
+				>
+					<Skeleton className='size-12 rounded-full' />
+					<div className='space-y-2'>
+						<Skeleton className='h-4 w-36' />
+						<Skeleton className='h-3 w-52' />
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }

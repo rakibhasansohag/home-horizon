@@ -24,7 +24,7 @@ export default function ConfirmActionModal({
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
-				<p>{description}</p>
+				<div className='space-y-3 text-base text-foreground'>{description}</div>
 				<DialogFooter className='mt-4'>
 					<Button variant='outline' onClick={onClose} disabled={loading}>
 						{cancelLabel}

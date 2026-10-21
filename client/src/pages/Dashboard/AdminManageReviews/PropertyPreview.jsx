@@ -22,16 +22,20 @@ export default function PropertyPreview({ propertyId }) {
 		<Link
 			to={'/all-properties/' + property._id}
 			target={'_blank'}
-			className='flex items-center gap-3 mt-4 border rounded p-2'
+			className='flex items-center gap-3 rounded-lg border border-border p-2'
 		>
-			<img
-				src={property.images[0]?.url || '/placeholder.png'}
-				alt={property.title}
-				className='w-12 h-12 rounded object-cover'
-			/>
-			<div>
-				<p className='text-sm font-medium'>{property.title}</p>
-				<p className='text-sm text-muted-foreground'>{property.location}</p>
+			{property.images?.[0]?.url ? (
+				<img
+					src={property.images[0].url}
+					alt=''
+					className='size-12 rounded-md object-cover'
+				/>
+			) : (
+				<div className='size-12 rounded-md bg-muted' />
+			)}
+			<div className='min-w-0'>
+				<p className='truncate text-sm font-medium'>{property.title}</p>
+				<p className='truncate text-sm text-muted-foreground'>{property.location}</p>
 			</div>
 		</Link>
 	);
