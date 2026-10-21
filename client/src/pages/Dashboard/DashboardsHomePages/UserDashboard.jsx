@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropertyCard from '../Components/PropertyCard';
-import GlobalLoading from '@/components/Shared/GlobalLoading';
+import DashboardSkeleton from '@/components/Shared/skeletons/DashboardSkeleton';
+import { gateQuery } from '@/lib/queryWait';
 import useUserDashboard from '@/hooks/useUserDashboard';
 import { Clock, Heart, ShoppingBag, Wallet } from 'lucide-react';
 import { Link } from 'react-router';
@@ -15,11 +16,13 @@ import {
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 const UserDashboard = () => {
-	const { dashboard, isLoading, error } = useUserDashboard();
+	const dashboardQuery = useUserDashboard();
+	const { dashboard } = dashboardQuery;
 	const [focus, setFocus] = useState('all');
+	const gate = gateQuery({ ...dashboardQuery, data: dashboard });
 
-	if (isLoading) return <GlobalLoading />;
-	if (error) return <p>Error: {error.message}</p>;
+	if (gate === 'loading') return <DashboardSkeleton />;
+	if (gate === 'error') return <p>Could not load your dashboard.</p>;
 
 	const activity =
 		focus === 'bought'

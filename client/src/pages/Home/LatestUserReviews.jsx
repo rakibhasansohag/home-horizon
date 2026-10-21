@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
+import { gateQuery } from '@/lib/queryWait';
 import Marquee from 'react-fast-marquee';
 import { Star } from 'lucide-react';
 import useAxios from '../../hooks/useAxios';
@@ -8,7 +10,7 @@ const PREVIEW_LIMIT = 8;
 export default function LatestUserReviews() {
 	const axios = useAxios();
 
-	const { data: reviews = [], isLoading } = useQuery({
+	const reviewsQuery = useQuery({
 		queryKey: ['latest-reviews', PREVIEW_LIMIT],
 		queryFn: async () => {
 			const res = await axios.get(
@@ -18,7 +20,23 @@ export default function LatestUserReviews() {
 		},
 	});
 
-	if (isLoading || !reviews.length) return null;
+	if (gateQuery(reviewsQuery) === 'loading') {
+		return (
+			<section className='bg-paper py-16' aria-busy='true'>
+				<div className='section'>
+					<Skeleton className='h-10 w-64' />
+					<div className='mt-6 flex gap-4 overflow-hidden'>
+						{Array.from({ length: 3 }, (_, index) => (
+							<Skeleton key={index} className='h-28 w-72 shrink-0' />
+						))}
+					</div>
+				</div>
+			</section>
+		);
+	}
+
+	const reviews = reviewsQuery.data ?? [];
+	if (!reviews.length) return null;
 
 	const preview = reviews.slice(0, PREVIEW_LIMIT);
 

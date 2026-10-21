@@ -19,10 +19,13 @@ import { Button } from '@/components/ui/button';
 import useUserProfile from '@/hooks/useUserProfile';
 import useAuth from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
+import { gateQuery } from '@/lib/queryWait';
 
 export default function ProfilePage() {
 	const { user } = useAuth();
-	const { data: profile, isLoading } = useUserProfile();
+	const profileQuery = useUserProfile();
+	const { data: profile } = profileQuery;
+	const gate = gateQuery(profileQuery);
 
 	console.log(user);
 
@@ -32,7 +35,18 @@ export default function ProfilePage() {
 			: 'Profile | Home Horizon';
 	}, [user]);
 
-	if (isLoading) {
+	if (gate === 'error') {
+		return (
+			<div className='space-y-3'>
+				<p className='text-destructive'>Could not load your profile.</p>
+				<Button type='button' variant='outline' onClick={() => profileQuery.refetch()}>
+					Try again
+				</Button>
+			</div>
+		);
+	}
+
+	if (gate === 'loading') {
 		return (
 			<Card className='w-full mx-auto mt-10 p-6'>
 				<CardHeader className='flex items-center gap-4'>

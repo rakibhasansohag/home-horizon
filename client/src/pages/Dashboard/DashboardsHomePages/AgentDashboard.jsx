@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useAgentDashboard from '@/hooks/useAgentDashboard';
-import GlobalLoading from '@/components/Shared/GlobalLoading';
+import DashboardSkeleton from '@/components/Shared/skeletons/DashboardSkeleton';
+import { gateQuery } from '@/lib/queryWait';
 import { toast } from 'react-toastify';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import AgentPendingCard from '../Components/AgentPendingCard';
@@ -16,12 +17,15 @@ import ReviewsCarousel from '../Components/ReviewsCarousel';
 import { FilterSection } from '@/pages/Dashboard/Components/DashboardFilter';
 
 export default function AgentDashboard() {
-	const { dashboard, isLoading, error, refetch } = useAgentDashboard();
+	const dashboardQuery = useAgentDashboard();
+	const { dashboard, refetch } = dashboardQuery;
 	const axios = useAxiosSecure();
 	const [focus, setFocus] = useState('all');
 
-	if (isLoading) return <GlobalLoading />;
-	if (error) return <div className='p-6 text-destructive'>Failed to load</div>;
+	const gate = gateQuery({ ...dashboardQuery, data: dashboard });
+	if (gate === 'loading') return <DashboardSkeleton />;
+	if (gate === 'error')
+		return <div className='p-6 text-destructive'>Could not load your dashboard.</div>;
 
 	const { agent, stats, listings, leads, sold, earningsSparkline } = dashboard;
 	console.log(dashboard);

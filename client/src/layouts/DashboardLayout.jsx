@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router';
 import useDynamicTitle from '../hooks/useDynamicTitle';
 
 const titles = [
+	['/dashboard/profile/edit', 'Edit profile'],
 	['/dashboard/profile', 'My Profile'],
 	['/dashboard/wishlist', 'Wishlist'],
 	['/dashboard/offer', 'Make an offer'],

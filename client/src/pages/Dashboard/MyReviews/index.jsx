@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
@@ -6,6 +6,7 @@ import useAuth from '@/hooks/useAuth';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
+import { gateQuery } from '@/lib/queryWait';
 import { Link, useNavigate } from 'react-router';
 import { Star } from 'lucide-react';
 
@@ -15,18 +16,16 @@ export default function MyReviews() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	const {
-		data: reviews = [],
-		isLoading,
-		isError,
-	} = useQuery({
+	const reviewsQuery = useQuery({
 		queryKey: ['my-reviews', user?.uid],
 		queryFn: async () => {
 			const res = await axiosSecure.get(`/reviews/my?uid=${user?.uid}`);
 			return res.data;
 		},
 		enabled: !!user?.uid,
+		placeholderData: keepPreviousData,
 	});
+	const reviews = reviewsQuery.data ?? [];
 
 	const { mutate: deleteReview, isPending: isDeleting } = useMutation({
 		mutationFn: async (id) => {
@@ -42,7 +41,7 @@ export default function MyReviews() {
 	console.log(user);
 	console.log(reviews);
 
-	if (isLoading) {
+	if (gateQuery(reviewsQuery) === 'loading') {
 		return (
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
 				{Array.from({ length: 6 }).map((_, i) => (
@@ -52,8 +51,8 @@ export default function MyReviews() {
 		);
 	}
 
-	if (isError)
-		return <p className='text-destructive'>Failed to load reviews</p>;
+	if (gateQuery(reviewsQuery) === 'error')
+		return <p className='text-destructive'>Could not load your reviews.</p>;
 
 	if (!reviews.length) {
 		return (

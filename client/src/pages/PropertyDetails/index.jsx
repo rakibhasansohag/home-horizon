@@ -7,6 +7,7 @@ import ImageGallery from './ImageGallery';
 import StickySidebar from './StickySidebar';
 import ReviewCard from './ReviewCard';
 import ReviewModal from './ReviewModal';
+import AroundHome from './AroundHome';
 
 import {
 	Card,
@@ -82,8 +83,6 @@ export default function PropertyDetails() {
 		return <EmptyProperties />;
 	}
 
-	// TODO : will added more details like ( around this home with map  and recommendation properties based on the location or coordination )
-
 	// TODO : we will check if the proprety status is paid/sold/accipted we will make this property add to wihs list or make an offer it will be disbled or do somehting that user can not make any changes  if it's for sale and also we will make the staus as sold if the user paid the price
 
 	return (
@@ -152,6 +151,8 @@ export default function PropertyDetails() {
 							</div>
 						</CardContent>
 					</Card>
+
+					<AroundHome property={property} />
 
 					{/* Review Section */}
 					<div>

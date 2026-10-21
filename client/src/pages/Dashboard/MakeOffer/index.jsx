@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { gateQuery } from '@/lib/queryWait';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { useParams, useNavigate } from 'react-router';
@@ -112,8 +113,8 @@ export default function MakeOffer() {
 		}
 	}, [isSoldGlobally, userAlreadyBought, isLoading, isOfferLoading, navigate]);
 
-	if (isLoading) {
-		return <Skeleton className='w-full h-96' />;
+	if (gateQuery({ data: property, isError, isFetching: isLoading }) === 'loading' || isLoading || isOfferLoading) {
+		return <Skeleton className='h-96 w-full' />;
 	}
 
 	if ((isSoldGlobally || userAlreadyBought) && !isLoading && !isOfferLoading) {
@@ -131,8 +132,8 @@ export default function MakeOffer() {
 		);
 	}
 
-	if (isError || !property) {
-		return <p className='text-destructive'>Failed to load property details</p>;
+	if ((isError || !property) && !isLoading && !isOfferLoading) {
+		return <p className='text-destructive'>Could not load this property.</p>;
 	}
 
 	return (

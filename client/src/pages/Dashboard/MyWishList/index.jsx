@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import PropertyCard from '@/components/Shared/PropertyCard';
 import { Button } from '@/components/ui/button';
 import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
+import { gateQuery } from '@/lib/queryWait';
 
 export default function MyWishlist() {
 	const axiosSecure = useAxiosSecure();
@@ -13,8 +14,9 @@ export default function MyWishlist() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	const { data: wishlist = [], isLoading } = useQuery({
+	const wishlistQuery = useQuery({
 		queryKey: ['user-wishlist', user?.uid],
+		placeholderData: keepPreviousData,
 		queryFn: async () => {
 			const res = await axiosSecure.get(`/wishlist?userId=${user?.uid}`);
 			const propertyIds = res.data.map((item) => item.propertyId);
@@ -27,6 +29,7 @@ export default function MyWishlist() {
 		},
 		enabled: !!user?.uid,
 	});
+	const wishlist = wishlistQuery.data ?? [];
 
 	const { mutate: removeFromWishlist, isLoading: removing } = useMutation({
 		mutationFn: async (propertyId) => {
@@ -43,7 +46,7 @@ export default function MyWishlist() {
 		},
 	});
 
-	if (isLoading) {
+	if (gateQuery(wishlistQuery) === 'loading') {
 		return (
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
 				{Array.from({ length: 6 }).map((_, i) => (
@@ -51,6 +54,10 @@ export default function MyWishlist() {
 				))}
 			</div>
 		);
+	}
+
+	if (gateQuery(wishlistQuery) === 'error') {
+		return <p className='text-destructive'>Could not load your wishlist.</p>;
 	}
 
 	if (wishlist.length === 0) {

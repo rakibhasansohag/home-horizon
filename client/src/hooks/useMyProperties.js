@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
 
@@ -9,6 +9,7 @@ export default function useMyProperties() {
 	return useQuery({
 		queryKey: ['my-properties', user?.uid],
 		enabled: !!user?.uid,
+		placeholderData: keepPreviousData,
 		queryFn: async () => {
 			const res = await axiosSecure.get('/agent/my-properties');
 			return res.data;

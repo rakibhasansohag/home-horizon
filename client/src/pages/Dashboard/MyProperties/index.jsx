@@ -8,15 +8,17 @@ import { useState } from 'react';
 import UpdatePropertyModal from '../../../components/Shared/UpdatePropertyModal';
 import ConfirmDeleteModal from '../../../components/Shared/ConfirmDeleteModal';
 import { Skeleton } from '../../../components/ui/skeleton';
+import { gateQuery } from '@/lib/queryWait';
 
 export default function MyProperties() {
-	const { data: properties, isLoading, refetch } = useMyProperties();
+	const propertiesQuery = useMyProperties();
+	const { data: properties, refetch } = propertiesQuery;
 	const [propertyToUpdate, setPropertyToUpdate] = useState(null);
 	const [propertyToDeleteId, setPropertyToDeleteId] = useState(null);
 	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-	if (isLoading)
+	if (gateQuery(propertiesQuery) === 'loading')
 		return (
 			<div className='p-4 space-y-2 max-w-full'>
 				{[...Array(6)].map((_, i) => (
@@ -24,6 +26,10 @@ export default function MyProperties() {
 				))}
 			</div>
 		);
+
+	if (gateQuery(propertiesQuery) === 'error') {
+		return <p className='text-destructive'>Could not load your properties.</p>;
+	}
 
 	if (!properties?.length) {
 		return (

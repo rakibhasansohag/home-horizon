@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation } from '@tanstack/react-query';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 
@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
+import { gateQuery } from '@/lib/queryWait';
 import { Link } from 'react-router';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,14 +20,16 @@ export default function PropertyBought() {
 
 	const axiosSecure = useAxiosSecure();
 
-	const { data: offers, isLoading } = useQuery({
+	const offersQuery = useQuery({
 		queryKey: ['offers', user?.email],
 		queryFn: async () => {
 			const res = await axiosSecure.get(`/offers?email=${user?.email}`);
 			return res.data;
 		},
 		enabled: !!user?.email,
+		placeholderData: keepPreviousData,
 	});
+	const offers = offersQuery.data;
 
 	const { mutate: initiatePayment, isPending: isPaying } = useMutation({
 		mutationFn: async (offerId) => {
@@ -45,7 +48,7 @@ export default function PropertyBought() {
 		},
 	});
 
-	if (isLoading) {
+	if (gateQuery(offersQuery) === 'loading') {
 		return (
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
 				{Array.from({ length: 6 }).map((_, i) => (
@@ -67,6 +70,10 @@ export default function PropertyBought() {
 				return 'bg-danger-fill text-surface';
 		}
 	};
+
+	if (gateQuery(offersQuery) === 'error') {
+		return <p className='text-destructive'>Could not load your offers.</p>;
+	}
 
 	if (!offers?.length) {
 		return (

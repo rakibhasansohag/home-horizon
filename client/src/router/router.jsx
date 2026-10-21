@@ -9,6 +9,7 @@ import Dashboard from '../pages/Dashboard';
 import PrivateRoute from '../route/PrivateRoute';
 import AddProperties from '../pages/Dashboard/AddProperties';
 import Profile from '../pages/Dashboard/Profile';
+import EditProfile from '../pages/Dashboard/Profile/Edit';
 import MyProperties from '../pages/Dashboard/MyProperties';
 import AdminManageProperties from '../pages/Dashboard/AdminManageProperties';
 import AdminManageUsers from '../pages/Dashboard/AdminManageUsers';
@@ -104,6 +105,10 @@ const router = createBrowserRouter([
 			{
 				path: 'profile',
 				Component: Profile,
+			},
+			{
+				path: 'profile/edit',
+				Component: EditProfile,
 			},
 			{
 				path: 'wishlist',
