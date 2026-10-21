@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { Card } from '@heroui/react/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -34,33 +35,26 @@ export default function PropertyCard({
 			? ` – ${formatMoney(property.maxPrice)}`
 			: ''
 	}`;
-
 	const linked = Boolean(href && !children);
+
 	const titleNode =
-		href && !compact && !linked ? (
+		href && !linked ? (
 			<Link
 				to={href}
 				onClick={(event) => event.stopPropagation()}
-				className='text-lg font-semibold leading-snug text-foreground transition-colors duration-200 hover:text-brand'
+				className='transition-colors duration-200 hover:text-brand'
 			>
 				{title}
 			</Link>
 		) : (
-			<h2
-				className={cn(
-					'font-semibold leading-snug',
-					compact ? 'line-clamp-2 text-base' : 'line-clamp-2 text-lg',
-				)}
-			>
-				{title}
-			</h2>
+			title
 		);
 
 	const card = (
-		<article
+		<Card
 			onClick={onClick}
 			className={cn(
-				'flex h-full overflow-hidden rounded-lg border border-border bg-surface text-foreground transition-colors duration-200 hover:border-brand',
+				'h-full gap-0 overflow-hidden rounded-lg border border-border bg-surface p-0 text-foreground shadow-none transition-colors duration-200 hover:border-brand',
 				compact ? 'flex-row' : 'flex-col',
 				selected && 'ring-2 ring-brand',
 				className,
@@ -88,26 +82,33 @@ export default function PropertyCard({
 					aria-label={title}
 				/>
 			)}
-			<div
+			<Card.Content
 				className={cn(
-					'flex min-w-0 flex-1 flex-col',
+					'min-w-0 flex-1',
 					compact ? 'justify-center gap-1 p-3' : 'gap-2 p-4',
 				)}
 			>
-				{titleNode}
+				<Card.Title
+					className={cn(
+						'font-semibold leading-snug text-foreground',
+						compact ? 'line-clamp-2 text-base' : 'line-clamp-2 text-lg',
+					)}
+				>
+					{titleNode}
+				</Card.Title>
 				{property?.location ? (
-					<p
+					<Card.Description
 						className={cn(
 							'text-muted-foreground',
 							compact ? 'truncate text-sm' : 'text-base',
 						)}
 					>
 						{property.location}
-					</p>
+					</Card.Description>
 				) : null}
 				<p
 					className={cn(
-						'font-semibold tabular-nums',
+						'font-semibold tabular-nums text-foreground',
 						compact ? 'text-base' : 'text-xl',
 					)}
 				>
@@ -129,11 +130,11 @@ export default function PropertyCard({
 				{children ? (
 					<div className={compact ? 'pt-1' : 'mt-auto pt-2'}>{children}</div>
 				) : null}
-			</div>
-		</article>
+			</Card.Content>
+		</Card>
 	);
 
-	if (linked || (compact && href)) {
+	if (linked) {
 		return (
 			<Link
 				to={href}
