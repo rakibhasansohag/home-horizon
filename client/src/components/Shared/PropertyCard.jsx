@@ -20,6 +20,7 @@ export default function PropertyCard({
 	children,
 	href,
 	selected = false,
+	compact = false,
 	className,
 	onClick,
 }) {
@@ -27,24 +28,39 @@ export default function PropertyCard({
 	const title = property?.title || 'Property';
 	const status = property?.verificationStatus;
 	const badge = statusVariant(status);
+	const price = `${formatMoney(property?.minPrice)}${
+		property?.maxPrice != null &&
+		String(property.maxPrice) !== String(property.minPrice)
+			? ` – ${formatMoney(property.maxPrice)}`
+			: ''
+	}`;
 
-	const titleNode = href ? (
-		<Link
-			to={href}
-			onClick={(event) => event.stopPropagation()}
-			className='text-lg font-semibold leading-snug text-foreground hover:text-brand'
-		>
-			{title}
-		</Link>
-	) : (
-		<h2 className='text-lg font-semibold leading-snug'>{title}</h2>
-	);
+	const titleNode =
+		href && !compact ? (
+			<Link
+				to={href}
+				onClick={(event) => event.stopPropagation()}
+				className='text-lg font-semibold leading-snug text-foreground transition-colors duration-200 hover:text-brand'
+			>
+				{title}
+			</Link>
+		) : (
+			<h2
+				className={cn(
+					'font-semibold leading-snug',
+					compact ? 'line-clamp-2 text-base' : 'text-lg',
+				)}
+			>
+				{title}
+			</h2>
+		);
 
-	return (
+	const card = (
 		<article
 			onClick={onClick}
 			className={cn(
-				'flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface text-foreground',
+				'flex h-full overflow-hidden rounded-lg border border-border bg-surface text-foreground transition-colors duration-200 hover:border-brand',
+				compact ? 'flex-row' : 'flex-col',
 				selected && 'ring-2 ring-brand',
 				className,
 			)}
@@ -54,24 +70,49 @@ export default function PropertyCard({
 					src={image}
 					alt={title}
 					loading='lazy'
-					className='aspect-[4/3] w-full object-cover'
+					className={
+						compact
+							? 'h-24 w-28 shrink-0 object-cover sm:h-28 sm:w-32'
+							: 'aspect-[4/3] w-full object-cover'
+					}
 				/>
 			) : (
-				<div className='aspect-[4/3] w-full bg-muted' role='img' aria-label={title} />
+				<div
+					className={
+						compact
+							? 'h-24 w-28 shrink-0 bg-muted sm:h-28 sm:w-32'
+							: 'aspect-[4/3] w-full bg-muted'
+					}
+					role='img'
+					aria-label={title}
+				/>
 			)}
-			<div className='flex flex-1 flex-col gap-2 p-4'>
+			<div
+				className={cn(
+					'flex min-w-0 flex-1 flex-col',
+					compact ? 'justify-center gap-1 p-3' : 'gap-2 p-4',
+				)}
+			>
 				{titleNode}
 				{property?.location ? (
-					<p className='text-base text-muted-foreground'>{property.location}</p>
+					<p
+						className={cn(
+							'text-muted-foreground',
+							compact ? 'truncate text-sm' : 'text-base',
+						)}
+					>
+						{property.location}
+					</p>
 				) : null}
-				<p className='text-xl font-semibold tabular-nums'>
-					{formatMoney(property?.minPrice)}
-					{property?.maxPrice != null &&
-					String(property.maxPrice) !== String(property.minPrice)
-						? ` – ${formatMoney(property.maxPrice)}`
-						: ''}
+				<p
+					className={cn(
+						'font-semibold tabular-nums',
+						compact ? 'text-base' : 'text-xl',
+					)}
+				>
+					{price}
 				</p>
-				{property?.agentName ? (
+				{!compact && property?.agentName ? (
 					<div className='flex items-center gap-2 text-sm text-muted-foreground'>
 						{property.agentImage ? (
 							<img
@@ -83,9 +124,24 @@ export default function PropertyCard({
 						<span>{property.agentName}</span>
 					</div>
 				) : null}
-				{badge ? <Badge variant={badge}>{status}</Badge> : null}
-				{children ? <div className='mt-auto pt-2'>{children}</div> : null}
+				{!compact && badge ? <Badge variant={badge}>{status}</Badge> : null}
+				{!compact && children ? (
+					<div className='mt-auto pt-2'>{children}</div>
+				) : null}
 			</div>
 		</article>
 	);
+
+	if (compact && href) {
+		return (
+			<Link
+				to={href}
+				className='block h-full rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand'
+			>
+				{card}
+			</Link>
+		);
+	}
+
+	return card;
 }

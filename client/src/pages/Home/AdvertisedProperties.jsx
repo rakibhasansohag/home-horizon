@@ -4,13 +4,15 @@ import { Link } from 'react-router';
 import PropertyCard from '@/components/Shared/PropertyCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const PREVIEW_LIMIT = 4;
+
 export default function AdvertisedProperties() {
 	const axiosInstance = useAxios();
 	const { data: properties = [], isLoading } = useQuery({
-		queryKey: ['advertised-properties'],
+		queryKey: ['advertised-properties', PREVIEW_LIMIT],
 		queryFn: async () => {
 			const res = await axiosInstance.get(
-				'/public/advertised-properties?limit=6',
+				`/public/advertised-properties?limit=${PREVIEW_LIMIT}`,
 			);
 			return res.data;
 		},
@@ -19,9 +21,9 @@ export default function AdvertisedProperties() {
 	if (isLoading) {
 		return (
 			<section className='bg-paper py-16'>
-				<div className='section grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-					{Array.from({ length: 6 }).map((_, i) => (
-						<Skeleton key={i} className='aspect-[4/3] w-full rounded-lg' />
+				<div className='section grid gap-3 sm:grid-cols-2'>
+					{Array.from({ length: PREVIEW_LIMIT }).map((_, i) => (
+						<Skeleton key={i} className='h-24 w-full rounded-lg sm:h-28' />
 					))}
 				</div>
 			</section>
@@ -30,20 +32,28 @@ export default function AdvertisedProperties() {
 
 	if (!properties.length) return null;
 
+	const preview = properties.slice(0, PREVIEW_LIMIT);
+
 	return (
 		<section className='bg-paper py-16'>
 			<div className='section'>
-				<h2 className='font-display text-3xl'>Advertised Properties</h2>
-				<div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-					{properties.map((p) => (
-						<PropertyCard key={p._id} property={p}>
-							<Link
-								to={`/all-properties/${p._id}`}
-								className='inline-flex min-h-11 items-center text-base font-medium text-brand hover:underline'
-							>
-								View Details
-							</Link>
-						</PropertyCard>
+				<div className='flex items-end justify-between gap-4'>
+					<h2 className='font-display text-3xl'>Advertised Properties</h2>
+					<Link
+						to='/all-properties'
+						className='inline-flex min-h-11 items-center text-base font-medium text-brand transition-colors duration-200 hover:underline'
+					>
+						All properties
+					</Link>
+				</div>
+				<div className='mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+					{preview.map((p) => (
+						<PropertyCard
+							key={p._id}
+							compact
+							href={`/all-properties/${p._id}`}
+							property={p}
+						/>
 					))}
 				</div>
 			</div>

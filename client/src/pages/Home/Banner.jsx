@@ -26,7 +26,7 @@ export default function Banner() {
 						/>
 						<button
 							type='button'
-							className='inline-flex size-11 shrink-0 items-center justify-center text-ink'
+							className='inline-flex size-11 shrink-0 items-center justify-center text-ink transition-colors duration-200 hover:bg-brand-soft hover:text-brand'
 							aria-label='Search'
 						>
 							<Search />

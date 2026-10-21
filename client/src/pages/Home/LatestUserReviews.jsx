@@ -1,72 +1,61 @@
 import { useQuery } from '@tanstack/react-query';
+import Marquee from 'react-fast-marquee';
 import { Star } from 'lucide-react';
 import useAxios from '../../hooks/useAxios';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const PREVIEW_LIMIT = 8;
 
 export default function LatestUserReviews() {
 	const axios = useAxios();
 
 	const { data: reviews = [], isLoading } = useQuery({
-		queryKey: ['latest-reviews'],
+		queryKey: ['latest-reviews', PREVIEW_LIMIT],
 		queryFn: async () => {
-			const res = await axios.get('/public/latest-reviews?limit=14');
+			const res = await axios.get(
+				`/public/latest-reviews?limit=${PREVIEW_LIMIT}`,
+			);
 			return res.data;
 		},
 	});
 
 	if (isLoading || !reviews.length) return null;
 
+	const preview = reviews.slice(0, PREVIEW_LIMIT);
+
 	return (
-		<section className='bg-paper py-16'>
+		<section className='overflow-hidden bg-paper py-16'>
 			<div className='section'>
 				<h2 className='font-display text-3xl'>Latest User Reviews</h2>
-				<ul className='mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-					{reviews.map((review) => (
-						<li
-							key={review._id}
-							className='flex flex-col gap-3 rounded-lg border border-border bg-surface p-4'
-						>
-							<div className='flex items-center gap-3'>
-								<Avatar className='size-10'>
-									<AvatarImage src={review?.userImage} alt='' />
-									<AvatarFallback>
-										{review.userName?.charAt(0).toUpperCase() || 'U'}
-									</AvatarFallback>
-								</Avatar>
-								<div className='min-w-0'>
-									<p className='truncate font-semibold text-foreground'>
-										{review.userName}
-									</p>
-									<p className='truncate text-sm text-muted-foreground'>
-										{review.userEmail}
-									</p>
-								</div>
-							</div>
-
+			</div>
+			<Marquee
+				pauseOnHover
+				gradient={false}
+				speed={32}
+				className='mt-6'
+			>
+				{preview.map((review) => (
+					<article
+						key={review._id}
+						className='mx-2 w-72 rounded-lg border border-border bg-surface p-4 transition-colors duration-200 hover:border-brand'
+					>
+						<div className='flex items-center justify-between gap-3'>
+							<p className='truncate font-semibold'>{review.userName}</p>
 							{Number.isFinite(Number(review.rating)) ? (
-								<p className='flex items-center gap-1 text-warning'>
-									<span className='sr-only'>{review.rating} out of 5</span>
-									{[...Array(5)].map((_, i) => (
-										<Star
-											key={i}
-											className={
-												i < review.rating
-													? 'size-4 fill-warning text-warning'
-													: 'size-4 text-line'
-											}
-											aria-hidden='true'
-										/>
-									))}
+								<p className='flex shrink-0 items-center gap-1 text-sm text-warning'>
+									<Star
+										className='size-3.5 fill-warning text-warning'
+										aria-hidden='true'
+									/>
+									<span>{review.rating}/5</span>
 								</p>
 							) : null}
-
-							<p className='line-clamp-4 text-base text-foreground'>
-								{review.reviewText}
-							</p>
-						</li>
-					))}
-				</ul>
-			</div>
+						</div>
+						<p className='mt-2 line-clamp-2 text-sm text-muted-foreground'>
+							{review.reviewText}
+						</p>
+					</article>
+				))}
+			</Marquee>
 		</section>
 	);
 }

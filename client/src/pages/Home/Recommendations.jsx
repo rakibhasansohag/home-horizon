@@ -21,7 +21,7 @@ function Recommendations({ searchQuery = '' }) {
 	const { user } = useAuth();
 
 	return (
-		<section className='border-b border-border bg-paper py-16'>
+		<section className='border-b border-border bg-paper py-12'>
 			<div className='section grid items-center gap-8 md:grid-cols-2'>
 				<div>
 					{!user ? (
