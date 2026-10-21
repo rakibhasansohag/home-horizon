@@ -29,13 +29,13 @@ export default function SmallListCard({ items = [], type = 'generic' }) {
 						<div key={it.id || it._id} className='flex items-center gap-3'>
 							<img
 								src={it.avatar || '/default-avatar.png'}
-								alt={it.name}
-								className='w-8 h-8 rounded-full object-cover bg-accent'
+								alt=''
+								className='size-8 shrink-0 rounded-full object-cover bg-accent'
 							/>
-							<div>
-								<div className='font-medium'>{it.name}</div>
+							<div className='min-w-0'>
+								<div className='truncate font-medium'>{it.name}</div>
 								<div className='text-sm text-muted-foreground'>
-									{(it.total || 0).toLocaleString()} earned
+									৳{(it.total || 0).toLocaleString()} earned
 								</div>
 							</div>
 						</div>
@@ -46,12 +46,12 @@ export default function SmallListCard({ items = [], type = 'generic' }) {
 					return (
 						<div
 							key={it._id || it.transactionId}
-							className='flex items-center justify-between'
+							className='flex items-center justify-between gap-3'
 						>
-							<div>
+							<div className='min-w-0'>
 								<Link
 									to={`/all-properties/${it.propertyId}`}
-									className='font-medium'
+									className='block truncate font-medium'
 								>
 									{it.propertyTitle || it.propertyId || '—'}
 								</Link>

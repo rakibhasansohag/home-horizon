@@ -13,11 +13,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
+import {
+	FilterSection,
+	ResultSummary,
+	ShowMore,
+	usePreview,
+} from '@/pages/Dashboard/Components/DashboardFilter';
 
 export default function AgentOffersPage() {
 	const { user } = useAuth();
 	const axios = useAxiosSecure();
 	const queryClient = useQueryClient();
+	const { filter, choose, visible, showMore } = usePreview('all');
 
 	const { data: offers = [], isLoading } = useQuery({
 		queryKey: ['agent-offers', user?.uid],
@@ -71,10 +78,35 @@ export default function AgentOffersPage() {
 		return null;
 	};
 
+	const filtered =
+		filter === 'all'
+			? offers
+			: offers.filter((offer) => offer.status === filter);
+	const rows = filtered.slice(0, visible);
+	const offerTotal = filtered.reduce(
+		(sum, offer) => sum + Number(offer.offerAmount || 0),
+		0,
+	);
+
 	return (
-		<div className='w-full'>
+		<div className='w-full space-y-6'>
+			<FilterSection
+				label='Status'
+				value={filter}
+				onChange={choose}
+				options={[
+					{ value: 'all', label: 'All' },
+					{ value: 'pending', label: 'Pending' },
+					{ value: 'accepted', label: 'Accepted' },
+					{ value: 'rejected', label: 'Rejected' },
+				]}
+			/>
+			<ResultSummary
+				label={`${filtered.length} ${filter === 'all' ? 'offers' : filter}`}
+				value={`৳${offerTotal.toLocaleString()}`}
+			/>
 			<div className='space-y-3 md:hidden'>
-				{offers.map((offer) => (
+				{rows.map((offer) => (
 					<article
 						key={offer._id}
 						className='space-y-3 rounded-lg border border-border bg-surface p-4'
@@ -151,7 +183,7 @@ export default function AgentOffersPage() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{offers.map((offer) => (
+					{rows.map((offer) => (
 						<TableRow
 							key={offer._id}
 							className='even:bg-muted hover:bg-muted transition'
@@ -211,6 +243,7 @@ export default function AgentOffersPage() {
 				</TableBody>
 			</Table>
 			</div>
+			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
 		</div>
 	);
 }

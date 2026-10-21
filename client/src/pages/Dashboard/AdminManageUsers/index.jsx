@@ -14,9 +14,24 @@ import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ConfirmActionModal from '@/components/Shared/ConfirmActionModal';
+import {
+	FilterSection,
+	ResultSummary,
+	ShowMore,
+	usePreview,
+} from '@/pages/Dashboard/Components/DashboardFilter';
+
+const ROLE_LABEL = {
+	all: 'All people',
+	user: 'Users',
+	agent: 'Agents',
+	admin: 'Admins',
+	fraud: 'Fraud',
+};
 
 export default function AdminManageUsers() {
 	const axios = useAxiosSecure();
+	const { filter, choose, visible, showMore } = usePreview('all');
 
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [modalType, setModalType] = useState(null); // 'admin' | 'agent' | 'fraud' | 'delete'
@@ -78,10 +93,31 @@ export default function AdminManageUsers() {
 			</div>
 		);
 
+	const filtered =
+		filter === 'all' ? users : users.filter((person) => person.role === filter);
+	const rows = filtered.slice(0, visible);
+
 	return (
-		<div className='w-full'>
+		<div className='w-full space-y-6'>
+			<FilterSection
+				label='Role'
+				value={filter}
+				onChange={choose}
+				options={[
+					{ value: 'all', label: 'All' },
+					{ value: 'user', label: 'Users' },
+					{ value: 'agent', label: 'Agents' },
+					{ value: 'admin', label: 'Admins' },
+					{ value: 'fraud', label: 'Fraud' },
+				]}
+			/>
+			<ResultSummary label={ROLE_LABEL[filter]} value={filtered.length} />
+			{rows.length === 0 ? (
+				<p className='text-base text-muted-foreground'>No people in this role.</p>
+			) : (
+			<div className='space-y-6'>
 			<div className='space-y-3 md:hidden'>
-				{users.map((user) => (
+				{rows.map((user) => (
 					<article
 						key={user._id}
 						className='space-y-3 rounded-lg border border-border bg-surface p-4'
@@ -155,7 +191,7 @@ export default function AdminManageUsers() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{users.map((user) => (
+					{rows.map((user) => (
 						<TableRow
 							key={user._id}
 							className='even:bg-muted hover:bg-muted transition'
@@ -221,6 +257,9 @@ export default function AdminManageUsers() {
 				</TableBody>
 			</Table>
 			</div>
+			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
+			</div>
+			)}
 			<ConfirmActionModal
 				isOpen={!!selectedUser}
 				onClose={() => setSelectedUser(null)}

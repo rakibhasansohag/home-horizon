@@ -12,9 +12,25 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router';
+import {
+	FilterSection,
+	ResultSummary,
+	ShowMore,
+	usePreview,
+} from '@/pages/Dashboard/Components/DashboardFilter';
+
+function inThisMonth(value) {
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return false;
+	const now = new Date();
+	return (
+		date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth()
+	);
+}
 
 export default function AgentSoldProperties() {
 	const axiosSecure = useAxiosSecure();
+	const { filter, choose, visible, showMore } = usePreview('all');
 
 	const { data: sold = [], isLoading } = useQuery({
 		queryKey: ['agent-sold-properties'],
@@ -34,22 +50,32 @@ export default function AgentSoldProperties() {
 		);
 
 	// Total sold amount calculation
-	const totalSold = sold.reduce(
-		(acc, item) => acc + parseInt(item.offerAmount),
+	const filtered =
+		filter === 'month' ? sold.filter((item) => inThisMonth(item.paidAt)) : sold;
+	const rows = filtered.slice(0, visible);
+	const totalSold = filtered.reduce(
+		(acc, item) => acc + Number(item.offerAmount || 0),
 		0,
 	);
 
 	return (
-		<div className='w-full space-y-4'>
-			<div className='max-w-sm rounded-lg border border-success bg-success-soft p-5'>
-				<p className='text-sm text-muted-foreground'>Total Sold Amount</p>
-				<h3 className='text-3xl font-semibold tabular-nums text-success'>
-					৳{totalSold.toLocaleString()}
-				</h3>
-			</div>
+		<div className='w-full space-y-6'>
+			<FilterSection
+				label='Period'
+				value={filter}
+				onChange={choose}
+				options={[
+					{ value: 'all', label: 'All time' },
+					{ value: 'month', label: 'This month' },
+				]}
+			/>
+			<ResultSummary
+				label={filter === 'month' ? 'Sold this month' : 'Sold, all time'}
+				value={`৳${totalSold.toLocaleString()}`}
+			/>
 
 			<div className='space-y-3 md:hidden'>
-				{sold.map((item) => (
+				{rows.map((item) => (
 					<article
 						key={item._id}
 						className='space-y-2 rounded-lg border border-border bg-surface p-4'
@@ -102,7 +128,7 @@ export default function AgentSoldProperties() {
 				</TableHeader>
 
 				<TableBody>
-					{sold.map((item, idx) => (
+					{rows.map((item, idx) => (
 						<TableRow
 							key={item._id}
 							className={`${
@@ -157,6 +183,7 @@ export default function AgentSoldProperties() {
 				</TableBody>
 			</Table>
 			</div>
+			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
 		</div>
 	);
 }

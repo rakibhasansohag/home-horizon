@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+	PREVIEW_LIMIT,
+	ResultSummary,
+	ShowMore,
+} from '@/pages/Dashboard/Components/DashboardFilter';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ConfirmActionModal from '@/components/shared/ConfirmActionModal';
 import { toast } from 'react-toastify';
@@ -14,6 +20,8 @@ export default function AdminManageReviews() {
 	const queryClient = useQueryClient();
 
 	const [selectedReview, setSelectedReview] = useState(null);
+	const [query, setQuery] = useState('');
+	const [visible, setVisible] = useState(PREVIEW_LIMIT);
 
 	const {
 		data: reviews = [],
@@ -52,10 +60,39 @@ export default function AdminManageReviews() {
 	if (isError)
 		return <p className='text-destructive'>Failed to load reviews</p>;
 
+	const term = query.trim().toLowerCase();
+	const filtered = term
+		? reviews.filter((review) =>
+				`${review.userName || ''} ${review.reviewText || ''}`
+					.toLowerCase()
+					.includes(term),
+		  )
+		: reviews;
+	const rows = filtered.slice(0, visible);
+
 	return (
-		<div className='p-6 w-full space-y-4 max-w-7xl'>
-			<div className='grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'>
-				{reviews.map((review) => (
+		<div className='w-full max-w-7xl space-y-6'>
+			<section className='rounded-lg border border-border bg-surface p-4'>
+				<h2 className='mb-3 text-base font-semibold'>Find a review</h2>
+				<Input
+					value={query}
+					placeholder='Name or review'
+					onChange={(event) => {
+						setQuery(event.target.value);
+						setVisible(PREVIEW_LIMIT);
+					}}
+				/>
+			</section>
+			<ResultSummary
+				label={term ? 'Matching reviews' : 'All reviews'}
+				value={filtered.length}
+			/>
+			{rows.length === 0 ? (
+				<p className='text-base text-muted-foreground'>No reviews match.</p>
+			) : (
+			<div className='space-y-6'>
+			<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+				{rows.map((review) => (
 					<Card
 						key={review._id}
 						className='border border-border bg-surface transition-colors duration-200 hover:border-brand'
@@ -87,6 +124,13 @@ export default function AdminManageReviews() {
 					</Card>
 				))}
 			</div>
+			<ShowMore
+				shown={rows.length}
+				total={filtered.length}
+				onMore={() => setVisible((count) => count + PREVIEW_LIMIT)}
+			/>
+			</div>
+			)}
 
 			{/* Confirmation Modal */}
 			<ConfirmActionModal

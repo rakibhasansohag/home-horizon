@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import useAgentDashboard from '@/hooks/useAgentDashboard';
 import GlobalLoading from '@/components/Shared/GlobalLoading';
 import { toast } from 'react-toastify';
@@ -9,14 +9,16 @@ import PropertyCard from '../Components/PropertyCard';
 
 import ViewAllCard from '../Components/ViewAllCard';
 import EarningsChart from '../Components/EarningChart';
+import MonthlyBarChart from '../Components/MonthlyBarChart';
 
 import { Link } from 'react-router';
 import ReviewsCarousel from '../Components/ReviewsCarousel';
-import { Separator } from '../../../components/ui/separator';
+import { FilterSection } from '@/pages/Dashboard/Components/DashboardFilter';
 
 export default function AgentDashboard() {
 	const { dashboard, isLoading, error, refetch } = useAgentDashboard();
 	const axios = useAxiosSecure();
+	const [focus, setFocus] = useState('all');
 
 	if (isLoading) return <GlobalLoading />;
 	if (error) return <div className='p-6 text-destructive'>Failed to load</div>;
@@ -37,10 +39,13 @@ export default function AgentDashboard() {
 		}
 	}
 
-	const take5 = (arr) => (Array.isArray(arr) ? arr.slice(0, 5) : []);
+	const take6 = (arr) => (Array.isArray(arr) ? arr.slice(0, 6) : []);
 	const activeListingsSource =
 		dashboard.listingsPreview ?? dashboard.listings ?? listings;
-	const previews = take5(activeListingsSource);
+	const previews = take6(activeListingsSource);
+	const showListings = focus === 'all' || focus === 'listings';
+	const showLeads = focus === 'all' || focus === 'leads';
+	const showSold = focus === 'all' || focus === 'sold';
 	const totalCount = listings?.length ?? 0;
 
 	return (
@@ -58,31 +63,61 @@ export default function AgentDashboard() {
 					className='size-12 rounded-full object-cover'
 				/>
 			</div>
-			<div className='grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full '>
-				<div className='col-span-1 rounded-lg border border-border bg-surface p-4 sm:col-span-1 lg:col-span-2'>
-					<div className='text-sm text-muted-foreground'>
-						Earnings (This month)
+			<FilterSection
+				label='Show'
+				value={focus}
+				onChange={setFocus}
+				options={[
+					{ value: 'all', label: 'All' },
+					{ value: 'listings', label: 'Listings' },
+					{ value: 'leads', label: 'Leads' },
+					{ value: 'sold', label: 'Sold' },
+				]}
+			/>
+			<div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
+				{(focus === 'all' || focus === 'listings') && (
+					<div className='rounded-lg border border-border bg-surface p-4'>
+						<div className='text-sm text-muted-foreground'>Active listings</div>
+						<div className='text-2xl font-bold'>{stats.activeListingsCount}</div>
 					</div>
-					<div className='text-2xl font-bold'>
-						{stats.earningsMonth?.toLocaleString()}
+				)}
+				{focus === 'all' && (
+					<div className='rounded-lg border border-border bg-surface p-4'>
+						<div className='text-sm text-muted-foreground'>
+							Earnings (This month)
+						</div>
+						<div className='text-2xl font-bold tabular-nums'>
+							৳{Number(stats.earningsMonth || 0).toLocaleString()}
+						</div>
 					</div>
-				</div>
-				<div className='col-span-1 rounded-lg border border-border bg-surface p-4 sm:col-span-1 lg:col-span-2'>
-					<div className='text-sm text-muted-foreground'>
-						Earnings (Lifetime)
+				)}
+				{focus === 'all' && (
+					<div className='rounded-lg border border-border bg-surface p-4'>
+						<div className='text-sm text-muted-foreground'>
+							Earnings (Lifetime)
+						</div>
+						<div className='text-2xl font-bold tabular-nums'>
+							৳{Number(stats.earningsLifetime || 0).toLocaleString()}
+						</div>
 					</div>
-					<div className='text-2xl font-bold'>
-						{stats.earningsLifetime?.toLocaleString()}
+				)}
+				{focus === 'leads' && (
+					<div className='rounded-lg border border-border bg-surface p-4'>
+						<div className='text-sm text-muted-foreground'>Open leads</div>
+						<div className='text-2xl font-bold'>{leads.length}</div>
 					</div>
-				</div>
-				<div className='col-span-1 rounded-lg border border-border bg-surface p-4 sm:col-span-1 lg:col-span-2'>
-					<div className='text-sm text-muted-foreground'>Active listings</div>
-					<div className='text-2xl font-bold'>{stats.activeListingsCount}</div>
-				</div>
+				)}
+				{focus === 'sold' && (
+					<div className='rounded-lg border border-border bg-surface p-4'>
+						<div className='text-sm text-muted-foreground'>Sold</div>
+						<div className='text-2xl font-bold'>{sold.length}</div>
+					</div>
+				)}
 			</div>
 
 			{/* All Active Listing */}
-			<div className='grid  xl:grid-cols-[2fr_1fr] gap-6'>
+			<div className='grid gap-6 xl:grid-cols-[2fr_1fr]'>
+				{showListings ? (
 				<div className='rounded-lg border border-border bg-surface p-4 order-1 xl:order-none'>
 					<h3 className='font-semibold mb-3'>
 						Active Listings{' '}
@@ -108,15 +143,28 @@ export default function AgentDashboard() {
 						</div>
 					</div>
 				</div>
+				) : null}
 
-				<div className='rounded-lg border border-border bg-surface p-4'>
-					<h3 className='font-semibold mb-3'>Earnings (last 6 months)</h3>
-					<div style={{ width: '100%', height: 160 }}>
-						<EarningsChart data={earningsSparkline} />
-					</div>
+				{focus === 'all' ? (
+				<div className='space-y-6'>
+					<section className='rounded-lg border border-border bg-surface p-4'>
+						<h3 className='mb-3 font-semibold'>Monthly earnings</h3>
+						<div className='h-52'>
+							<MonthlyBarChart data={earningsSparkline} />
+						</div>
+					</section>
+					<section className='rounded-lg border border-border bg-surface p-4'>
+						<h3 className='mb-3 font-semibold'>Earnings trend</h3>
+						<div className='h-40'>
+							<EarningsChart data={earningsSparkline} />
+						</div>
+					</section>
+				</div>
+				) : null}
+			</div>
 
-					<Separator className='my-4' />
-					<div className='mt-4 flex items-center justify-between'>
+			<section className='rounded-lg border border-border bg-surface p-4'>
+					<div className='flex items-center justify-between'>
 						<div>
 							<h4 className='text-lg font-semibold'>Reviews</h4>
 							<p className='text-sm text-muted-foreground'>
@@ -140,14 +188,13 @@ export default function AgentDashboard() {
 							reviews={dashboard.reviewsPreview ?? dashboard.reviews ?? []}
 						/>
 					</div>
-				</div>
-			</div>
+			</section>
 
-			{/* // Recent Leads */}
+			{showLeads ? (
 			<div className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='font-semibold mb-3'>Recent Leads ({leads.length}) </h3>
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
-					{take5(leads).map((lead) => (
+					{take6(leads).map((lead) => (
 						<div
 							key={lead._id}
 							className='h-full flex flex-col justify-between'
@@ -167,7 +214,7 @@ export default function AgentDashboard() {
 						<ViewAllCard
 							to='/dashboard/agent-offer-properties'
 							count={leads.length}
-							showCount={take5(leads).length}
+							showCount={take6(leads).length}
 							label={
 								leads.length > 0
 									? `View all ${leads.length}`
@@ -177,11 +224,12 @@ export default function AgentDashboard() {
 					</div>
 				</div>
 			</div>
-			{/* // Sold */}
+			) : null}
+			{showSold ? (
 			<div className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='font-semibold mb-3'>Recent Sold</h3>
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
-					{take5(sold).map((s) => (
+					{take6(sold).map((s) => (
 						<div key={s._id} className='h-full'>
 							<AgentSoldCard sale={s} />
 						</div>
@@ -190,7 +238,7 @@ export default function AgentDashboard() {
 						<ViewAllCard
 							to='/dashboard/sold-properties'
 							count={sold.length}
-							showCount={take5(sold).length}
+							showCount={take6(sold).length}
 							label={
 								sold.length > 0 ? `View all ${sold.length}` : 'No listings yet'
 							}
@@ -198,6 +246,7 @@ export default function AgentDashboard() {
 					</div>
 				</div>
 			</div>
+			) : null}
 		</div>
 	);
 }

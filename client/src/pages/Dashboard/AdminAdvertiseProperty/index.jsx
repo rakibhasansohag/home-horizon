@@ -6,22 +6,23 @@ import PropertyCard from '@/components/Shared/PropertyCard';
 import ConfirmActionModal from '@/components/shared/ConfirmActionModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'react-toastify';
+import {
+	FilterSection,
+	ResultSummary,
+	ShowMore,
+	usePreview,
+} from '@/pages/Dashboard/Components/DashboardFilter';
 
 export default function AdminAdvertiseProperty() {
 	const axios = useAxiosSecure();
 	const qc = useQueryClient();
 
 	const [selected, setSelected] = useState(null);
+	const { filter, choose, visible, showMore } = usePreview('all');
 
 	const { data: properties = [], isLoading } = useQuery({
 		queryKey: ['admin‐verified-properties'],
 		queryFn: () => axios.get('/admin/verified-properties').then((r) => r.data),
-	});
-
-	const { data: stats } = useQuery({
-		queryKey: ['advertise‐stats'],
-		queryFn: () => axios.get('/admin/advertise-stats').then((r) => r.data),
-		staleTime: 60 * 1000,
 	});
 
 	const advertiseM = useMutation({
@@ -56,17 +57,44 @@ export default function AdminAdvertiseProperty() {
 		);
 	}
 
+	const filtered =
+		filter === 'advertised'
+			? properties.filter((property) => property.isAdvertised)
+			: filter === 'available'
+				? properties.filter((property) => !property.isAdvertised)
+				: properties;
+	const rows = filtered.slice(0, visible);
+
 	return (
 		<div className='w-full max-w-7xl space-y-6'>
-			<div className='p-4 bg-surface rounded-lg border flex items-center justify-between'>
-				<div>
-					<p className='text-sm text-muted-foreground'>Total Advertised</p>
-					<p className='text-3xl font-semibold tabular-nums'>{stats?.total ?? 0}</p>
-				</div>
-			</div>
-
-			<div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6'>
-				{properties.map((p) => (
+			<FilterSection
+				label='Listings'
+				value={filter}
+				onChange={choose}
+				options={[
+					{ value: 'all', label: 'All' },
+					{ value: 'advertised', label: 'Advertised' },
+					{ value: 'available', label: 'Not advertised' },
+				]}
+			/>
+			<ResultSummary
+				label={
+					filter === 'advertised'
+						? 'Advertised'
+						: filter === 'available'
+							? 'Not advertised'
+							: 'Verified listings'
+				}
+				value={filtered.length}
+			/>
+			{rows.length === 0 ? (
+				<p className='text-base text-muted-foreground'>
+					No listings for this filter.
+				</p>
+			) : (
+			<div className='space-y-6'>
+			<div className='grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3'>
+				{rows.map((p) => (
 					<PropertyCard key={p._id} property={p}>
 						{p.isAdvertised ? (
 							<Button
@@ -98,6 +126,9 @@ export default function AdminAdvertiseProperty() {
 					</PropertyCard>
 				))}
 			</div>
+			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
+			</div>
+			)}
 
 			{/* Confirmation Modal */}
 			{selected && (

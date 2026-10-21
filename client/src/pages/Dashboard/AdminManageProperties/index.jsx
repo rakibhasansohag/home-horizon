@@ -14,13 +14,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BadgeCheck, Ban, CircleCheck, Clock, MapPin, User, X } from 'lucide-react';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import {
+	FilterSection,
+	ResultSummary,
+	ShowMore,
+	usePreview,
+} from '@/pages/Dashboard/Components/DashboardFilter';
+import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '../../../components/ui/tooltip';
 
+const STATUS_LABEL = {
+	all: 'All properties',
+	pending: 'Pending review',
+	verified: 'Verified',
+	rejected: 'Rejected',
+};
+
 export default function AdminManageProperties() {
 	const axiosSecure = useAxiosSecure();
+	const { filter, choose, visible, showMore } = usePreview('all');
 
 	const {
 		data: properties = [],
@@ -61,13 +75,11 @@ export default function AdminManageProperties() {
 			</div>
 		);
 
-	if (!properties.length) {
-		return (
-			<p className='text-base text-muted-foreground'>
-				No properties to review.
-			</p>
-		);
-	}
+	const filtered =
+		filter === 'all'
+			? properties
+			: properties.filter((prop) => prop.verificationStatus === filter);
+	const rows = filtered.slice(0, visible);
 
 	const statusBadge = (status) => {
 		if (status === 'verified') {
@@ -126,9 +138,27 @@ export default function AdminManageProperties() {
 		);
 
 	return (
-		<div className='w-full space-y-3'>
+		<div className='w-full space-y-6'>
+			<FilterSection
+				label='Status'
+				value={filter}
+				onChange={choose}
+				options={[
+					{ value: 'all', label: 'All' },
+					{ value: 'pending', label: 'Pending' },
+					{ value: 'verified', label: 'Verified' },
+					{ value: 'rejected', label: 'Rejected' },
+				]}
+			/>
+			<ResultSummary label={STATUS_LABEL[filter]} value={filtered.length} />
+			{rows.length === 0 ? (
+				<p className='text-base text-muted-foreground'>
+					No properties in this status.
+				</p>
+			) : (
+			<div className='space-y-6'>
 			<div className='space-y-3 md:hidden'>
-				{properties.map((prop) => (
+				{rows.map((prop) => (
 					<article
 						key={prop._id}
 						className='space-y-3 rounded-lg border border-border bg-surface p-4'
@@ -177,7 +207,7 @@ export default function AdminManageProperties() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{properties.map((prop, idx) => (
+					{rows.map((prop, idx) => (
 						<TableRow
 							key={prop._id}
 							className={`${
@@ -237,6 +267,9 @@ export default function AdminManageProperties() {
 				</TableBody>
 			</Table>
 			</div>
+			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
+			</div>
+			)}
 		</div>
 	);
 }

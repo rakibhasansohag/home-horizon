@@ -15,8 +15,18 @@ export default function RevenueChart({ data = [] }) {
 		<ResponsiveContainer width='100%' height='100%'>
 			<LineChart data={data}>
 				<CartesianGrid strokeDasharray='3 3' opacity={0.06} />
-				<XAxis dataKey='month' tick={{ fill: 'var(--muted-foreground)' }} />
-				<YAxis tickFormatter={(v) => (v ? (v / 1000).toFixed(0) + 'k' : '0')} />
+				<XAxis
+					dataKey='month'
+					tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+					axisLine={false}
+					tickLine={false}
+				/>
+				<YAxis
+					axisLine={false}
+					tickLine={false}
+					tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+					tickFormatter={(v) => (v ? (v / 1000).toFixed(0) + 'k' : '0')}
+				/>
 				<Tooltip formatter={(v) => `৳${Number(v || 0).toLocaleString()}`} />
 				<Line
 					type='monotone'
