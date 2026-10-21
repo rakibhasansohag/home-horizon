@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { FaMapMarkerAlt, FaUser, FaChevronRight } from 'react-icons/fa';
+import { ChevronRight, MapPin } from 'lucide-react';
 
 function fmtCurrency(v) {
 	const n = Number(v || 0);
@@ -33,13 +33,13 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 	const status = offer.status || 'pending';
 
 	return (
-		<div className='bg-card rounded-2xl overflow-hidden border border-border/50 shadow-md flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-1 '>
+		<div className='flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-brand'>
 			{/* image */}
 			<div className='h-44 w-full overflow-hidden'>
 				<img
 					src={img}
 					alt={title}
-					className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'
+					className='h-full w-full object-cover'
 				/>
 			</div>
 
@@ -49,7 +49,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 						<h4 className='text-lg font-semibold line-clamp-2'>{title}</h4>
 						<div className='text-sm text-muted-foreground mt-1 flex items-center gap-3'>
 							<span className='inline-flex items-center gap-2'>
-								<FaMapMarkerAlt className='w-4 h-4 text-brand/80' /> {loc}
+								<MapPin className='size-4 text-brand' aria-hidden='true' /> {loc}
 							</span>
 						</div>
 					</div>
@@ -58,7 +58,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 						to={id ? `/all-properties/${id}` : '#'}
 						className='ml-3 text-foreground/80 hover:text-brand'
 					>
-						<FaChevronRight className='w-5 h-5' />
+						<ChevronRight className='size-5' aria-hidden='true' />
 					</Link>
 				</div>
 
@@ -71,7 +71,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 					/>
 					<div>
 						<div className='text-sm font-medium'>{buyer.name}</div>
-						<div className='text-xs text-muted-foreground'>Buyer</div>
+						<div className='text-sm text-muted-foreground'>Buyer</div>
 					</div>
 				</div>
 
@@ -80,7 +80,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 					<div className='flex items-center justify-between'>
 						<span className='font-medium'>Offer Amount</span>
 						<span className='font-semibold text-brand'>
-							${fmtCurrency(amount)}
+							৳{fmtCurrency(amount)}
 						</span>
 					</div>
 
@@ -96,7 +96,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 					<div className='flex items-center justify-between mt-2'>
 						<span className='font-medium'>Status</span>
 						<span
-							className={`px-2 py-1 rounded-full text-xs font-semibold ${
+							className={`rounded-md px-2 py-1 text-sm font-medium ${
 								status.toLowerCase() === 'pending'
 									? 'bg-warning-soft text-warning'
 									: status.toLowerCase() === 'accepted'
@@ -113,13 +113,13 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 				<div className='mt-4 flex gap-2'>
 					<button
 						onClick={() => onAccept && onAccept(offer._id, offer.propertyId)}
-						className='flex-1 rounded-xl py-2 text-sm bg-success-fill text-white hover:bg-success-fill/90 transition'
+						className='min-h-11 flex-1 rounded-md bg-success-fill text-sm text-surface transition-colors duration-200 hover:bg-success-fill/90'
 					>
 						Accept
 					</button>
 					<button
 						onClick={() => onReject && onReject(offer._id, offer.propertyId)}
-						className='flex-1 rounded-xl py-2 text-sm border border-border text-foreground hover:bg-danger-soft transition'
+						className='min-h-11 flex-1 rounded-md border border-border text-sm text-foreground transition-colors duration-200 hover:bg-danger-soft'
 					>
 						Reject
 					</button>

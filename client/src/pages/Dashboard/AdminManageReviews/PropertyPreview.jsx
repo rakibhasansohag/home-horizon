@@ -31,7 +31,7 @@ export default function PropertyPreview({ propertyId }) {
 			/>
 			<div>
 				<p className='text-sm font-medium'>{property.title}</p>
-				<p className='text-xs text-muted-foreground'>{property.location}</p>
+				<p className='text-sm text-muted-foreground'>{property.location}</p>
 			</div>
 		</Link>
 	);

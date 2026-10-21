@@ -1,7 +1,5 @@
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation } from '@tanstack/react-query';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { useParams, useNavigate } from 'react-router';
@@ -120,26 +118,16 @@ export default function MakeOffer() {
 
 	if ((isSoldGlobally || userAlreadyBought) && !isLoading && !isOfferLoading) {
 		return (
-			<motion.div
-				initial={{ opacity: 0, y: 40 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5 }}
-				className='w-full flex flex-col items-center justify-center text-center p-6'
-			>
-				<img
-					src='https://cdn-icons-png.flaticon.com/512/4076/4076549.png'
-					alt='sold'
-					className='w-24 h-24 mb-4 animate-pulse'
-				/>
-				<h2 className='text-2xl font-semibold text-danger mb-2'>
+			<div className='flex w-full flex-col items-center justify-center p-6 text-center'>
+				<h2 className='mb-2 text-2xl font-semibold text-danger'>
 					{isSoldGlobally
 						? 'This property has already been sold'
 						: 'You have already bought this property'}
 				</h2>
-				<p className='text-muted-foreground text-base'>
+				<p className='text-base text-muted-foreground'>
 					Redirecting you back in a few seconds...
 				</p>
-			</motion.div>
+			</div>
 		);
 	}
 
@@ -148,12 +136,7 @@ export default function MakeOffer() {
 	}
 
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 50 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5 }}
-			className='max-w-7xl p-4 w-full'
-		>
+		<div className='w-full max-w-3xl'>
 			<Card className='p-6 space-y-4'>
 				<h2 className='text-xl font-semibold'>
 					Make an Offer for "{property.title}"
@@ -223,6 +206,6 @@ export default function MakeOffer() {
 					</Button>
 				</form>
 			</Card>
-		</motion.div>
+		</div>
 	);
 }

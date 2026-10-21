@@ -1,10 +1,5 @@
 import { Link } from 'react-router';
-import {
-	FaMapMarkerAlt,
-	FaUser,
-	FaReceipt,
-	FaChevronRight,
-} from 'react-icons/fa';
+import { ChevronRight, MapPin, Receipt } from 'lucide-react';
 
 function fmt(v) {
 	const n = Number(v || 0);
@@ -33,7 +28,7 @@ export default function AgentSoldCard({ sale }) {
 	const soldDate = sale.paidAt || sale.buyingDate || sale.updatedAt || null;
 
 	return (
-		<div className='bg-card rounded-2xl p-0 overflow-hidden border border-border/50 shadow-md flex flex-col h-full transition-transform duration-300 hover:scale-[1.01]'>
+		<div className='flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-brand'>
 			<div className='h-40 w-full overflow-hidden'>
 				<img src={img} alt={title} className='w-full h-full object-cover' />
 			</div>
@@ -43,7 +38,7 @@ export default function AgentSoldCard({ sale }) {
 					<div>
 						<h4 className='text-lg font-semibold line-clamp-2'>{title}</h4>
 						<div className='text-sm text-muted-foreground mt-1 flex items-center gap-2'>
-							<FaMapMarkerAlt className='w-4 h-4 text-brand/80' />
+							<MapPin className='size-4 text-brand' aria-hidden='true' />
 							{loc}
 						</div>
 					</div>
@@ -51,7 +46,7 @@ export default function AgentSoldCard({ sale }) {
 						to={id ? `/all-properties/${id}` : '#'}
 						className='ml-3 text-foreground/80 hover:text-brand'
 					>
-						<FaChevronRight className='w-5 h-5' />
+						<ChevronRight className='size-5' aria-hidden='true' />
 					</Link>
 				</div>
 
@@ -63,26 +58,26 @@ export default function AgentSoldCard({ sale }) {
 					/>
 					<div>
 						<div className='text-sm font-medium'>{buyer.name}</div>
-						<div className='text-xs text-muted-foreground'>Buyer</div>
+						<div className='text-sm text-muted-foreground'>Buyer</div>
 					</div>
 				</div>
 
 				<div className='mt-4 text-sm'>
 					<div className='flex justify-between'>
 						<span className='font-medium'>Amount</span>
-						<span className='font-semibold text-brand'>${fmt(amount)}</span>
+						<span className='font-semibold tabular-nums text-brand'>৳{fmt(amount)}</span>
 					</div>
 
 					{soldDate && (
-						<div className='flex justify-between mt-2 text-xs text-muted-foreground'>
+						<div className='mt-2 flex justify-between text-sm text-muted-foreground'>
 							<span>Sold on</span>
 							<span>{new Date(soldDate).toLocaleDateString()}</span>
 						</div>
 					)}
 
 					{tx && (
-						<div className='flex items-center gap-2 mt-2 text-xs text-muted-foreground'>
-							<FaReceipt className='w-4 h-4' />
+						<div className='mt-2 flex items-center gap-2 text-sm text-muted-foreground'>
+							<Receipt className='size-4' aria-hidden='true' />
 							<span className='truncate'>Tx: {tx}</span>
 						</div>
 					)}

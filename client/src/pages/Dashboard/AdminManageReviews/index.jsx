@@ -58,7 +58,7 @@ export default function AdminManageReviews() {
 				{reviews.map((review) => (
 					<Card
 						key={review._id}
-						className='border bg-background transition hover:shadow-md'
+						className='border border-border bg-surface transition-colors duration-200 hover:border-brand'
 					>
 						<CardContent className='p-4 space-y-2'>
 							<div className='flex items-center gap-3'>

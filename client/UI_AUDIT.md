@@ -1,5 +1,7 @@
 # HomeHorizon UI audit
 
+About, contact, the three legal pages, and dashboard payments are a single column with a Fraunces title and the existing notify form. The construction illustration, emoji, and fake card are gone. Login and register were left as they are.
+
 Dark mode uses the same tokens as light: paper, surface, ink, and the accent all switch. Map pins follow that accent. Checked home, the property list, and a listing page in both themes.
 
 Property details: one 16:9 photo, grouped taka prices, and the offer button uses the theme text color on hover.

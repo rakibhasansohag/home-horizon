@@ -57,7 +57,7 @@ export default function AdminAdvertiseProperty() {
 	}
 
 	return (
-		<div className='p-6 space-y-6 bg-background w-full max-w-7xl'>
+		<div className='w-full max-w-7xl space-y-6'>
 			<div className='p-4 bg-surface rounded-lg border flex items-center justify-between'>
 				<div>
 					<p className='text-sm text-muted-foreground'>Total Advertised</p>

@@ -1,5 +1,4 @@
-import React from 'react';
-import { FaStar } from 'react-icons/fa';
+import { Star } from 'lucide-react';
 import { Link } from 'react-router';
 
 export default function ReviewCard({ review }) {
@@ -12,7 +11,7 @@ export default function ReviewCard({ review }) {
 		: '';
 
 	return (
-		<div className='bg-card rounded-xl p-4 shadow-md flex flex-col h-full border border-border/50'>
+		<div className='flex h-full flex-col rounded-lg border border-border bg-surface p-4'>
 			{/* top: property thumbnail + property title */}
 			<div className='flex items-center gap-3 mb-3'>
 				<img
@@ -29,7 +28,7 @@ export default function ReviewCard({ review }) {
 					>
 						{prop.title || 'Property'}
 					</Link>
-					<div className='text-xs text-muted-foreground'>{created}</div>
+					<div className='text-sm text-muted-foreground'>{created}</div>
 				</div>
 			</div>
 
@@ -47,8 +46,8 @@ export default function ReviewCard({ review }) {
 					/>
 					<div>
 						<div className='text-sm font-medium'>{review.userName}</div>
-						<div className='text-xs text-muted-foreground'>
-							Rating: {review.rating ?? '-'}
+						<div className='text-sm text-muted-foreground'>
+							{review.rating ?? '–'}/5
 						</div>
 					</div>
 				</div>
@@ -56,11 +55,14 @@ export default function ReviewCard({ review }) {
 				<div className='flex items-center gap-1'>
 					{/* stars */}
 					{Array.from({ length: 5 }).map((_, i) => (
-						<FaStar
+						<Star
 							key={i}
-							className={`w-3 h-3 ${
-								i < (review.rating || 0) ? 'text-warning' : 'text-border/40'
+							className={`size-4 ${
+								i < (review.rating || 0)
+									? 'fill-brand text-brand'
+									: 'text-border'
 							}`}
+							aria-hidden='true'
 						/>
 					))}
 				</div>
