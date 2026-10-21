@@ -1,7 +1,22 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Search } from 'lucide-react';
 import banner from '@/assets/banner.jpg';
 
 export default function Banner() {
+	const navigate = useNavigate();
+	const [term, setTerm] = useState('');
+
+	const submitSearch = (event) => {
+		event.preventDefault();
+		const query = term.trim();
+		navigate(
+			query
+				? `/all-properties?search=${encodeURIComponent(query)}`
+				: '/all-properties',
+		);
+	};
+
 	return (
 		<section
 			className='relative h-[32rem] w-full bg-cover bg-center'
@@ -15,22 +30,24 @@ export default function Banner() {
 					<span className='block'>at the right price</span>
 				</h1>
 
-				<div className='mt-8 w-full max-w-xl'>
+				<form className='mt-8 w-full max-w-xl' onSubmit={submitSearch}>
 					<div className='flex overflow-hidden rounded-lg bg-white text-black shadow-lg'>
 						<input
 							type='text'
+							value={term}
+							onChange={(event) => setTerm(event.target.value)}
 							placeholder='Enter an address, neighborhood, city, or ZIP code'
 							className='min-h-14 w-full px-4 text-base outline-none placeholder:text-neutral-500'
 						/>
 						<button
-							type='button'
+							type='submit'
 							className='inline-flex shrink-0 items-center justify-center px-4'
 							aria-label='Search'
 						>
 							<Search />
 						</button>
 					</div>
-				</div>
+				</form>
 			</div>
 		</section>
 	);

@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { cn } from '@/lib/utils';
 import useAxios from '../../hooks/useAxios';
 import MapView from './MapView';
@@ -38,7 +38,8 @@ function byPrice(sort) {
 export default function AllProperties() {
 	const axiosInstance = useAxios();
 	const queryClient = useQueryClient();
-	const [search, setSearch] = useState('');
+	const [searchParams] = useSearchParams();
+	const [search, setSearch] = useState(() => searchParams.get('search') || '');
 	const [sort, setSort] = useState('desc');
 	const [bounds, setBounds] = useState(null);
 	const [activeId, setActiveId] = useState(null);
@@ -46,30 +47,40 @@ export default function AllProperties() {
 
 	const cardRefs = useRef({});
 	const selectFromMap = useRef(false);
+	const locationSearch = search.trim();
+
+	useEffect(() => {
+		setSearch(searchParams.get('search') || '');
+	}, [searchParams]);
 
 	const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
-		queryKey: ['all-properties', search, sort, bounds, forceFetch],
+		queryKey: locationSearch
+			? ['all-properties', 'search', locationSearch, sort, forceFetch]
+			: ['all-properties', search, sort, bounds, forceFetch],
 		queryFn: async () => {
 			const params = new URLSearchParams({
-				search: search.toLowerCase(),
+				search: locationSearch.toLowerCase(),
 				sort,
-				swLat: bounds.swLat,
-				swLng: bounds.swLng,
-				neLat: bounds.neLat,
-				neLng: bounds.neLng,
 			});
+			if (!locationSearch && bounds) {
+				params.set('swLat', bounds.swLat);
+				params.set('swLng', bounds.swLng);
+				params.set('neLat', bounds.neLat);
+				params.set('neLng', bounds.neLng);
+			}
 			const res = await axiosInstance.get(
 				`/properties/verified?${params.toString()}`,
 			);
 			return res.data;
 		},
-		enabled: !!bounds,
+		enabled: !!locationSearch || !!bounds,
 		placeholderData: keepPreviousData,
 		staleTime: 5 * 60 * 1000,
 		gcTime: 30 * 60 * 1000,
 	});
 
 	const shown = useMemo(() => {
+		if (locationSearch) return Array.isArray(data) ? data : [];
 		if (!bounds) return [];
 		if (Array.isArray(data) && !isPlaceholderData && !isFetching) return data;
 
@@ -84,7 +95,16 @@ export default function AllProperties() {
 		}
 		if (cached.size > 0) return [...cached.values()].sort(byPrice(sort));
 		return Array.isArray(data) ? data : [];
-	}, [bounds, data, isFetching, isPlaceholderData, queryClient, search, sort]);
+	}, [
+		bounds,
+		data,
+		isFetching,
+		isPlaceholderData,
+		locationSearch,
+		queryClient,
+		search,
+		sort,
+	]);
 
 	const handleSearchChange = (e) => {
 		setSearch(e.target.value);
@@ -247,6 +267,9 @@ export default function AllProperties() {
 						onBoundsChange={updateBounds}
 						onMarkerClick={(id) => selectProperty(id, true)}
 						activeId={activeId}
+						fitKey={
+							locationSearch ? shown.map((property) => property._id).join(',') : ''
+						}
 					/>
 				</div>
 			</div>

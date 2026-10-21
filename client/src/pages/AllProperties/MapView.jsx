@@ -142,11 +142,33 @@ function PropertyMarker({ property, active, onMarkerClick }) {
 	);
 }
 
+function FitSearch({ fitKey, propertiesRef, ignoreUntil }) {
+	const map = useMap();
+
+	useEffect(() => {
+		if (!fitKey) return;
+		const points = propertiesRef.current
+			.map((property) => property?.coordinates)
+			.filter(
+				(point) =>
+					Number.isFinite(Number(point?.lat)) &&
+					Number.isFinite(Number(point?.lng)),
+			)
+			.map((point) => [Number(point.lat), Number(point.lng)]);
+		if (!points.length) return;
+		ignoreUntil.current = Date.now() + 1200;
+		map.fitBounds(points, { padding: [48, 48], maxZoom: 13 });
+	}, [fitKey, ignoreUntil, map, propertiesRef]);
+
+	return null;
+}
+
 export default function MapView({
 	properties,
 	onBoundsChange,
 	onMarkerClick,
 	activeId,
+	fitKey = '',
 }) {
 	const { theme } = useContext(ThemeContext);
 	const ignoreUntil = useRef(0);
@@ -171,6 +193,11 @@ export default function MapView({
 			<MapEvents onBoundsChange={onBoundsChange} ignoreUntil={ignoreUntil} />
 			<FocusMarker
 				activeId={activeId}
+				propertiesRef={propertiesRef}
+				ignoreUntil={ignoreUntil}
+			/>
+			<FitSearch
+				fitKey={fitKey}
 				propertiesRef={propertiesRef}
 				ignoreUntil={ignoreUntil}
 			/>
