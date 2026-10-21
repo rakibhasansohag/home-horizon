@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-// eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from 'motion/react';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { toast } from 'react-toastify';
@@ -433,22 +431,12 @@ function AddProperties() {
 						<Button type='button' onClick={() => setShowMap(!showMap)} variant='secondary'>
 							{showMap ? 'Hide Map' : 'Pick Location on Map'}
 						</Button>
-						<AnimatePresence>
-							{showMap && (
-								<motion.div
-									initial={{ height: 0, opacity: 0, scaleY: 0.8 }}
-									animate={{ height: 'auto', opacity: 1, scaleY: 1 }}
-									exit={{ height: 0, opacity: 0, scaleY: 0.8 }}
-									transition={{ duration: 0.4, ease: 'easeInOut' }}
-									className='overflow-hidden origin-top'
-								>
-									<MapPicker
-										setLat={(val) => setValue('lat', val)}
-										setLng={(val) => setValue('lng', val)}
-									/>
-								</motion.div>
-							)}
-						</AnimatePresence>
+						{showMap && (
+							<MapPicker
+								setLat={(val) => setValue('lat', val)}
+								setLng={(val) => setValue('lng', val)}
+							/>
+						)}
 					</div>
 
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

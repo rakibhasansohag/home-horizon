@@ -1,5 +1,7 @@
 # HomeHorizon UI audit
 
+Polish pass: the home recommendations block is type only. The stock card graphic is gone. Revenue and earnings charts use the accent and taka. Review stars use the accent. The footer includes the cookie policy. Login and register were left as they are.
+
 About, contact, the three legal pages, and dashboard payments are a single column with a Fraunces title and the existing notify form. The construction illustration, emoji, and fake card are gone. Login and register were left as they are.
 
 Dark mode uses the same tokens as light: paper, surface, ink, and the accent all switch. Map pins follow that accent. Checked home, the property list, and a listing page in both themes.

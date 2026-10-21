@@ -9,7 +9,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { MapPin } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router';
 
@@ -125,7 +125,7 @@ export default function AgentSoldProperties() {
 							</TableCell>
 							<TableCell className='text-muted-foreground'>
 								<div className='flex items-center gap-1'>
-									<FaMapMarkerAlt />
+									<MapPin className='size-4' aria-hidden='true' />
 									<span>{item.propertyLocation}</span>
 								</div>
 							</TableCell>

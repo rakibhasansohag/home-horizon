@@ -22,10 +22,13 @@ function EarningsChart({ data }) {
 				<YAxis
 					tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v)}
 				/>
-				<Tooltip formatter={(value) => value?.toLocaleString?.() || value} />
+				<Tooltip
+					formatter={(value) => `৳${Number(value || 0).toLocaleString()}`}
+				/>
 				<Line
 					type='monotone'
 					dataKey='value'
+					stroke='var(--brand)'
 					strokeWidth={2}
 					dot={false}
 					strokeLinecap='round'

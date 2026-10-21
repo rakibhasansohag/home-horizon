@@ -1,8 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { X } from 'lucide-react';
-// eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from 'motion/react';
 
 export default function SortableImage({ id, url, onRemove, isDeleting }) {
 	const { attributes, listeners, setNodeRef, transform, transition } =
@@ -13,34 +11,29 @@ export default function SortableImage({ id, url, onRemove, isDeleting }) {
 		transition,
 	};
 
+	if (isDeleting) return null;
+
 	return (
-		<AnimatePresence>
-			{!isDeleting && (
-				<motion.div
-					ref={setNodeRef}
-					style={style}
-					{...attributes}
-					{...listeners}
-					initial={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.95, y: -10 }}
-					transition={{ duration: 0.3 }}
-					className='relative'
-				>
-					<img
-						src={url}
-						alt='Preview'
-						className='w-20 h-20 object-cover rounded border'
-					/>
-					<button
-						type='button'
-						onClick={() => onRemove(id)}
-						onPointerDown={(e) => e.stopPropagation()}
-						className='absolute -top-2 -right-2 bg-danger-fill text-white rounded-full w-5 h-5 text-xs flex items-center justify-center z-10'
-					>
-						<X />
-					</button>
-				</motion.div>
-			)}
-		</AnimatePresence>
+		<div
+			ref={setNodeRef}
+			style={style}
+			{...attributes}
+			{...listeners}
+			className='relative'
+		>
+			<img
+				src={url}
+				alt='Preview'
+				className='h-20 w-20 rounded border object-cover'
+			/>
+			<button
+				type='button'
+				onClick={() => onRemove(id)}
+				onPointerDown={(e) => e.stopPropagation()}
+				className='absolute -top-2 -right-2 z-10 flex size-6 items-center justify-center rounded-full bg-danger-fill text-surface'
+			>
+				<X aria-hidden='true' />
+			</button>
+		</div>
 	);
 }

@@ -17,11 +17,11 @@ export default function RevenueChart({ data = [] }) {
 				<CartesianGrid strokeDasharray='3 3' opacity={0.06} />
 				<XAxis dataKey='month' tick={{ fill: 'var(--muted-foreground)' }} />
 				<YAxis tickFormatter={(v) => (v ? (v / 1000).toFixed(0) + 'k' : '0')} />
-				<Tooltip formatter={(v) => `$${Number(v || 0).toLocaleString()}`} />
+				<Tooltip formatter={(v) => `৳${Number(v || 0).toLocaleString()}`} />
 				<Line
 					type='monotone'
 					dataKey='value'
-					stroke='var(--color-chart-1)'
+					stroke='var(--brand)'
 					strokeWidth={2}
 					dot={false}
 				/>

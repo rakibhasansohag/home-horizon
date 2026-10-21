@@ -1,18 +1,10 @@
-import React from 'react';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
-
 export default function KpiCard({ title, value, delta, children }) {
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 8 }}
-			animate={{ opacity: 1, y: 0 }}
-			className='p-4 rounded-2xl bg-background dark:bg-input shadow'
-		>
-			<div className='flex justify-between items-start'>
+		<div className='rounded-lg border border-border bg-surface p-4'>
+			<div className='flex items-start justify-between'>
 				<div>
 					<div className='text-sm text-muted-foreground'>{title}</div>
-					<div className='text-2xl font-semibold'>{value}</div>
+					<div className='text-2xl font-semibold tabular-nums'>{value}</div>
 				</div>
 				{typeof delta !== 'undefined' && (
 					<div
@@ -25,6 +17,6 @@ export default function KpiCard({ title, value, delta, children }) {
 				)}
 			</div>
 			{children && <div className='mt-3'>{children}</div>}
-		</motion.div>
+		</div>
 	);
 }

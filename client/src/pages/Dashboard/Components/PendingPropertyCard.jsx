@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { FaMapMarkerAlt, FaUser, FaDollarSign, FaClock } from 'react-icons/fa';
+import { MapPin, User } from 'lucide-react';
 
 export default function PendingPropertyCard({ property }) {
 	console.log(property);
@@ -33,11 +33,11 @@ export default function PendingPropertyCard({ property }) {
 				{/* Location & Agent */}
 				<div className='space-y-1 text-muted-foreground text-sm mt-2 mb-4'>
 					<p className='flex items-center gap-2'>
-						<FaMapMarkerAlt className='text-brand/70' />
+						<MapPin className='size-4 text-brand' aria-hidden='true' />
 						{property.property.location}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaUser className='text-brand/70' />
+						<User className='size-4 text-brand' aria-hidden='true' />
 						<span className='font-medium'>Agent:</span> {property.agentName}
 					</p>
 				</div>

@@ -1,11 +1,5 @@
 import { Link } from 'react-router';
-import {
-	FaMapMarkerAlt,
-	FaUser,
-	FaCalendarAlt,
-	FaReceipt,
-	FaDollarSign,
-} from 'react-icons/fa';
+import { Calendar, MapPin, Receipt, User } from 'lucide-react';
 
 export default function BoughtPropertyCard({ property }) {
 	return (
@@ -34,11 +28,11 @@ export default function BoughtPropertyCard({ property }) {
 				{/* Location & Agent */}
 				<div className='space-y-1 text-muted-foreground text-sm'>
 					<p className='flex items-center gap-2'>
-						<FaMapMarkerAlt className='text-brand/70' />
+						<MapPin className='size-4 text-brand' aria-hidden='true' />
 						{property.location}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaUser className='text-brand/70' />
+						<User className='size-4 text-brand' aria-hidden='true' />
 						<span className='font-medium'>Agent:</span> {property.agentName}
 					</p>
 				</div>
@@ -46,17 +40,16 @@ export default function BoughtPropertyCard({ property }) {
 				{/* Offer Info */}
 				<div className='space-y-1 text-sm text-foreground/80 mt-auto'>
 					<p className='flex items-center gap-2'>
-						<FaDollarSign className='text-success' />
 						<span className='font-medium'>Offer Amount:</span> ৳
 						{property.offerAmount?.toLocaleString()}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaCalendarAlt className='text-brand' />
+						<Calendar className='size-4 text-brand' aria-hidden='true' />
 						<span className='font-medium'>Buying Date:</span>{' '}
 						{new Date(property.buyingDate).toLocaleDateString()}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaReceipt className='text-muted-foreground' />
+						<Receipt className='size-4 text-muted-foreground' aria-hidden='true' />
 						<span className='font-medium'>Transaction ID:</span>{' '}
 						{property.transactionId}
 					</p>

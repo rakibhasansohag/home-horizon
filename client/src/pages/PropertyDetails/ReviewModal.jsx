@@ -47,8 +47,8 @@ export default function ReviewModal({
 								key={num}
 								className={`w-6 h-6 cursor-pointer ${
 									rating >= num
-										? 'fill-warning text-warning'
-										: 'text-warning'
+										? 'fill-brand text-brand'
+										: 'text-muted-foreground'
 								}`}
 								onClick={() => setValue('rating', num)}
 							/>

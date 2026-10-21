@@ -20,6 +20,7 @@ const Footer = () => {
 	const terms = [
 		{ label: 'Terms of Service', to: '/legal/terms-of-service' },
 		{ label: 'Privacy Policy', to: '/legal/privacy-policy' },
+		{ label: 'Cookie Policy', to: '/legal/cookie-policy' },
 	];
 
 	const socials = [

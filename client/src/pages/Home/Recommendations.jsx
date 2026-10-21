@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router';
 
 const dummyHomes = Array(6).fill({
-	price: '$695,000',
+	price: '৳695,000',
 	beds: 4,
 	baths: 3,
 	sqft: 3102,
@@ -21,12 +21,12 @@ function Recommendations({ searchQuery = '' }) {
 	const { user } = useAuth();
 
 	return (
-		<section className='border-b border-border bg-paper py-12'>
-			<div className='section grid items-center gap-8 md:grid-cols-2'>
-				<div>
+		<section className='bg-surface py-12'>
+			<div className='section flex flex-col items-center justify-between gap-8 md:flex-row'>
+				<div className='w-full md:w-1/2'>
 					{!user ? (
-						<div className='max-w-md'>
-							<h2 className='font-display text-3xl'>
+						<div className='flex flex-col items-center text-center md:items-center'>
+							<h2 className='text-2xl font-bold'>
 								Get home recommendations
 							</h2>
 							<p className='mt-3 text-base text-muted-foreground'>
@@ -80,8 +80,8 @@ function Recommendations({ searchQuery = '' }) {
 									</Swiper>
 								</>
 							) : (
-								<div className='max-w-md'>
-									<h3 className='font-display text-3xl'>
+								<div className='flex flex-col items-center text-center'>
+									<h3 className='text-2xl font-bold'>
 										Recommendations underway
 									</h3>
 									<p className='mt-3 text-base text-muted-foreground'>
@@ -94,11 +94,13 @@ function Recommendations({ searchQuery = '' }) {
 					)}
 				</div>
 
-				<img
-					src={recommendationImg}
-					alt='Sample recommendation cards laid over a brick house'
-					className='mx-auto w-full max-w-md object-contain'
-				/>
+				<div className='w-full md:w-1/2'>
+					<img
+						src={recommendationImg}
+						alt='Sample recommendation cards laid over a brick house'
+						className='mx-auto h-auto w-full max-w-md'
+					/>
+				</div>
 			</div>
 		</section>
 	);
