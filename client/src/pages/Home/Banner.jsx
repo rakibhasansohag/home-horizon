@@ -1,32 +1,35 @@
-import React from 'react';
+import { Search } from 'lucide-react';
 import banner from '@/assets/banner.jpg';
-import { FaMagnifyingGlass } from 'react-icons/fa6';
 
 export default function Banner() {
 	return (
-		<section
-			className='w-full h-[32rem] bg-cover bg-center relative'
-			style={{ backgroundImage: `url(${banner})` }}
-		>
-			{/* Overlay */}
-			<div className='absolute inset-0 bg-black/40' />
+		<section className='relative h-[28rem] overflow-hidden md:h-[32rem]'>
+			<img
+				src={banner}
+				alt='Red and grey houses along a residential street'
+				className='absolute inset-0 h-full w-full object-cover'
+			/>
+			<div className='absolute inset-0 bg-ink/45' />
 
-			{/* Content */}
-			<div className='relative z-10 h-full flex flex-col  justify-center  text-white px-4 section'>
-				<h1 className='text-4xl md:text-5xl font-extrabold leading-tight drop-shadow-md '>
-					Find the right home
-					<span className='block'>at the right price</span>
-				</h1>
+			<div className='section relative z-10 flex h-full items-center'>
+				<div className='w-full max-w-xl rounded-lg bg-paper p-6 text-ink md:p-8'>
+					<h1 className='font-display text-4xl md:text-5xl'>
+						Find the right home
+						<span className='block'>at the right price</span>
+					</h1>
 
-				<div className='mt-8 w-full max-w-xl'>
-					<div className='flex rounded-lg overflow-hidden shadow-lg bg-surface text-ink'>
+					<div className='mt-6 flex min-w-0 items-center rounded-md border border-line bg-surface'>
 						<input
 							type='text'
 							placeholder='Enter an address, neighborhood, city, or ZIP code'
-							className='w-full px-4 py-5 outline-none text-sm'
+							className='min-h-11 min-w-0 flex-1 bg-transparent px-3 text-base text-ink outline-none placeholder:text-ink-muted'
 						/>
-						<button className='px-4 hover:bg-primary/90 text-ink text-base font-semibold  transition-all cursor-pointer'>
-							<FaMagnifyingGlass />
+						<button
+							type='button'
+							className='inline-flex size-11 shrink-0 items-center justify-center text-ink'
+							aria-label='Search'
+						>
+							<Search />
 						</button>
 					</div>
 				</div>

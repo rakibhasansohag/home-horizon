@@ -1,4 +1,3 @@
-import React from 'react';
 import Banner from './Banner';
 import Recommendations from './Recommendations';
 import ServicesSection from './ServiceSection';
@@ -7,14 +6,14 @@ import LatestUserReviews from './LatestUserReviews';
 
 function Home() {
 	return (
-		<main className=''>
+		<div>
 			<Banner />
 			<Recommendations />
 			<ServicesSection />
 			{/* TODO : Will added dynamic newst home from database or show some dummy data if there is none  */}
 			<AdvertisedProperties />
 			<LatestUserReviews />
-		</main>
+		</div>
 	);
 }
 

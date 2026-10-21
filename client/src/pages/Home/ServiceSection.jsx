@@ -1,7 +1,4 @@
-import React from 'react';
-import { FaHome, FaDollarSign, FaBuilding, FaChartLine } from 'react-icons/fa';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
+import { Building2, Home, KeyRound, TrendingUp } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 
 const services = [
@@ -9,7 +6,7 @@ const services = [
 		title: 'Buy a Home',
 		description:
 			'Explore listings, virtual tours, and tools to find your perfect home easily.',
-		icon: <FaHome className='text-4xl text-brand ' />,
+		icon: Home,
 		button: 'Browse Homes',
 		link: '/buy',
 	},
@@ -17,7 +14,7 @@ const services = [
 		title: 'Sell Your Property',
 		description:
 			'Get expert tips and valuation support to sell your property successfully.',
-		icon: <FaDollarSign className='text-4xl text-brand ' />,
+		icon: KeyRound,
 		button: 'Sell Now',
 		link: '/sell',
 	},
@@ -25,14 +22,14 @@ const services = [
 		title: 'Rent a Place',
 		description:
 			'Browse thousands of rental listings and apply online with ease.',
-		icon: <FaBuilding className='text-4xl text-brand ' />,
+		icon: Building2,
 		button: 'Find Rentals',
 		link: '/rent',
 	},
 	{
 		title: 'Invest Smartly',
 		description: 'Discover profitable investment opportunities in real estate.',
-		icon: <FaChartLine className='text-4xl text-brand' />,
+		icon: TrendingUp,
 		button: 'Start Investing',
 		link: '/invest',
 	},
@@ -40,32 +37,31 @@ const services = [
 
 function ServicesSection() {
 	return (
-		<section className='bg-background dark:bg-input py-16'>
-			<div className='section text-center'>
-				<h2 className='text-3xl font-bold mb-6'>Our Services</h2>
-				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
-					{services.map((item, idx) => (
-						<motion.div
-							key={idx}
-							initial={{ opacity: 0, y: 30 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.8, delay: idx * 0.1 }}
-							viewport={{ once: true }}
-							className='bg-surface dark:bg-input rounded-2xl shadow-md p-6 hover:shadow-xl transition-all text-center flex flex-col justify-center items-center'
-						>
-							<span className='bg-background rounded-full p-5 flex justify-center items-center mb-4'>
-								{item.icon}
-							</span>
-							<h3 className='text-lg font-semibold mb-2'>{item.title}</h3>
-							<p className='text-sm text-muted-foreground mb-4'>
-								{item.description}
-							</p>
-							<Button variant='rounded' href={item.link}>
-								{item.button}
-							</Button>
-						</motion.div>
-					))}
-				</div>
+		<section className='bg-paper py-16'>
+			<div className='section'>
+				<h2 className='font-display text-3xl'>Our Services</h2>
+				<ul className='mt-8 grid gap-4 sm:grid-cols-2'>
+					{services.map((item) => {
+						const Icon = item.icon;
+						return (
+							<li
+								key={item.title}
+								className='flex flex-col gap-3 rounded-lg border border-border bg-surface p-6'
+							>
+								<div className='flex items-center gap-3'>
+									<Icon className='size-5 text-brand' aria-hidden='true' />
+									<h3 className='text-xl font-semibold'>{item.title}</h3>
+								</div>
+								<p className='flex-1 text-base text-muted-foreground'>
+									{item.description}
+								</p>
+								<Button variant='rounded' href={item.link} className='self-start'>
+									{item.button}
+								</Button>
+							</li>
+						);
+					})}
+				</ul>
 			</div>
 		</section>
 	);

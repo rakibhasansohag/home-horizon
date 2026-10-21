@@ -1,8 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import Marquee from 'react-fast-marquee';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
-import { FaStar, FaRegStar } from 'react-icons/fa6';
+import { Star } from 'lucide-react';
 import useAxios from '../../hooks/useAxios';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -20,61 +17,56 @@ export default function LatestUserReviews() {
 	if (isLoading || !reviews.length) return null;
 
 	return (
-		<section className='px-4 py-16 bg-background dark:bg-input '>
-			<h2 className='text-3xl font-bold text-center mb-10'>
-				Latest User Reviews
-			</h2>
-
-			<Marquee
-				pauseOnHover
-				gradient={false}
-				speed={45}
-				className='overflow-hidden'
-			>
-				{reviews.map((review, idx) => (
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.4, delay: idx * 0.1 }}
-						key={review._id}
-						className='mx-4 w-[20rem] bg-background shadow-md rounded-xl border border-border p-4 space-y-3'
-					>
-						{/* Avatar & Info */}
-						<div className='flex items-center gap-3'>
-							<Avatar className='w-10 h-10'>
-								<AvatarImage src={review?.userImage} />
-								<AvatarFallback>
-									{review.userName?.charAt(0).toUpperCase() || 'U'}
-								</AvatarFallback>
-							</Avatar>
-							<div>
-								<p className='font-semibold text-foreground'>
-									{review.userName}
-								</p>
-								<p className='text-xs text-muted-foreground'>
-									{review.userEmail}
-								</p>
+		<section className='bg-paper py-16'>
+			<div className='section'>
+				<h2 className='font-display text-3xl'>Latest User Reviews</h2>
+				<ul className='mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+					{reviews.map((review) => (
+						<li
+							key={review._id}
+							className='flex flex-col gap-3 rounded-lg border border-border bg-surface p-4'
+						>
+							<div className='flex items-center gap-3'>
+								<Avatar className='size-10'>
+									<AvatarImage src={review?.userImage} alt='' />
+									<AvatarFallback>
+										{review.userName?.charAt(0).toUpperCase() || 'U'}
+									</AvatarFallback>
+								</Avatar>
+								<div className='min-w-0'>
+									<p className='truncate font-semibold text-foreground'>
+										{review.userName}
+									</p>
+									<p className='truncate text-sm text-muted-foreground'>
+										{review.userEmail}
+									</p>
+								</div>
 							</div>
-						</div>
 
-						{/* Star Rating */}
-						<div className='flex gap-1 text-warning'>
-							{[...Array(5)].map((_, i) =>
-								i < review.rating ? (
-									<FaStar key={i} className='w-4 h-4' />
-								) : (
-									<FaRegStar key={i} className='w-4 h-4 text-line' />
-								),
-							)}
-						</div>
+							{Number.isFinite(Number(review.rating)) ? (
+								<p className='flex items-center gap-1 text-warning'>
+									<span className='sr-only'>{review.rating} out of 5</span>
+									{[...Array(5)].map((_, i) => (
+										<Star
+											key={i}
+											className={
+												i < review.rating
+													? 'size-4 fill-warning text-warning'
+													: 'size-4 text-line'
+											}
+											aria-hidden='true'
+										/>
+									))}
+								</p>
+							) : null}
 
-						{/* Review Text */}
-						<p className='text-sm text-muted-foreground line-clamp-4'>
-							“{review.reviewText}”
-						</p>
-					</motion.div>
-				))}
-			</Marquee>
+							<p className='line-clamp-4 text-base text-foreground'>
+								{review.reviewText}
+							</p>
+						</li>
+					))}
+				</ul>
+			</div>
 		</section>
 	);
 }

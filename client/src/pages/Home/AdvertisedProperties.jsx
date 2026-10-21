@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import useAxios from '../../hooks/useAxios';
 import { Link } from 'react-router';
 import PropertyCard from '@/components/Shared/PropertyCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdvertisedProperties() {
 	const axiosInstance = useAxios();
@@ -15,15 +16,25 @@ export default function AdvertisedProperties() {
 		},
 	});
 
-	if (isLoading) return <p>Loading advertised properties...</p>;
+	if (isLoading) {
+		return (
+			<section className='bg-paper py-16'>
+				<div className='section grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+					{Array.from({ length: 6 }).map((_, i) => (
+						<Skeleton key={i} className='aspect-[4/3] w-full rounded-lg' />
+					))}
+				</div>
+			</section>
+		);
+	}
 
 	if (!properties.length) return null;
 
 	return (
-		<section className='px-4 py-16 bg-background'>
-			<div className='space-y-4 section'>
-				<h2 className='text-2xl font-semibold mb-10'>Advertised Properties</h2>
-				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+		<section className='bg-paper py-16'>
+			<div className='section'>
+				<h2 className='font-display text-3xl'>Advertised Properties</h2>
+				<div className='mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
 					{properties.map((p) => (
 						<PropertyCard key={p._id} property={p}>
 							<Link

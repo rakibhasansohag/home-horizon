@@ -1,4 +1,3 @@
-import React from 'react';
 import recommendationImg from '@/assets/recomand.webp';
 import useAuth from '@/hooks/useAuth';
 
@@ -22,58 +21,56 @@ function Recommendations({ searchQuery = '' }) {
 	const { user } = useAuth();
 
 	return (
-		<div className='bg-surface dark:bg-background py-10'>
-			<div className='section flex gap-6 justify-between md:flex-row flex-col items-center'>
-				<div className='w-full md:w-1/2'>
-					{/* Not logged in */}
+		<section className='border-b border-border bg-paper py-16'>
+			<div className='section grid items-center gap-8 md:grid-cols-2'>
+				<div>
 					{!user ? (
-						<div className='md:text-left md:flex flex-col justify-center items-center '>
-							<h2 className='text-2xl font-bold mb-2'>
+						<div className='max-w-md'>
+							<h2 className='font-display text-3xl'>
 								Get home recommendations
 							</h2>
-							<p className='text-muted-foreground mb-4'>
+							<p className='mt-3 text-base text-muted-foreground'>
 								Sign in for a more personalized experience.
 							</p>
-							<Button variant='outline'>
-								<Link to={'/auth/login'}>Sign In</Link>
+							<Button variant='outline' asChild className='mt-6'>
+								<Link to='/auth/login'>Sign In</Link>
 							</Button>
 						</div>
 					) : (
 						<>
-							{/* Logged in */}
 							{searchQuery ? (
 								<>
 									{/* TODO : Will updated this after completing the project need lot of backend logic in this right now it' going to be static */}
-									<h3 className='text-xl font-semibold mb-4'>
+									<h3 className='font-display text-2xl'>
 										Recommended homes based on your search
 									</h3>
 									<Swiper
-										spaceBetween={20}
-										slidesPerView={1.2}
+										className='mt-4'
+										spaceBetween={16}
+										slidesPerView={1.15}
 										breakpoints={{
 											640: { slidesPerView: 2 },
-											1024: { slidesPerView: 2.2 },
+											1024: { slidesPerView: 2 },
 										}}
 										navigation
 										modules={[Navigation]}
 									>
 										{dummyHomes.map((home, idx) => (
 											<SwiperSlide key={idx}>
-												<div className='rounded-lg overflow-hidden border bg-card hover:shadow-md transition'>
+												<div className='overflow-hidden rounded-lg border border-border bg-surface'>
 													<img
 														src={home.img}
-														alt='home'
-														className='w-full h-44 object-cover'
+														alt='Large house with a lawn'
+														className='aspect-[4/3] w-full object-cover'
 													/>
-													<div className='p-4'>
-														<p className='font-semibold text-lg'>
+													<div className='space-y-1 p-4'>
+														<p className='text-xl font-semibold tabular-nums'>
 															{home.price}
 														</p>
 														<p className='text-sm text-muted-foreground'>
-															{home.beds} bd | {home.baths} ba | {home.sqft}{' '}
-															sqft
+															{home.beds} bd · {home.baths} ba · {home.sqft} sqft
 														</p>
-														<p className='text-xs text-muted-foreground'>
+														<p className='text-sm text-muted-foreground'>
 															{home.type}
 														</p>
 													</div>
@@ -83,11 +80,11 @@ function Recommendations({ searchQuery = '' }) {
 									</Swiper>
 								</>
 							) : (
-								<div className='flex items-center justify-center flex-col'>
-									<h3 className='text-xl font-semibold mb-2'>
+								<div className='max-w-md'>
+									<h3 className='font-display text-3xl'>
 										Recommendations underway
 									</h3>
-									<p className='text-muted-foreground max-w-sm'>
+									<p className='mt-3 text-base text-muted-foreground'>
 										Search and save a few homes you like and we’ll find
 										recommendations for you.
 									</p>
@@ -97,16 +94,13 @@ function Recommendations({ searchQuery = '' }) {
 					)}
 				</div>
 
-				{/* Right - image */}
-				<div className='w-full md:w-1/2'>
-					<img
-						src={recommendationImg}
-						alt='recommendation'
-						className='w-full h-auto max-w-md mx-auto'
-					/>
-				</div>
+				<img
+					src={recommendationImg}
+					alt='Sample recommendation cards laid over a brick house'
+					className='mx-auto w-full max-w-md object-contain'
+				/>
 			</div>
-		</div>
+		</section>
 	);
 }
 
