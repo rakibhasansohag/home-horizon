@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import PropertyCard from '@/components/Shared/PropertyCard';
+import { formatMoney } from '@/components/Shared/PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router';
+import { cn } from '@/lib/utils';
 import useAxios from '../../hooks/useAxios';
 import MapView from './MapView';
 
@@ -24,6 +25,7 @@ export default function AllProperties() {
 	const [forceFetch, setForceFetch] = useState(false);
 
 	const cardRefs = useRef({});
+	const selectFromMap = useRef(false);
 
 	const { data: properties = [], isLoading } = useQuery({
 		queryKey: ['all-properties', search, sort, bounds, forceFetch],
@@ -49,13 +51,18 @@ export default function AllProperties() {
 		setSort((prev) => (prev === 'asc' ? 'desc' : 'asc'));
 	};
 
+	const selectProperty = (id, fromMap = false) => {
+		selectFromMap.current = fromMap;
+		setActiveId(id);
+	};
+
 	useEffect(() => {
-		if (activeId && cardRefs.current[activeId]) {
-			cardRefs.current[activeId].scrollIntoView({
-				behavior: 'smooth',
-				block: 'center', // scroll so card is centered vertically
-			});
-		}
+		if (!activeId || !selectFromMap.current) return;
+		selectFromMap.current = false;
+		cardRefs.current[activeId]?.scrollIntoView({
+			behavior: 'smooth',
+			block: 'nearest',
+		});
 	}, [activeId]);
 
 	useEffect(() => {
@@ -95,27 +102,63 @@ export default function AllProperties() {
 						? [...Array(6)].map((_, i) => (
 								<Skeleton key={i} className='h-28 w-full rounded-lg' />
 						  ))
-						: properties.map((prop) => (
-								<div
-									key={prop._id}
-									ref={(el) => (cardRefs.current[prop._id] = el)}
-									onClick={() => setActiveId(prop._id)}
-								>
-									<PropertyCard
-										compact
-										property={prop}
-										selected={activeId === prop._id}
+						: properties.map((prop) => {
+								const selected = activeId === prop._id;
+								const image = prop.images?.[0]?.url;
+								const price = `${formatMoney(prop.minPrice)}${
+									prop.maxPrice != null &&
+									String(prop.maxPrice) !== String(prop.minPrice)
+										? ` – ${formatMoney(prop.maxPrice)}`
+										: ''
+								}`;
+								return (
+									<article
+										key={prop._id}
+										ref={(el) => (cardRefs.current[prop._id] = el)}
+										onMouseEnter={() => selectProperty(prop._id)}
+										onClick={() => selectProperty(prop._id)}
+										className={cn(
+											'flex cursor-pointer gap-3 rounded-lg border bg-surface p-2 transition-colors duration-200',
+											selected
+												? 'border-brand bg-brand-soft'
+												: 'border-border hover:border-brand',
+										)}
 									>
-										<Link
-											to={`/all-properties/${prop._id}`}
-											className='inline-flex min-h-11 items-center text-base font-medium text-brand transition-colors duration-200 hover:underline'
-											onClick={(e) => e.stopPropagation()}
-										>
-											View Details
-										</Link>
-									</PropertyCard>
-								</div>
-						  ))}
+										{image ? (
+											<img
+												src={image}
+												alt={prop.title || 'Property'}
+												loading='lazy'
+												className='h-20 w-24 shrink-0 rounded-md object-cover'
+											/>
+										) : (
+											<div className='h-20 w-24 shrink-0 rounded-md bg-muted' />
+										)}
+										<div className='flex min-w-0 flex-1 flex-col justify-center gap-0.5 py-1'>
+											<h2 className='truncate text-base font-semibold'>
+												{prop.title || 'Property'}
+											</h2>
+											{prop.location ? (
+												<p className='truncate text-sm text-muted-foreground'>
+													{prop.location}
+												</p>
+											) : null}
+											<div className='mt-1 flex items-center justify-between gap-3'>
+												<p className='truncate text-sm font-semibold tabular-nums'>
+													{price}
+												</p>
+												<Link
+													to={`/all-properties/${prop._id}`}
+													onClick={(event) => event.stopPropagation()}
+													className='shrink-0 text-sm font-medium text-brand transition-colors duration-200 hover:underline'
+												>
+													Details
+												</Link>
+											</div>
+										</div>
+									</article>
+								);
+						  })}
 					{!isLoading && properties.length === 0 && (
 						<div className='col-span-full text-center text-muted-foreground py-10'>
 							<p className='text-lg'>No properties found in this location.</p>
@@ -142,7 +185,7 @@ export default function AllProperties() {
 					<MapView
 						properties={properties}
 						onBoundsChange={setBounds}
-						onMarkerClick={setActiveId}
+						onMarkerClick={(id) => selectProperty(id, true)}
 						activeId={activeId}
 					/>
 				</div>

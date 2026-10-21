@@ -62,11 +62,11 @@ export default function Header() {
 				onClick={() => setOpen(false)}
 				className={({ isActive }) =>
 					cn(
-						'inline-flex min-h-11 items-center rounded-md px-3 text-base transition-colors duration-200',
+						'inline-flex min-h-11 items-center rounded-full px-4 text-base transition-colors duration-200',
 						stacked && 'w-full',
 						isActive
 							? 'bg-brand-soft font-medium text-brand'
-							: 'text-foreground hover:text-brand',
+							: 'text-foreground hover:bg-brand-soft hover:text-brand',
 					)
 				}
 			>
@@ -75,20 +75,24 @@ export default function Header() {
 		));
 
 	return (
-		<header className='sticky top-0 z-50 border-b border-border bg-paper'>
-			<div className='section flex h-16 items-center justify-between gap-4'>
-				<Link to='/' className='text-xl font-semibold text-foreground'>
-					Home<span className='text-brand'>Horizon</span>
+		<header className='sticky top-0 z-50 bg-background px-3 py-3'>
+			<div className='section flex h-14 items-center justify-between gap-3 rounded-full border border-border bg-paper px-3 md:grid md:grid-cols-[1fr_auto_1fr] md:px-5'>
+				<Link to='/' className='text-xl font-semibold text-brand'>
+					HomeHorizon
 				</Link>
 
-				<nav className='hidden items-center gap-1 md:flex' aria-label='Primary'>
+				<nav
+					className='hidden items-center justify-center gap-1 md:flex'
+					aria-label='Primary'
+				>
 					{renderLinks(false)}
 				</nav>
 
-				<div className='flex items-center gap-2'>
+				<div className='flex items-center justify-end gap-2'>
 					<Button
 						variant='outline'
 						size='icon'
+						className='rounded-full'
 						onClick={toggleTheme}
 						aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
 					>
@@ -132,7 +136,7 @@ export default function Header() {
 					<Button
 						variant='ghost'
 						size='icon'
-						className='md:hidden'
+						className='rounded-full md:hidden'
 						aria-expanded={open}
 						aria-label={open ? 'Close menu' : 'Open menu'}
 						onClick={() => setOpen((value) => !value)}
@@ -144,7 +148,7 @@ export default function Header() {
 
 			{open && (
 				<nav
-					className='border-t border-border bg-paper px-4 py-2 md:hidden'
+					className='section mt-2 rounded-lg border border-border bg-paper px-3 py-2 md:hidden'
 					aria-label='Mobile'
 				>
 					<div className='flex flex-col'>{renderLinks(true)}</div>

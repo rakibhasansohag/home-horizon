@@ -231,6 +231,22 @@ button {
 	border: none;
 }
 
+.hh-map-dark .leaflet-tile-pane {
+	filter: invert(100%) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: var(--surface);
+	color: var(--ink);
+	border: 1px solid var(--line);
+	box-shadow: none;
+}
+
+.leaflet-popup-content-wrapper {
+	border-radius: 8px;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
 	width: 8px;
 	height: 8px;
