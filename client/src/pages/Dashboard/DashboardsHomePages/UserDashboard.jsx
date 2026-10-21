@@ -1,12 +1,8 @@
 import PropertyCard from '../Components/PropertyCard';
 import GlobalLoading from '@/components/Shared/GlobalLoading';
 import useUserDashboard from '@/hooks/useUserDashboard';
-import {
-	FaShoppingCart,
-	FaHeart,
-	FaMoneyBillWave,
-	FaClock,
-} from 'react-icons/fa';
+import { Clock, Heart, ShoppingBag, Wallet } from 'lucide-react';
+import { Link } from 'react-router';
 import BoughtPropertyCard from '../Components/BoughtPropertyCard';
 import PendingPropertyCard from '../Components/PendingPropertyCard';
 
@@ -17,20 +13,19 @@ const UserDashboard = () => {
 	if (error) return <p>Error: {error.message}</p>;
 
 	return (
-		<div className='space-y-6 p-6'>
-			{/* User Info */}
-			<div className='bg-background dark:bg-card shadow-lg rounded-xl p-6 flex flex-col sm:flex-row items-center gap-6 border border-card-foreground/10'>
+		<div className='space-y-8'>
+			<div className='flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 sm:flex-row'>
 				<img
 					src={dashboard.user.avatar || '/default-avatar.png'}
-					alt='avatar'
-					className='w-24 h-24 rounded-full object-cover ring-2 ring-brand ring-offset-4 ring-offset-background'
+					alt=''
+					className='size-16 rounded-full object-cover'
 				/>
 				<div className='text-center sm:text-left'>
-					<h2 className='text-3xl font-bold tracking-tight text-foreground'>
-						Welcome, {dashboard.user.name}!
+					<h2 className='font-display text-3xl text-foreground'>
+						Welcome, {dashboard.user.name}
 					</h2>
-					<p className='text-lg text-muted-foreground mt-1'>
-						Role: {dashboard.user.role}
+					<p className='mt-1 text-base capitalize text-muted-foreground'>
+						{dashboard.user.role}
 					</p>
 				</div>
 			</div>
@@ -40,22 +35,22 @@ const UserDashboard = () => {
 				<StatBox
 					title='Bought'
 					value={dashboard.stats.boughtCount}
-					icon={FaShoppingCart}
+					icon={ShoppingBag}
 				/>
 				<StatBox
 					title='Wishlist'
 					value={dashboard.stats.wishlistCount}
-					icon={FaHeart}
+					icon={Heart}
 				/>
 				<StatBox
 					title='Pending Offers'
 					value={dashboard.stats.pendingOffers}
-					icon={FaClock}
+					icon={Clock}
 				/>
 				<StatBox
 					title='Total Spent'
-					value={`$${dashboard.stats.totalSpent.toLocaleString()}`}
-					icon={FaMoneyBillWave}
+					value={`৳${dashboard.stats.totalSpent.toLocaleString()}`}
+					icon={Wallet}
 				/>
 			</div>
 
@@ -80,38 +75,33 @@ const UserDashboard = () => {
 };
 
 const StatBox = ({ title, value, icon: Icon }) => (
-	<div className='relative overflow-hidden bg-card rounded-xl p-6 shadow-md transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl group'>
-		{/* Animated Gradient Border */}
-		<div className='absolute inset-0 bg-brand-soft opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-
-		<div className='relative z-10'>
-			<div className='flex items-center gap-3'>
-				{Icon && <Icon className='w-8 h-8 text-brand' />}
-				<p className='text-sm text-muted-foreground uppercase tracking-wide font-medium'>
-					{title}
-				</p>
-			</div>
-			<p className='text-4xl font-extrabold text-foreground mt-2'>{value}</p>
+	<div className='rounded-lg border border-border bg-surface p-4 transition-colors duration-200 hover:border-brand'>
+		<div className='flex items-center gap-2 text-sm text-muted-foreground'>
+			{Icon ? <Icon className='size-4 text-brand' aria-hidden='true' /> : null}
+			{title}
 		</div>
+		<p className='mt-2 text-2xl font-semibold tabular-nums text-foreground'>
+			{value}
+		</p>
 	</div>
 );
 
 // eslint-disable-next-line no-unused-vars
 const Section = ({ title, properties, CardComponent = PropertyCard }) => (
 	<div>
-		<h3 className='text-2xl font-bold mb-3 border-b-2 border-brand/20 pb-2'>
-			{title}
-		</h3>
+		<h3 className='mb-3 text-xl font-semibold'>{title}</h3>
 		{properties?.length > 0 ? (
-			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+			<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 				{properties?.map((property) => (
 					<CardComponent key={property._id} property={property} />
 				))}
 			</div>
 		) : (
-			<p className='text-muted-foreground text-center py-8'>
-				<span className='font-semibold'>No {title.toLowerCase()} yet.</span>{' '}
-				Explore listings to get started.
+			<p className='py-6 text-base text-muted-foreground'>
+				No {title.toLowerCase()} yet.{' '}
+				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+					Browse properties
+				</Link>
 			</p>
 		)}
 	</div>

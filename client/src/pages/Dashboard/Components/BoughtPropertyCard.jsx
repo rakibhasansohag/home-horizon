@@ -9,13 +9,13 @@ import {
 
 export default function BoughtPropertyCard({ property }) {
 	return (
-		<div className='group relative bg-card rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-border/50 flex flex-col h-full'>
+		<div className='flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-brand'>
 			{/* Image */}
 			<div className='relative w-full h-48 flex-shrink-0'>
 				<img
 					src={property.images?.[0]?.url || '/placeholder.jpg'}
 					alt={property.title}
-					className='w-full h-full object-cover transition-transform duration-300 group-hover:scale-105'
+					className='h-full w-full object-cover'
 				/>
 			</div>
 

@@ -1,5 +1,5 @@
+import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { FaArrowRight, FaTh } from 'react-icons/fa';
 
 export default function ViewAllCard({
 	to = '#',
@@ -10,27 +10,17 @@ export default function ViewAllCard({
 	return (
 		<Link
 			to={to}
-			className='group block bg-card rounded-xl shadow-lg border border-border/50 overflow-hidden h-full transition-transform duration-300 hover:-translate-y-1'
+			className='flex h-full flex-col justify-center rounded-lg border border-border bg-surface p-6 transition-colors duration-200 hover:border-brand hover:bg-brand-soft'
 			aria-label={label}
 		>
-			<div className='p-6 h-full flex flex-col items-center justify-center text-center'>
-				<div className='flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-brand mb-4 transition-transform duration-300 group-hover:scale-105'>
-					<FaTh className='w-6 h-6' />
-				</div>
-
-				<h4 className='text-lg font-semibold text-foreground mb-2'>{label}</h4>
-
-				<p className='text-sm text-muted-foreground'>
-					{count > 0
-						? `Showing ${showCount} — ${count} total`
-						: 'No more items'}
-				</p>
-
-				<div className='mt-4 inline-flex items-center gap-2 text-brand font-medium'>
-					<span>Open</span>
-					<FaArrowRight />
-				</div>
-			</div>
+			<h4 className='text-lg font-semibold text-foreground'>{label}</h4>
+			<p className='mt-2 text-sm text-muted-foreground'>
+				{count > 0 ? `Showing ${showCount} of ${count}` : 'No more items'}
+			</p>
+			<span className='mt-4 inline-flex items-center gap-2 font-medium text-brand'>
+				Open
+				<ArrowRight className='size-4' />
+			</span>
 		</Link>
 	);
 }

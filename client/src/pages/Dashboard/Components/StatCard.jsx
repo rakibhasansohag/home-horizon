@@ -2,11 +2,11 @@ import React from 'react';
 
 export default function StatCard({ title, value, subtitle }) {
 	return (
-		<div className='bg-card rounded-xl p-4 shadow-md'>
+		<div className='rounded-lg border border-border bg-surface p-4'>
 			<p className='text-sm text-muted-foreground'>{title}</p>
-			<div className='text-2xl font-bold mt-2'>{value}</div>
+			<div className='mt-2 text-2xl font-semibold tabular-nums'>{value}</div>
 			{subtitle && (
-				<div className='text-xs text-muted-foreground mt-1'>{subtitle}</div>
+				<div className='mt-1 text-sm text-muted-foreground'>{subtitle}</div>
 			)}
 		</div>
 	);

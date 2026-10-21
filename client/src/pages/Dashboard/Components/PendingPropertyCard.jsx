@@ -4,7 +4,7 @@ import { FaMapMarkerAlt, FaUser, FaDollarSign, FaClock } from 'react-icons/fa';
 export default function PendingPropertyCard({ property }) {
 	console.log(property);
 	return (
-		<div className='group relative bg-card rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 overflow-hidden border border-border/50 flex flex-col h-full'>
+		<div className='flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-brand'>
 			{/* Image */}
 			<div className='relative w-full h-48 flex-shrink-0'>
 				<img
@@ -14,7 +14,7 @@ export default function PendingPropertyCard({ property }) {
 						'/placeholder.jpg'
 					}
 					alt={property.property.title}
-					className='w-full h-full object-cover transition-transform duration-300 group-hover:scale-105'
+					className='h-full w-full object-cover'
 				/>
 			</div>
 

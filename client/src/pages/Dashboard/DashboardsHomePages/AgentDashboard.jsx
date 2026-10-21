@@ -44,7 +44,7 @@ export default function AgentDashboard() {
 	const totalCount = listings?.length ?? 0;
 
 	return (
-		<div className='p-6 space-y-6'>
+		<div className='space-y-6'>
 			<div className='flex items-center justify-between w-full'>
 				<div>
 					<h1 className='text-2xl font-bold'>Welcome back, {agent.name}</h1>
@@ -54,11 +54,12 @@ export default function AgentDashboard() {
 				</div>
 				<img
 					src={agent.avatar || '/placeholder-avatar.png'}
-					className='w-12 h-12 rounded-full'
+					alt=''
+					className='size-12 rounded-full object-cover'
 				/>
 			</div>
 			<div className='grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full '>
-				<div className='col-span-1 sm:col-span-1 lg:col-span-2 p-4 bg-card rounded-xl'>
+				<div className='col-span-1 rounded-lg border border-border bg-surface p-4 sm:col-span-1 lg:col-span-2'>
 					<div className='text-sm text-muted-foreground'>
 						Earnings (This month)
 					</div>
@@ -66,7 +67,7 @@ export default function AgentDashboard() {
 						{stats.earningsMonth?.toLocaleString()}
 					</div>
 				</div>
-				<div className='col-span-1 sm:col-span-1 lg:col-span-2 p-4 bg-card rounded-xl'>
+				<div className='col-span-1 rounded-lg border border-border bg-surface p-4 sm:col-span-1 lg:col-span-2'>
 					<div className='text-sm text-muted-foreground'>
 						Earnings (Lifetime)
 					</div>
@@ -74,7 +75,7 @@ export default function AgentDashboard() {
 						{stats.earningsLifetime?.toLocaleString()}
 					</div>
 				</div>
-				<div className='col-span-1 sm:col-span-1 lg:col-span-2 p-4 bg-card rounded-xl'>
+				<div className='col-span-1 rounded-lg border border-border bg-surface p-4 sm:col-span-1 lg:col-span-2'>
 					<div className='text-sm text-muted-foreground'>Active listings</div>
 					<div className='text-2xl font-bold'>{stats.activeListingsCount}</div>
 				</div>
@@ -82,7 +83,7 @@ export default function AgentDashboard() {
 
 			{/* All Active Listing */}
 			<div className='grid  xl:grid-cols-[2fr_1fr] gap-6'>
-				<div className='bg-card p-4 rounded-xl shadow order-1 xl:order-none'>
+				<div className='rounded-lg border border-border bg-surface p-4 order-1 xl:order-none'>
 					<h3 className='font-semibold mb-3'>
 						Active Listings{' '}
 						{totalCount ? `(Showing ${previews.length} of ${totalCount})` : ''}
@@ -108,7 +109,7 @@ export default function AgentDashboard() {
 					</div>
 				</div>
 
-				<div className='bg-card p-4 rounded-xl shadow'>
+				<div className='rounded-lg border border-border bg-surface p-4'>
 					<h3 className='font-semibold mb-3'>Earnings (last 6 months)</h3>
 					<div style={{ width: '100%', height: 160 }}>
 						<EarningsChart data={earningsSparkline} />
@@ -143,7 +144,7 @@ export default function AgentDashboard() {
 			</div>
 
 			{/* // Recent Leads */}
-			<div className='bg-card p-4 rounded-xl shadow'>
+			<div className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='font-semibold mb-3'>Recent Leads ({leads.length}) </h3>
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
 					{take5(leads).map((lead) => (
@@ -177,7 +178,7 @@ export default function AgentDashboard() {
 				</div>
 			</div>
 			{/* // Sold */}
-			<div className='bg-card p-4 rounded-xl shadow'>
+			<div className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='font-semibold mb-3'>Recent Sold</h3>
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
 					{take5(sold).map((s) => (

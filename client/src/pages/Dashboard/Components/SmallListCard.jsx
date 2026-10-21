@@ -19,7 +19,7 @@ export default function SmallListCard({ items = [], type = 'generic' }) {
 							/>
 							<div>
 								<div className='font-medium'>{it.name || it.email}</div>
-								<div className='text-xs text-muted-foreground'>{it.email}</div>
+								<div className='text-sm text-muted-foreground'>{it.email}</div>
 							</div>
 						</div>
 					);
@@ -34,7 +34,7 @@ export default function SmallListCard({ items = [], type = 'generic' }) {
 							/>
 							<div>
 								<div className='font-medium'>{it.name}</div>
-								<div className='text-xs text-muted-foreground'>
+								<div className='text-sm text-muted-foreground'>
 									{(it.total || 0).toLocaleString()} earned
 								</div>
 							</div>
@@ -55,12 +55,12 @@ export default function SmallListCard({ items = [], type = 'generic' }) {
 								>
 									{it.propertyTitle || it.propertyId || '—'}
 								</Link>
-								<div className='text-xs text-muted-foreground'>
+								<div className='text-sm text-muted-foreground'>
 									{it.buyerName || it.buyerId}
 								</div>
 							</div>
 							<div className='font-semibold'>
-								${(it.amount || 0).toLocaleString()}
+								৳{(it.amount || 0).toLocaleString()}
 							</div>
 						</div>
 					);

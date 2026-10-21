@@ -30,7 +30,7 @@ export default function AdminDashboard() {
 	} = dashboard;
 
 	return (
-		<div className='p-6 space-y-6'>
+		<div className='space-y-6'>
 			<div className='grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-6 gap-4'>
 				<StatCard title='Users' value={totals.users} subtitle='Total users' />
 				<StatCard
@@ -55,13 +55,13 @@ export default function AdminDashboard() {
 				/>
 				<StatCard
 					title='Revenue'
-					value={`$${(totals.revenue || 0).toLocaleString()}`}
+					value={`৳${(totals.revenue || 0).toLocaleString()}`}
 					subtitle='Lifetime'
 				/>
 			</div>
 
 			<div className='grid lg:grid-cols-[2fr_1fr] gap-6'>
-				<div className='bg-card p-4 rounded-xl shadow'>
+				<div className='rounded-lg border border-border bg-surface p-4'>
 					<h3 className='font-semibold mb-3'>Earnings (last 6 months)</h3>
 					<div style={{ width: '100%', height: 200 }}>
 						<RevenueChart data={revenueSparkline} />
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
 					</div>
 				</div>
 
-				<div className='bg-card p-4 rounded-xl shadow space-y-4'>
+				<div className='rounded-lg border border-border bg-surface p-4 space-y-4'>
 					<div>
 						<h4 className='font-semibold'>Top Agents</h4>
 						<SmallListCard items={topAgents} type='agents' />
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
 			</div>
 
 			<div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
-				<div className='bg-card p-4 rounded-xl shadow'>
+				<div className='rounded-lg border border-border bg-surface p-4'>
 					<h4 className='font-semibold mb-3'>Recent Users</h4>
 					<SmallListCard items={recentUsers} type='users' />
 					<div className='mt-2'>
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
 					</div>
 				</div>
 
-				<div className='bg-card p-4 rounded-xl shadow col-span-2'>
+				<div className='rounded-lg border border-border bg-surface p-4 col-span-2'>
 					<h4 className='font-semibold mb-3'>Recent Properties</h4>
 					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 						{recentProperties.map((p) => (
