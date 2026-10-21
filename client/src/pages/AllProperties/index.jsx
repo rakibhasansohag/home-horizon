@@ -220,7 +220,13 @@ export default function AllProperties() {
 										)}
 										<div className='flex min-w-0 flex-1 flex-col justify-center gap-0.5 py-1'>
 											<h2 className='truncate text-base font-semibold'>
-												{prop.title || 'Property'}
+												<Link
+													to={`/all-properties/${prop._id}`}
+													onClick={(event) => event.stopPropagation()}
+													className='transition-colors duration-200 hover:text-brand hover:underline'
+												>
+													{prop.title || 'Property'}
+												</Link>
 											</h2>
 											{prop.location ? (
 												<p className='truncate text-sm text-muted-foreground'>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import {
 	Dialog,
 	DialogContent,
@@ -11,11 +11,36 @@ const PREVIEW_COUNT = 5;
 export default function ImageGallery({ images }) {
 	const [open, setOpen] = useState(false);
 	const [active, setActive] = useState(0);
+	const photos = (images || []).filter((image) => image?.url);
 
-	if (!images || images.length === 0) return null;
+	useEffect(() => {
+		if (!open) return undefined;
+		const onKeyDown = (event) => {
+			if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+			event.preventDefault();
+			const direction = event.key === 'ArrowRight' ? 1 : -1;
+			setActive((current) => (current + direction + photos.length) % photos.length);
+		};
+		window.addEventListener('keydown', onKeyDown);
+		return () => window.removeEventListener('keydown', onKeyDown);
+	}, [open, photos.length]);
 
-	const preview = images.slice(0, PREVIEW_COUNT);
-	const hiddenCount = images.length - PREVIEW_COUNT;
+	if (photos.length === 0) {
+		return (
+			<div className='section pt-6'>
+				<div className='flex min-h-56 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-paper px-6 py-12 text-center'>
+					<ImageOff className='size-8 text-muted-foreground' aria-hidden='true' />
+					<p className='mt-3 text-lg font-semibold'>No photos yet</p>
+					<p className='mt-1 max-w-sm text-sm text-muted-foreground'>
+						This listing does not include any photos.
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+	const preview = photos.slice(0, PREVIEW_COUNT);
+	const hiddenCount = photos.length - PREVIEW_COUNT;
 
 	const openAt = (index) => {
 		setActive(index);
@@ -23,7 +48,7 @@ export default function ImageGallery({ images }) {
 	};
 
 	const step = (direction) => {
-		setActive((current) => (current + direction + images.length) % images.length);
+		setActive((current) => (current + direction + photos.length) % photos.length);
 	};
 
 	return (
@@ -56,7 +81,7 @@ export default function ImageGallery({ images }) {
 									className='relative overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand'
 									aria-label={
 										isOverflowTile
-											? `Open all ${images.length} photos`
+											? `Open all ${photos.length} photos`
 											: `Open photo ${imageIndex + 1}`
 									}
 								>
@@ -81,10 +106,11 @@ export default function ImageGallery({ images }) {
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent className='w-[min(56rem,calc(100%-2rem))] max-w-none gap-3 bg-paper p-4 sm:max-w-none'>
 					<DialogTitle className='pr-10 text-base font-semibold'>
-						Photo {active + 1} of {images.length}
+						Photo {active + 1} of {photos.length}
 					</DialogTitle>
+					<p className='sr-only'>Use the left and right arrow keys to change photos.</p>
 					<img
-						src={images[active].url}
+						src={photos[active].url}
 						alt={`Property photo ${active + 1}`}
 						className='max-h-[65vh] w-full rounded-lg object-contain'
 					/>
@@ -98,7 +124,7 @@ export default function ImageGallery({ images }) {
 							<ChevronLeft />
 						</button>
 						<div className='flex min-w-0 flex-1 gap-2 overflow-x-auto'>
-							{images.map((img, index) => (
+							{photos.map((img, index) => (
 								<button
 									key={`${img.url}-${index}`}
 									type='button'
