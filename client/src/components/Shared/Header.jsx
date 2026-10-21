@@ -62,11 +62,13 @@ export default function Header() {
 				onClick={() => setOpen(false)}
 				className={({ isActive }) =>
 					cn(
-						'inline-flex min-h-11 items-center px-1 text-base font-medium transition-colors duration-200',
+						'inline-flex min-h-11 items-center px-1 text-base font-medium transition-colors duration-300',
 						stacked && 'w-full px-3',
+						!stacked &&
+							'relative before:absolute before:bottom-2 before:left-0 before:h-0.5 before:bg-[oklch(0.55_0.13_250)] before:transition-[width] before:duration-300 dark:before:bg-[oklch(0.75_0.12_250)]',
 						isActive
-							? 'text-[oklch(0.55_0.13_250)] dark:text-[oklch(0.75_0.12_250)]'
-							: 'text-muted-foreground hover:text-[oklch(0.55_0.13_250)] dark:hover:text-[oklch(0.75_0.12_250)]',
+							? 'text-[oklch(0.55_0.13_250)] before:w-full dark:text-[oklch(0.75_0.12_250)]'
+							: 'text-muted-foreground before:w-0 hover:text-[oklch(0.55_0.13_250)] hover:before:w-full dark:hover:text-[oklch(0.75_0.12_250)]',
 					)
 				}
 			>

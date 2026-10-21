@@ -28,6 +28,7 @@ export default function LatestUserReviews() {
 				<h2 className='font-display text-3xl'>Latest User Reviews</h2>
 			</div>
 			<Marquee
+				autoFill
 				pauseOnHover
 				gradient={false}
 				speed={32}
@@ -36,23 +37,25 @@ export default function LatestUserReviews() {
 				{preview.map((review) => (
 					<article
 						key={review._id}
-						className='mx-2 w-72 rounded-lg border border-border bg-surface p-4 transition-colors duration-200 hover:border-brand'
+						className='mx-2 flex h-28 w-72 shrink-0 flex-col justify-between rounded-lg border border-border bg-surface p-4'
 					>
+						<p className='line-clamp-2 text-base text-foreground'>
+							{review.reviewText}
+						</p>
 						<div className='flex items-center justify-between gap-3'>
-							<p className='truncate font-semibold'>{review.userName}</p>
+							<p className='truncate text-sm text-muted-foreground'>
+								{review.userName}
+							</p>
 							{Number.isFinite(Number(review.rating)) ? (
-								<p className='flex shrink-0 items-center gap-1 text-sm text-warning'>
+								<p className='flex shrink-0 items-center gap-1 text-sm text-foreground'>
 									<Star
-										className='size-3.5 fill-warning text-warning'
+										className='size-4 fill-brand text-brand'
 										aria-hidden='true'
 									/>
 									<span>{review.rating}/5</span>
 								</p>
 							) : null}
 						</div>
-						<p className='mt-2 line-clamp-2 text-sm text-muted-foreground'>
-							{review.reviewText}
-						</p>
 					</article>
 				))}
 			</Marquee>

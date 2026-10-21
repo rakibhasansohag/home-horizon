@@ -21,9 +21,9 @@ export default function AdvertisedProperties() {
 	if (isLoading) {
 		return (
 			<section className='bg-paper py-16'>
-				<div className='section grid gap-3 sm:grid-cols-2'>
+				<div className='section grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
 					{Array.from({ length: PREVIEW_LIMIT }).map((_, i) => (
-						<Skeleton key={i} className='h-24 w-full rounded-lg sm:h-28' />
+						<Skeleton key={i} className='aspect-[4/3] w-full rounded-lg' />
 					))}
 				</div>
 			</section>
@@ -46,11 +46,10 @@ export default function AdvertisedProperties() {
 						All properties
 					</Link>
 				</div>
-				<div className='mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+				<div className='mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'>
 					{preview.map((p) => (
 						<PropertyCard
 							key={p._id}
-							compact
 							href={`/all-properties/${p._id}`}
 							property={p}
 						/>

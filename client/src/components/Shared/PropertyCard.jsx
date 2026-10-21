@@ -35,8 +35,9 @@ export default function PropertyCard({
 			: ''
 	}`;
 
+	const linked = Boolean(href && !children);
 	const titleNode =
-		href && !compact ? (
+		href && !compact && !linked ? (
 			<Link
 				to={href}
 				onClick={(event) => event.stopPropagation()}
@@ -48,7 +49,7 @@ export default function PropertyCard({
 			<h2
 				className={cn(
 					'font-semibold leading-snug',
-					compact ? 'line-clamp-2 text-base' : 'text-lg',
+					compact ? 'line-clamp-2 text-base' : 'line-clamp-2 text-lg',
 				)}
 			>
 				{title}
@@ -132,7 +133,7 @@ export default function PropertyCard({
 		</article>
 	);
 
-	if (compact && href) {
+	if (linked || (compact && href)) {
 		return (
 			<Link
 				to={href}
