@@ -10,20 +10,19 @@ import { useContext } from 'react';
 import { ThemeContext } from '../../context/ThemeContext';
 
 import L from 'leaflet';
-import markerIconPng from 'leaflet/dist/images/marker-icon.png';
-import markerIconActivePng from 'leaflet/dist/images/marker-icon-2x.png';
 
-const defaultIcon = new L.Icon({
-	iconUrl: markerIconPng,
-	iconSize: [25, 41],
-	iconAnchor: [12, 41],
-});
+function pin(active) {
+	const size = active ? 18 : 14;
+	return new L.DivIcon({
+		className: 'hh-pin',
+		iconSize: [size, size],
+		iconAnchor: [size / 2, size / 2],
+		html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:999px;background:#1F5C4A;border:2px solid #fff;box-shadow:0 0 0 1px #1F5C4A"></span>`,
+	});
+}
 
-const activeIcon = new L.Icon({
-	iconUrl: markerIconActivePng,
-	iconSize: [25, 41],
-	iconAnchor: [12, 41],
-});
+const defaultIcon = pin(false);
+const activeIcon = pin(true);
 
 const MapEvents = ({ onBoundsChange }) => {
 	useMapEvents({

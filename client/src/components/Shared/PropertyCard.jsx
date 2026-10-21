@@ -125,8 +125,8 @@ export default function PropertyCard({
 					</div>
 				) : null}
 				{!compact && badge ? <Badge variant={badge}>{status}</Badge> : null}
-				{!compact && children ? (
-					<div className='mt-auto pt-2'>{children}</div>
+				{children ? (
+					<div className={compact ? 'pt-1' : 'mt-auto pt-2'}>{children}</div>
 				) : null}
 			</div>
 		</article>

@@ -1,5 +1,9 @@
 # HomeHorizon UI audit
 
+Home follow-up: advertised listings request 4 compact cards, not the full catalog. Reviews request 8 and run in a marquee, without email addresses. Cards and service rows use a 200ms border transition.
+
+Phase 4, all properties: title is Fraunces, the list uses the compact card beside a fixed-height map, and pins are the green accent. Search, sort, and View Details still work. No document scroll at a wide desktop.
+
 Phase 4, home: the hero is a left-aligned paper panel on the street photo, with Fraunces at 40px / 56px and a search field that stays inside the screen at 390px. Recommendations sit in a two-column section instead of overlapping the next block. Services are a two-column list, not icon circles. Reviews are a static grid. Advertised prices use grouped taka. Checked at 390, 768, and a wide desktop: no document scroll, no text under 14px, View Details opens a listing. The search box and the four service buttons still do not navigate; that was already true.
 
 Phase 3 shells: public header is a sticky paper bar (desktop links, solid mobile panel, account menu, theme toggle). Footer is four columns of text links; All Properties points at `/all-properties`. Auth layout is a two-column split from 768px up, photo hidden below that. Dashboard sidebar is grouped by role (Account, Buying, Listings, Administration), logout sits in the footer, and the layout header shows the page title. Menu rows and the sidebar trigger are 44px. Checked live as admin at 390 (drawer opens, closes after Manage Users, no document scroll) and at a wide desktop (groups, active item, no document scroll). Auth login checked at 390, 768, and wide: form stays on screen, photo only from 768 up. Tables inside dashboard pages still scroll; that stays for the page pass.

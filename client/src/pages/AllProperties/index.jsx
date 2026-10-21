@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import PropertyCard from '@/components/Shared/PropertyCard';
 import { Input } from '@/components/ui/input';
@@ -74,12 +72,12 @@ export default function AllProperties() {
 	}, []);
 
 	return (
-		<div className='p-6 space-y-6'>
-			<h2 className='text-2xl font-semibold text-foreground'>
+		<div className='section space-y-6 py-10'>
+			<h1 className='font-display text-3xl text-foreground'>
 				All Verified Properties
-			</h2>
+			</h1>
 
-			<div className='flex flex-col md:flex-row gap-4 items-start md:items-center justify-between'>
+			<div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
 				<Input
 					placeholder='Search by location...'
 					value={search}
@@ -91,36 +89,32 @@ export default function AllProperties() {
 				</Button>
 			</div>
 
-			<div className='grid lg:grid-cols-[1fr_2fr] gap-6'>
-				{/* Left: Property Cards */}
-				<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+			<div className='grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]'>
+				<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1'>
 					{isLoading
 						? [...Array(6)].map((_, i) => (
-								<Skeleton key={i} className='h-60 w-full rounded-xl' />
+								<Skeleton key={i} className='h-28 w-full rounded-lg' />
 						  ))
 						: properties.map((prop) => (
-								<motion.div
+								<div
 									key={prop._id}
 									ref={(el) => (cardRefs.current[prop._id] = el)}
-									layout
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.3 }}
 									onClick={() => setActiveId(prop._id)}
 								>
 									<PropertyCard
+										compact
 										property={prop}
 										selected={activeId === prop._id}
 									>
 										<Link
 											to={`/all-properties/${prop._id}`}
-											className='inline-flex min-h-11 items-center text-base font-medium text-brand hover:underline'
+											className='inline-flex min-h-11 items-center text-base font-medium text-brand transition-colors duration-200 hover:underline'
 											onClick={(e) => e.stopPropagation()}
 										>
 											View Details
 										</Link>
 									</PropertyCard>
-								</motion.div>
+								</div>
 						  ))}
 					{!isLoading && properties.length === 0 && (
 						<div className='col-span-full text-center text-muted-foreground py-10'>
@@ -144,7 +138,7 @@ export default function AllProperties() {
 				</div>
 
 				{/* Right: Map (hidden on small screens) */}
-				<div className='hidden lg:block h-[80vh] rounded-xl overflow-hidden sticky top-20'>
+				<div className='sticky top-20 hidden h-[32rem] overflow-hidden rounded-lg border border-border lg:block'>
 					<MapView
 						properties={properties}
 						onBoundsChange={setBounds}

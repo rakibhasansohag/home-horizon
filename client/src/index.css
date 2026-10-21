@@ -226,6 +226,11 @@ button {
 	@apply max-w-7xl container mx-auto px-4 sm:px-2 lg:px-0;
 }
 
+.hh-pin {
+	background: transparent;
+	border: none;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
 	width: 8px;
 	height: 8px;
