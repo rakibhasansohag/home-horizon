@@ -1,7 +1,5 @@
 import { Button } from '@/components/ui/button';
 import PropertyCard from '@/components/Shared/PropertyCard';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
 import { Link } from 'react-router';
 
 import useMyProperties from '@/hooks/useMyProperties';
@@ -29,8 +27,11 @@ export default function MyProperties() {
 
 	if (!properties?.length) {
 		return (
-			<p className='text-center text-muted-foreground mt-10'>
-				No properties found.
+			<p className='text-base text-muted-foreground'>
+				No properties yet.{' '}
+				<Link to='/dashboard/add-property' className='font-medium text-brand hover:underline'>
+					Add a property
+				</Link>
 			</p>
 		);
 	}
@@ -51,12 +52,7 @@ export default function MyProperties() {
 				const isRejected = property.verificationStatus === 'rejected';
 
 				return (
-					<motion.div
-						key={property._id}
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.3 }}
-					>
+					<div key={property._id}>
 						<PropertyCard property={property}>
 							<p className='text-base text-muted-foreground'>
 								{property.bedrooms} bed · {property.bathrooms} bath ·{' '}
@@ -86,7 +82,7 @@ export default function MyProperties() {
 								</Button>
 							</div>
 						</PropertyCard>
-					</motion.div>
+					</div>
 				);
 			})}
 

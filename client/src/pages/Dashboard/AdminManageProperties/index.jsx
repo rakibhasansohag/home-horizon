@@ -11,10 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MdVerified, MdClose, MdHourglassEmpty } from 'react-icons/md';
-import { FaMapMarkerAlt } from 'react-icons/fa';
-import { AiOutlineUser } from 'react-icons/ai';
-import { AiOutlineCheckCircle, AiOutlineStop } from 'react-icons/ai';
+import { BadgeCheck, Ban, CircleCheck, Clock, MapPin, User, X } from 'lucide-react';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import {
 	Tooltip,
@@ -64,9 +61,109 @@ export default function AdminManageProperties() {
 			</div>
 		);
 
+	if (!properties.length) {
+		return (
+			<p className='text-base text-muted-foreground'>
+				No properties to review.
+			</p>
+		);
+	}
+
+	const statusBadge = (status) => {
+		if (status === 'verified') {
+			return (
+				<Badge variant='outline' className='gap-1 border-success text-success'>
+					<BadgeCheck className='size-4' aria-hidden='true' /> Verified
+				</Badge>
+			);
+		}
+		if (status === 'rejected') {
+			return (
+				<Badge variant='outline' className='gap-1 border-danger text-danger'>
+					<X className='size-4' aria-hidden='true' /> Rejected
+				</Badge>
+			);
+		}
+		return (
+			<Badge variant='outline' className='gap-1 border-warning text-warning'>
+				<Clock className='size-4' aria-hidden='true' /> Pending
+			</Badge>
+		);
+	};
+
+	const actions = (prop) =>
+		prop.verificationStatus === 'pending' ? (
+			<div className='flex flex-wrap gap-2'>
+				<Button
+					size='sm'
+					variant='accent'
+					onClick={() => verifyMutation.mutate(prop._id)}
+					disabled={verifyMutation.isLoading}
+				>
+					{verifyMutation.isLoading ? 'Verifying...' : 'Verify'}
+				</Button>
+				<Button
+					size='sm'
+					variant='destructive'
+					onClick={() => rejectMutation.mutate(prop._id)}
+					disabled={rejectMutation.isLoading}
+				>
+					{rejectMutation.isLoading ? 'Rejecting...' : 'Reject'}
+				</Button>
+			</div>
+		) : (
+			<div className='flex items-center gap-2 text-sm font-medium'>
+				{prop.verificationStatus === 'verified' ? (
+					<span className='flex items-center gap-1 text-success'>
+						<CircleCheck className='size-4' aria-hidden='true' /> Done
+					</span>
+				) : (
+					<span className='flex items-center gap-1 text-danger'>
+						<Ban className='size-4' aria-hidden='true' /> Done
+					</span>
+				)}
+			</div>
+		);
+
 	return (
-		<div className='overflow-x-auto bg-background p-6 space-y-4  w-full '>
-			<Table className='!w-full !max-w-7xl shadow-md '>
+		<div className='w-full space-y-3'>
+			<div className='space-y-3 md:hidden'>
+				{properties.map((prop) => (
+					<article
+						key={prop._id}
+						className='space-y-3 rounded-lg border border-border bg-surface p-4'
+					>
+						<div className='flex gap-3'>
+							<img
+								src={prop.images?.[0]?.url}
+								alt={prop.title}
+								className='h-16 w-20 rounded-md object-cover'
+							/>
+							<div className='min-w-0'>
+								<p className='truncate font-medium'>{prop.title}</p>
+								<p className='flex items-center gap-1 text-sm text-muted-foreground'>
+									<MapPin className='size-4 shrink-0' aria-hidden='true' />
+									{prop.location}
+								</p>
+								<p className='text-sm tabular-nums'>
+									৳{parseInt(prop.minPrice).toLocaleString()} – ৳
+									{parseInt(prop.maxPrice).toLocaleString()}
+								</p>
+							</div>
+						</div>
+						<p className='flex items-center gap-2 text-sm'>
+							<User className='size-4 text-muted-foreground' aria-hidden='true' />
+							{prop.agentName}
+						</p>
+						<div className='flex flex-wrap items-center justify-between gap-2'>
+							{statusBadge(prop.verificationStatus)}
+							{actions(prop)}
+						</div>
+					</article>
+				))}
+			</div>
+			<div className='hidden md:block'>
+			<Table className='w-full'>
 				<TableHeader>
 					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
 						<TableHead>Image</TableHead>
@@ -105,92 +202,41 @@ export default function AdminManageProperties() {
 									}`}</TooltipContent>
 								</Tooltip>
 							</TableCell>
-							<TableCell className='flex items-center gap-1 text-muted-foreground'>
-								<FaMapMarkerAlt />
-								{prop.location}
+							<TableCell className='text-muted-foreground'>
+								<span className='flex items-center gap-1'>
+									<MapPin className='size-4' aria-hidden='true' />
+									{prop.location}
+								</span>
 							</TableCell>
-							<TableCell className='text-foreground'>
-								{parseInt(prop.minPrice).toLocaleString()} -{' '}
-								{parseInt(prop.maxPrice).toLocaleString()} BDT
+							<TableCell className='tabular-nums text-foreground'>
+								৳{parseInt(prop.minPrice).toLocaleString()} – ৳
+								{parseInt(prop.maxPrice).toLocaleString()}
 							</TableCell>
 
 							{/* TODO : IN FUTURE we will be adding more tooltip here like how many propeties that user added and aslo how many properties are verified or rejected and also after clicking  and we will be adding a link to visit that user profile only admin can visit that page 
 							 =>lazy-fetch that info only on hover for better perf */}
 
-							<TableCell className='flex items-center gap-2 text-foreground'>
-								<AiOutlineUser className='text-lg' />
-								<div className='leading-tight'>
-									<p>{prop.agentName}</p>
-									<p className='text-xs text-muted-foreground'>
-										{prop.agentEmail}
-									</p>
+							<TableCell className='text-foreground'>
+								<div className='flex items-center gap-2'>
+									<User className='size-4' aria-hidden='true' />
+									<div className='leading-tight'>
+										<p>{prop.agentName}</p>
+										<p className='text-sm text-muted-foreground'>
+											{prop.agentEmail}
+										</p>
+									</div>
 								</div>
 							</TableCell>
 							<TableCell className='text-foreground'>
 								{prop.propertyType}
 							</TableCell>
-							<TableCell>
-								{prop.verificationStatus === 'verified' ? (
-									<Badge
-										variant='outline'
-										className='flex items-center gap-1 text-success border-success'
-									>
-										<MdVerified /> Verified
-									</Badge>
-								) : prop.verificationStatus === 'rejected' ? (
-									<Badge
-										variant='outline'
-										className='flex items-center gap-1 text-danger border-red-600'
-									>
-										<MdClose /> Rejected
-									</Badge>
-								) : (
-									<Badge
-										variant='outline'
-										className='flex items-center gap-1 text-warning border-yellow-600'
-									>
-										<MdHourglassEmpty /> Pending
-									</Badge>
-								)}
-							</TableCell>
-							<TableCell>
-								{prop.verificationStatus === 'pending' ? (
-									<div className='flex gap-2'>
-										<Button
-											size='sm'
-											variant='success'
-											onClick={() => verifyMutation.mutate(prop._id)}
-											disabled={verifyMutation.isLoading}
-										>
-											{verifyMutation.isLoading ? 'Verifying...' : 'Verify'}
-										</Button>
-										<Button
-											size='sm'
-											variant='destructive'
-											onClick={() => rejectMutation.mutate(prop._id)}
-											disabled={rejectMutation.isLoading}
-										>
-											{rejectMutation.isLoading ? 'Rejecting...' : 'Reject'}
-										</Button>
-									</div>
-								) : (
-									<div className='flex items-center gap-2 text-sm font-semibold'>
-										{prop.verificationStatus === 'verified' ? (
-											<span className='text-success flex items-center gap-1'>
-												<AiOutlineCheckCircle /> Done
-											</span>
-										) : (
-											<span className='text-danger flex items-center gap-1'>
-												<AiOutlineStop /> Done
-											</span>
-										)}
-									</div>
-								)}
-							</TableCell>
+							<TableCell>{statusBadge(prop.verificationStatus)}</TableCell>
+							<TableCell>{actions(prop)}</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
 			</Table>
+			</div>
 		</div>
 	);
 }

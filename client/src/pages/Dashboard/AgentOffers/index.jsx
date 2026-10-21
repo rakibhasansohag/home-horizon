@@ -72,8 +72,72 @@ export default function AgentOffersPage() {
 	};
 
 	return (
-		<div className='overflow-x-auto bg-background p-6 rounded-md shadow-md w-full'>
-			<Table className='!w-full !max-w-full'>
+		<div className='w-full'>
+			<div className='space-y-3 md:hidden'>
+				{offers.map((offer) => (
+					<article
+						key={offer._id}
+						className='space-y-3 rounded-lg border border-border bg-surface p-4'
+					>
+						<div className='flex gap-3'>
+							<img
+								src={offer.propertyImage}
+								alt={offer.propertyTitle}
+								className='h-16 w-20 rounded-md object-cover'
+							/>
+							<div className='min-w-0'>
+								<p className='truncate font-medium'>{offer.propertyTitle}</p>
+								<p className='text-sm text-muted-foreground'>
+									{offer.propertyLocation}
+								</p>
+								<p className='text-sm tabular-nums'>৳{offer.offerAmount}</p>
+							</div>
+						</div>
+						<p className='text-sm'>
+							{offer.buyerName}
+							<span className='text-muted-foreground'> · {offer.buyerEmail}</span>
+						</p>
+						<div className='flex flex-wrap items-center justify-between gap-2'>
+							{renderStatus(offer.status)}
+							{offer.status === 'pending' ? (
+								<div className='flex flex-wrap gap-2'>
+									<Button
+										size='sm'
+										onClick={() =>
+											mutation.mutate({
+												offerId: offer._id,
+												newStatus: 'accepted',
+												propertyId: offer?.propertyId,
+											})
+										}
+										disabled={mutation.isPending}
+									>
+										Accept
+									</Button>
+									<Button
+										size='sm'
+										variant='destructive'
+										onClick={() =>
+											mutation.mutate({
+												offerId: offer._id,
+												newStatus: 'rejected',
+												propertyId: offer?.propertyId,
+											})
+										}
+										disabled={mutation.isPending}
+									>
+										Reject
+									</Button>
+								</div>
+							) : (
+								<span className='text-sm text-muted-foreground'>No action</span>
+							)}
+						</div>
+					</article>
+				))}
+			</div>
+			<div className='hidden md:block'>
+			<Table className='w-full'>
 				<TableHeader>
 					<TableRow className='bg-muted hover:bg-muted'>
 						<TableHead>Image</TableHead>
@@ -146,6 +210,7 @@ export default function AgentOffersPage() {
 					))}
 				</TableBody>
 			</Table>
+			</div>
 		</div>
 	);
 }

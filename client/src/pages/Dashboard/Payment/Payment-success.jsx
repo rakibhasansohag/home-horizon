@@ -3,8 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { toast } from 'react-toastify';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
+import { Check } from 'lucide-react';
 
 export default function PaymentSuccess() {
 	const [params] = useSearchParams();
@@ -32,30 +31,13 @@ export default function PaymentSuccess() {
 	}, [sessionId]);
 
 	return (
-		<div className='w-full flex flex-col items-center justify-center space-y-4 min-h-[50vh]'>
-			<motion.div
-				initial={{ scale: 0 }}
-				animate={{ scale: 1 }}
-				transition={{ duration: 0.5, type: 'spring' }}
-				className='text-success'
-			>
-				<svg
-					xmlns='http://www.w3.org/2000/svg'
-					className='h-20 w-20'
-					fill='none'
-					viewBox='0 0 24 24'
-					stroke='currentColor'
-					strokeWidth={2}
-				>
-					<path
-						strokeLinecap='round'
-						strokeLinejoin='round'
-						d='M5 13l4 4L19 7'
-					/>
-				</svg>
-			</motion.div>
-			<p className='text-2xl font-bold text-center text-success'>
-				Payment Successful!
+		<div className='flex min-h-[50vh] w-full flex-col items-center justify-center space-y-3'>
+			<Check className='size-12 text-success' aria-hidden='true' />
+			<p className='text-center text-2xl font-semibold text-success'>
+				Payment successful
+			</p>
+			<p className='text-base text-muted-foreground'>
+				Confirming your payment…
 			</p>
 		</div>
 	);

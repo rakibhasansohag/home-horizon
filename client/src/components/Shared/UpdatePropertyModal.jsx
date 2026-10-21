@@ -119,7 +119,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.title && (
-								<p className='text-surface0 text-sm'>{errors.title.message}</p>
+								<p className='text-destructive text-sm'>{errors.title.message}</p>
 							)}
 						</div>
 
@@ -131,7 +131,7 @@ export default function UpdatePropertyModal({
 								{...register('location', { required: 'Location is required' })}
 							/>
 							{errors.location && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.location.message}
 								</p>
 							)}
@@ -149,7 +149,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.minPrice && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.minPrice.message}
 								</p>
 							)}
@@ -168,7 +168,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.maxPrice && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.maxPrice.message}
 								</p>
 							)}
@@ -188,7 +188,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.bedrooms && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.bedrooms.message}
 								</p>
 							)}
@@ -206,7 +206,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.bathrooms && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.bathrooms.message}
 								</p>
 							)}
@@ -229,7 +229,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.squareMeters && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.squareMeters.message}
 								</p>
 							)}
@@ -247,7 +247,7 @@ export default function UpdatePropertyModal({
 								placeholder='https://maps.google.com/maps?q=...'
 							/>
 							{errors.googleMap && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.googleMap.message}
 								</p>
 							)}
@@ -269,7 +269,7 @@ export default function UpdatePropertyModal({
 								})}
 							/>
 							{errors.description && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.description.message}
 								</p>
 							)}

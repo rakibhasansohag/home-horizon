@@ -47,13 +47,13 @@ export default function PendingPropertyCard({ property }) {
 					<div className='flex items-center justify-between'>
 						<span className='font-medium text-sm'>Offer Amount</span>
 						<span className='font-bold text-lg text-brand'>
-							${property.offerAmount?.toLocaleString()}
+							৳{property.offerAmount?.toLocaleString()}
 						</span>
 					</div>
 					<div className='flex items-center justify-between mt-1'>
 						<span className='font-medium text-sm'>Status</span>
 						<span
-							className={`px-2 py-1 rounded-full text-xs font-semibold ${
+							className={`rounded-md px-2 py-1 text-sm font-medium ${
 								property?.status?.toLowerCase() === 'pending'
 									? 'bg-warning-soft text-warning'
 									: 'bg-success-soft text-success'

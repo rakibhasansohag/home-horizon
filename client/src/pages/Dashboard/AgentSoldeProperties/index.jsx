@@ -40,15 +40,56 @@ export default function AgentSoldProperties() {
 	);
 
 	return (
-		<div className='overflow-x-auto bg-background p-6 space-y-4 w-full'>
-			<div className='bg-success-soft dark:bg-success-soft border border-success dark:border-success rounded-lg shadow p-5 max-w-sm'>
-				<p className='text-muted-foreground text-sm'>Total Sold Amount</p>
-				<h3 className='text-3xl font-bold text-success dark:text-success'>
-					৳ {totalSold.toLocaleString()}
+		<div className='w-full space-y-4'>
+			<div className='max-w-sm rounded-lg border border-success bg-success-soft p-5'>
+				<p className='text-sm text-muted-foreground'>Total Sold Amount</p>
+				<h3 className='text-3xl font-semibold tabular-nums text-success'>
+					৳{totalSold.toLocaleString()}
 				</h3>
 			</div>
 
-			<Table className='!w-full !max-w-7xl shadow-md'>
+			<div className='space-y-3 md:hidden'>
+				{sold.map((item) => (
+					<article
+						key={item._id}
+						className='space-y-2 rounded-lg border border-border bg-surface p-4'
+					>
+						<div className='flex gap-3'>
+							<img
+								src={item.propertyImage}
+								alt={item.propertyTitle || item.title}
+								className='h-16 w-20 rounded-md object-cover'
+							/>
+							<div className='min-w-0'>
+								<Link
+									to={`/all-properties/${item.propertyId}`}
+									className='font-medium text-brand hover:underline'
+								>
+									{item.propertyTitle}
+								</Link>
+								<p className='text-sm text-muted-foreground'>
+									{item.propertyLocation}
+								</p>
+							</div>
+						</div>
+						<p className='text-sm'>
+							{item.buyerName}
+							<span className='text-muted-foreground'> · {item.buyerEmail}</span>
+						</p>
+						<div className='flex items-center justify-between text-sm'>
+							<span className='font-semibold tabular-nums text-success'>
+								৳{parseInt(item.offerAmount).toLocaleString()}
+							</span>
+							<span className='text-muted-foreground'>
+								{new Date(item.paidAt).toLocaleDateString('en-BD')}
+							</span>
+						</div>
+					</article>
+				))}
+			</div>
+
+			<div className='hidden md:block'>
+			<Table className='w-full'>
 				<TableHeader>
 					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
 						<TableHead>Property</TableHead>
@@ -98,7 +139,7 @@ export default function AgentSoldProperties() {
 									</Avatar>
 									<div className='leading-tight'>
 										<p className='text-foreground text-sm'>{item.buyerName}</p>
-										<p className='text-xs text-muted-foreground'>
+										<p className='text-sm text-muted-foreground'>
 											{item.buyerEmail}
 										</p>
 									</div>
@@ -115,6 +156,7 @@ export default function AgentSoldProperties() {
 					))}
 				</TableBody>
 			</Table>
+			</div>
 		</div>
 	);
 }

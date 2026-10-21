@@ -47,7 +47,7 @@ export default function BoughtPropertyCard({ property }) {
 				<div className='space-y-1 text-sm text-foreground/80 mt-auto'>
 					<p className='flex items-center gap-2'>
 						<FaDollarSign className='text-success' />
-						<span className='font-medium'>Offer Amount:</span> $
+						<span className='font-medium'>Offer Amount:</span> ৳
 						{property.offerAmount?.toLocaleString()}
 					</p>
 					<p className='flex items-center gap-2'>
@@ -56,7 +56,7 @@ export default function BoughtPropertyCard({ property }) {
 						{new Date(property.buyingDate).toLocaleDateString()}
 					</p>
 					<p className='flex items-center gap-2'>
-						<FaReceipt className='text-purple-500' />
+						<FaReceipt className='text-muted-foreground' />
 						<span className='font-medium'>Transaction ID:</span>{' '}
 						{property.transactionId}
 					</p>

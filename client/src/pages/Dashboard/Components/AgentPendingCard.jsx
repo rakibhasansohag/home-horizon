@@ -101,7 +101,7 @@ export default function AgentPendingCard({ offer, onAccept, onReject }) {
 									? 'bg-warning-soft text-warning'
 									: status.toLowerCase() === 'accepted'
 									? 'bg-success-soft text-success'
-									: 'bg-danger-soft text-surface0'
+									: 'bg-danger-soft text-destructive'
 							}`}
 						>
 							{status}

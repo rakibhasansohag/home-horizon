@@ -211,7 +211,7 @@ function AddProperties() {
 							})}
 						/>
 						{errors.title && (
-							<p className='text-surface0 text-sm'>This field is required</p>
+							<p className='text-destructive text-sm'>This field is required</p>
 						)}
 					</div>
 
@@ -219,7 +219,7 @@ function AddProperties() {
 						<Label>Location</Label>
 						<Input {...register('location', { required: true })} />
 						{errors.location && (
-							<p className='text-surface0 text-sm'>This field is required</p>
+							<p className='text-destructive text-sm'>This field is required</p>
 						)}
 					</div>
 
@@ -282,7 +282,7 @@ function AddProperties() {
 						</div>
 					</div>
 
-					<div className='grid grid-cols-2 gap-4 space-y-2'>
+					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 						<div className='space-y-2'>
 							<Label>Min Price</Label>
 							<Input
@@ -293,7 +293,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.minPrice && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.minPrice.message}
 								</p>
 							)}
@@ -311,7 +311,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.maxPrice && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.maxPrice.message}
 								</p>
 							)}
@@ -329,7 +329,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.bedrooms && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.bedrooms.message}
 								</p>
 							)}
@@ -344,7 +344,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.bathrooms && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.bathrooms.message}
 								</p>
 							)}
@@ -364,7 +364,7 @@ function AddProperties() {
 								})}
 							/>
 							{errors.squareMeters && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.squareMeters.message}
 								</p>
 							)}
@@ -379,7 +379,7 @@ function AddProperties() {
 								placeholder='https://maps.google.com/maps?q=...'
 							/>
 							{errors.googleMap && (
-								<p className='text-surface0 text-sm'>
+								<p className='text-destructive text-sm'>
 									{errors.googleMap.message}
 								</p>
 							)}
@@ -396,7 +396,7 @@ function AddProperties() {
 								{...register('lat', { required: 'Latitude is required' })}
 							/>
 							{errors.lat && (
-								<p className='text-surface0 text-sm'>{errors.lat.message}</p>
+								<p className='text-destructive text-sm'>{errors.lat.message}</p>
 							)}
 						</div>
 
@@ -409,7 +409,7 @@ function AddProperties() {
 								{...register('lng', { required: 'Longitude is required' })}
 							/>
 							{errors.lng && (
-								<p className='text-surface0 text-sm'>{errors.lng.message}</p>
+								<p className='text-destructive text-sm'>{errors.lng.message}</p>
 							)}
 						</div>
 
@@ -471,7 +471,7 @@ function AddProperties() {
 								</SelectContent>
 							</Select>
 							{errors.propertyType && (
-								<p className='text-sm text-surface0'>
+								<p className='text-sm text-destructive'>
 									{errors.propertyType.message}
 								</p>
 							)}
@@ -510,13 +510,13 @@ function AddProperties() {
 							})}
 						/>
 						{errors.description && (
-							<p className='text-surface0 text-sm'>
+							<p className='text-destructive text-sm'>
 								{errors.description.message}
 							</p>
 						)}
 					</div>
 
-					<div className='grid grid-cols-2 gap-4'>
+					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 						<div className='space-y-2'>
 							<Label>Agent Name</Label>
 							<Input
@@ -531,9 +531,11 @@ function AddProperties() {
 						</div>
 					</div>
 
-					<Button type='submit' className='mt-4'>
-						Add Property
-					</Button>
+					<div className='sticky bottom-0 -mx-6 border-t border-border bg-surface px-6 py-3'>
+						<Button type='submit' className='w-full sm:w-auto'>
+							Add Property
+						</Button>
+					</div>
 				</form>
 			</CardContent>
 		</Card>

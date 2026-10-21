@@ -4,10 +4,9 @@ import useAxiosSecure from '@/hooks/useAxiosSecure';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
-
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
+import { Link } from 'react-router';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import ConfirmPaymentModal from '../../../components/Shared/ConfirmPaymentModal';
@@ -69,15 +68,26 @@ export default function PropertyBought() {
 		}
 	};
 
+	if (!offers?.length) {
+		return (
+			<p className='text-base text-muted-foreground'>
+				You have not made an offer yet.{' '}
+				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+					Browse properties
+				</Link>
+			</p>
+		);
+	}
+
 	return (
-		<div className='p-6 space-y-4 w-full max-w-7xl'>
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+		<div className='w-full max-w-7xl space-y-4'>
+			<div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
 				{offers?.map((offer) => (
-					<Card key={offer._id} className='overflow-hidden pt-0'>
+					<Card key={offer._id} className='overflow-hidden border border-border bg-surface pt-0 shadow-none'>
 						<img
 							src={offer.propertyImage}
-							alt='property'
-							className='w-full h-48 object-cover'
+							alt={offer.propertyTitle || 'Property'}
+							className='aspect-[4/3] w-full object-cover'
 						/>
 						<CardHeader>
 							<CardTitle className='text-lg'>{offer.propertyTitle}</CardTitle>
@@ -101,19 +111,17 @@ export default function PropertyBought() {
 							</div>
 
 							{offer?.status === 'accepted' && (
-								<motion.button
-									whileTap={{ scale: 0.95 }}
-									whileHover={{ scale: 1.02 }}
+								<Button
+									className='mt-3 w-full'
 									onClick={() => {
 										setSelectedOffer(offer);
 										setModalOpen(true);
 									}}
-									className='w-full mt-3 bg-primary text-white px-4 py-2 rounded shadow font-semibold'
 								>
 									{isPaying && currentPayingId === offer._id
 										? 'Redirecting...'
 										: 'Pay Now'}
-								</motion.button>
+								</Button>
 							)}
 
 							{offer?.status === 'bought' && (

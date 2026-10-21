@@ -6,7 +6,8 @@ import useAuth from '@/hooks/useAuth';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { Star } from 'lucide-react';
 
 export default function MyReviews() {
 	const { user } = useAuth();
@@ -54,10 +55,21 @@ export default function MyReviews() {
 	if (isError)
 		return <p className='text-destructive'>Failed to load reviews</p>;
 
-	return (
-		<div className='p-6 space-y-4 max-w-7xl w-full'>
+	if (!reviews.length) {
+		return (
 			<p className='text-base text-muted-foreground'>
-				{reviews?.length || 0} reviews
+				You have not written a review yet.{' '}
+				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+					Browse properties
+				</Link>
+			</p>
+		);
+	}
+
+	return (
+		<div className='w-full max-w-7xl space-y-4'>
+			<p className='text-base text-muted-foreground'>
+				{reviews.length} reviews
 			</p>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				{reviews?.map((review) => (
@@ -81,8 +93,9 @@ export default function MyReviews() {
 							<p className='text-base'>{review.reviewText}</p>
 
 							<div className='flex items-center justify-between'>
-								<p className='text-sm text-warning'>
-									⭐ Rating: {review.rating}/5
+								<p className='flex items-center gap-1 text-sm text-foreground'>
+									<Star className='size-4 fill-brand text-brand' aria-hidden='true' />
+									{review.rating}/5
 								</p>
 								<div className='flex gap-2'>
 									<Button

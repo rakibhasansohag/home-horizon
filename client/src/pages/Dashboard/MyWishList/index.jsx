@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
 import { toast } from 'react-toastify';
@@ -55,14 +55,17 @@ export default function MyWishlist() {
 
 	if (wishlist.length === 0) {
 		return (
-			<p className='text-center text-muted-foreground mt-10'>
-				Your wishlist is empty 🥲
+			<p className='text-base text-muted-foreground'>
+				Your wishlist is empty.{' '}
+				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+					Browse properties
+				</Link>
 			</p>
 		);
 	}
 
 	return (
-		<div className='p-6 space-y-4 w-full max-w-7xl'>
+		<div className='w-full max-w-7xl space-y-4'>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-center justify-center  '>
 				{wishlist.map((property) => (
 					<PropertyCard key={property._id} property={property}>

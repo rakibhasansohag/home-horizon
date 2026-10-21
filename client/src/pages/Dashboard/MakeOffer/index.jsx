@@ -198,7 +198,7 @@ export default function MakeOffer() {
 								{...register('offerAmount', { required: true })}
 							/>
 							{errors.amount && (
-								<p className='text-sm text-surface0 mt-1'>
+								<p className='text-sm text-destructive mt-1'>
 									Offer amount is required
 								</p>
 							)}
@@ -211,7 +211,7 @@ export default function MakeOffer() {
 								{...register('buyingDate', { required: true })}
 							/>
 							{errors.buyingDate && (
-								<p className='text-sm text-surface0 mt-1'>
+								<p className='text-sm text-destructive mt-1'>
 									Buying date is required
 								</p>
 							)}

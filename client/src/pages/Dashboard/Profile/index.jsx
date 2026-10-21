@@ -1,21 +1,18 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
 import moment from 'moment';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
-
 import {
-	FaEdit,
-	FaMapMarkerAlt,
-	FaPhone,
-	FaHome,
-	FaVenusMars,
-	FaClock,
-	FaUserCheck,
-	FaInfoCircle,
-	FaUserTie,
-} from 'react-icons/fa';
-import { MdBloodtype } from 'react-icons/md';
+	Clock,
+	Droplet,
+	House,
+	Info,
+	MapPin,
+	Pencil,
+	Phone,
+	User,
+	UserCheck,
+	KeyRound,
+} from 'lucide-react';
 
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,81 +71,99 @@ export default function ProfilePage() {
 
 	const firebaseInfo = [
 		{
-			icon: <FaClock />,
+			icon: <Clock className='size-4' aria-hidden='true' />,
 			label: 'Joined',
 			value: moment(created_at).format('LL'),
 		},
 		{
-			icon: <FaUserCheck />,
+			icon: <UserCheck className='size-4' aria-hidden='true' />,
 			label: 'Last Login',
 			value: moment(last_log_in).format('LLL'),
 		},
 		{
-			icon: <FaInfoCircle />,
+			icon: <Info className='size-4' aria-hidden='true' />,
 			label: 'Status',
 			value: status || 'Not set',
 		},
 		{
-			icon: <FaUserTie />,
+			icon: <KeyRound className='size-4' aria-hidden='true' />,
 			label: 'Login Method',
 			value: loginMethod,
 		},
 	];
 
 	const userInfo = [
-		{ icon: <FaMapMarkerAlt />, label: 'Location', value: location },
-		{ icon: <FaHome />, label: 'Address', value: address },
-		{ icon: <FaPhone />, label: 'Phone', value: phoneNumber },
-		{ icon: <FaVenusMars />, label: 'Gender', value: gender },
-		{ icon: <FaClock />, label: 'Age', value: age },
-		{ icon: <MdBloodtype />, label: 'Blood Group', value: bloodGroup },
+		{
+			icon: <MapPin className='size-4' aria-hidden='true' />,
+			label: 'Location',
+			value: location,
+		},
+		{
+			icon: <House className='size-4' aria-hidden='true' />,
+			label: 'Address',
+			value: address,
+		},
+		{
+			icon: <Phone className='size-4' aria-hidden='true' />,
+			label: 'Phone',
+			value: phoneNumber,
+		},
+		{
+			icon: <User className='size-4' aria-hidden='true' />,
+			label: 'Gender',
+			value: gender,
+		},
+		{
+			icon: <Clock className='size-4' aria-hidden='true' />,
+			label: 'Age',
+			value: age,
+		},
+		{
+			icon: <Droplet className='size-4' aria-hidden='true' />,
+			label: 'Blood Group',
+			value: bloodGroup,
+		},
 	];
 
 	return (
 		<>
-			<div className='grid grid-cols-1 gap-6 justify-between w-full lg:pr-12'>
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.4 }}
-				>
-					<Card className='w-full mx-auto mt-10 p-6 shadow-md'>
-						<CardHeader className='flex flex-col sm:flex-row items-center justify-between gap-4'>
-							<div className='flex items-center gap-4'>
-								<img
-									src={profilePic || '/user.png'}
-									alt='Profile'
-									className='w-20 h-20 object-cover rounded-full border'
-								/>
-								<div>
-									<h2 className='text-xl font-semibold'>{name}</h2>
-									<p className='text-muted-foreground text-sm'>{email}</p>
-									{role === 'admin' && (
-										<p className='text-muted-foreground text-sm'>Admin</p>
-									)}
-									{role === 'agent' && (
-										<p className='text-muted-foreground text-sm'>Agent</p>
-									)}
-								</div>
+			<div className='w-full'>
+				<Card className='w-full border border-border bg-surface p-6 shadow-none'>
+					<CardHeader className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
+						<div className='flex items-center gap-4'>
+							<img
+								src={profilePic || '/user.png'}
+								alt=''
+								className='size-16 rounded-full object-cover'
+							/>
+							<div>
+								<h2 className='font-display text-3xl'>{name}</h2>
+								<p className='text-base text-muted-foreground'>{email}</p>
+								{role === 'admin' && (
+									<p className='text-sm capitalize text-brand'>Admin</p>
+								)}
+								{role === 'agent' && (
+									<p className='text-sm capitalize text-brand'>Agent</p>
+								)}
 							</div>
-							<Button asChild>
-								<Link to='/dashboard/profile/edit'>
-									<FaEdit className='mr-2' /> Edit
-								</Link>
-							</Button>
-						</CardHeader>
+						</div>
+						<Button asChild variant='outline'>
+							<Link to='/dashboard/profile/edit'>
+								<Pencil aria-hidden='true' /> Edit
+							</Link>
+						</Button>
+					</CardHeader>
 
-						<CardContent className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 max-w-4xl px-0 md:px-6'>
-							{firebaseInfo.concat(userInfo).map((item, idx) => (
-								<div key={idx} className='flex items-center gap-2 text-sm'>
-									<span className='text-brand'>{item.icon}</span>
-									<span className='font-medium'>{item.label}:</span>
-									<span>{item.value || 'Not set'}</span>
-								</div>
-							))}
-						</CardContent>
-					</Card>
-				</motion.div>
+					<CardContent className='mt-4 grid max-w-4xl grid-cols-1 gap-3 px-0 md:grid-cols-2 md:px-6'>
+						{firebaseInfo.concat(userInfo).map((item, idx) => (
+							<div key={idx} className='flex items-center gap-2 text-base'>
+								<span className='text-brand'>{item.icon}</span>
+								<span className='font-medium'>{item.label}:</span>
+								<span>{item.value || 'Not set'}</span>
+							</div>
+						))}
+					</CardContent>
+				</Card>
 			</div>
 			{propertiesBrought && (
 				<div className='mt-4'>

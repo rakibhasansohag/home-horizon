@@ -79,8 +79,73 @@ export default function AdminManageUsers() {
 		);
 
 	return (
-		<div className='overflow-x-auto bg-background p-6 rounded-md shadow-md w-full'>
-			<Table className='!w-full !max-w-full'>
+		<div className='w-full'>
+			<div className='space-y-3 md:hidden'>
+				{users.map((user) => (
+					<article
+						key={user._id}
+						className='space-y-3 rounded-lg border border-border bg-surface p-4'
+					>
+						<div className='flex items-start justify-between gap-3'>
+							<div>
+								<p className='font-medium'>{user.name}</p>
+								<p className='text-sm text-muted-foreground'>{user.email}</p>
+							</div>
+							<Badge variant='outline' className='capitalize'>
+								{user.role}
+							</Badge>
+						</div>
+						<div className='flex flex-wrap gap-2'>
+							{user.role === 'user' && (
+								<>
+									<Button
+										size='sm'
+										onClick={() => {
+											setSelectedUser(user);
+											setModalType('admin');
+										}}
+									>
+										Make Admin
+									</Button>
+									<Button
+										size='sm'
+										onClick={() => {
+											setSelectedUser(user);
+											setModalType('agent');
+										}}
+									>
+										Make Agent
+									</Button>
+								</>
+							)}
+							{user.role === 'agent' && (
+								<Button
+									size='sm'
+									variant='destructive'
+									onClick={() => {
+										setSelectedUser(user);
+										setModalType('fraud');
+									}}
+								>
+									Mark as Fraud
+								</Button>
+							)}
+							<Button
+								size='sm'
+								variant='destructive'
+								onClick={() => {
+									setSelectedUser(user);
+									setModalType('delete');
+								}}
+							>
+								Delete User
+							</Button>
+						</div>
+					</article>
+				))}
+			</div>
+			<div className='hidden md:block'>
+			<Table className='w-full'>
 				<TableHeader>
 					<TableRow className='bg-muted hover:bg-muted'>
 						<TableHead>Name</TableHead>
@@ -155,6 +220,7 @@ export default function AdminManageUsers() {
 					))}
 				</TableBody>
 			</Table>
+			</div>
 			<ConfirmActionModal
 				isOpen={!!selectedUser}
 				onClose={() => setSelectedUser(null)}
