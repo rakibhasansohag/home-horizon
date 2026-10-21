@@ -17,7 +17,7 @@ function pin(active) {
 		className: 'hh-pin',
 		iconSize: [size, size],
 		iconAnchor: [size / 2, size / 2],
-		html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:999px;background:#1F5C4A;border:2px solid #fff;box-shadow:0 0 0 1px #1F5C4A"></span>`,
+		html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:999px;background:var(--brand);border:2px solid var(--paper);box-shadow:0 0 0 1px var(--brand)"></span>`,
 	});
 }
 
