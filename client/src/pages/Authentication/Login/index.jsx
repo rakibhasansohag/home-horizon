@@ -22,16 +22,41 @@ function Login() {
 	const from = location.state?.from || '/';
 
 	const [showPassword, setShowPassword] = useState(false);
+	const [pendingRole, setPendingRole] = useState(null);
 
-	const onSubmit = (data) => {
-		signIn(data?.email, data?.password)
+	const demoAccounts = [
+		{
+			role: 'Admin',
+			email: 'admin@email.com',
+			password: 'Password123@',
+		},
+		{
+			role: 'Agent',
+			email: 'agent@email.com',
+			password: 'Password123',
+		},
+		{
+			role: 'Fraud',
+			email: 'fraud@email.com',
+			password: 'Password123',
+		},
+	];
+
+	const finishSignIn = (email, password, role) => {
+		setPendingRole(role || 'form');
+		return signIn(email, password)
 			.then(() => {
 				toast.success('Login successful');
 				navigate(from);
 			})
 			.catch((error) => {
 				toast.error(error.message);
-			});
+			})
+			.finally(() => setPendingRole(null));
+	};
+
+	const onSubmit = (data) => {
+		finishSignIn(data?.email, data?.password);
 	};
 
 	return (
@@ -46,6 +71,38 @@ function Login() {
 					</h1>
 
 					<h2 className='text-2xl font-bold'>Sign in</h2>
+
+					<div className='space-y-2'>
+						<p className='text-sm text-muted-foreground'>
+							Demo accounts
+						</p>
+						<div
+							className='grid grid-cols-3 rounded-md border border-border bg-background p-1'
+							role='group'
+							aria-label='Sign in as a demo account'
+						>
+							{demoAccounts.map((account) => (
+								<Button
+									key={account.role}
+									type='button'
+									variant='ghost'
+									disabled={!!pendingRole}
+									onClick={() =>
+										finishSignIn(
+											account.email,
+											account.password,
+											account.role,
+										)
+									}
+									className='h-11 rounded-sm px-2 text-sm'
+								>
+									{pendingRole === account.role
+										? 'Signing in'
+										: account.role}
+								</Button>
+							))}
+						</div>
+					</div>
 
 					<form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
 						<div className='space-y-2'>
@@ -88,8 +145,12 @@ function Login() {
 							)}
 						</div>
 
-						<Button type='submit' className='w-full'>
-							Continue
+						<Button
+							type='submit'
+							className='w-full'
+							disabled={!!pendingRole}
+						>
+							{pendingRole === 'form' ? 'Signing in' : 'Continue'}
 						</Button>
 
 						<p className='text-center text-sm'>
