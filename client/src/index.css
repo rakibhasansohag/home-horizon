@@ -242,6 +242,31 @@ button {
 	scrollbar-color: var(--brand) transparent;
 }
 
+.Toastify__toast {
+	background: var(--surface);
+	color: var(--ink);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgb(22 22 22 / 0.08);
+	font-family: var(--font-sans);
+}
+.Toastify__toast--success {
+	background: var(--surface);
+}
+.Toastify__toast--error {
+	background: var(--surface);
+}
+.Toastify__progress-bar--success {
+	background: var(--success-fill);
+}
+.Toastify__progress-bar--error {
+	background: var(--danger-fill);
+}
+.Toastify__close-button {
+	color: var(--ink);
+	opacity: 0.7;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;

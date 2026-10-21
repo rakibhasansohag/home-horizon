@@ -1,15 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import PropertyCard from '@/components/Shared/PropertyCard';
 import ConfirmActionModal from '@/components/shared/ConfirmActionModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'react-toastify';
@@ -68,80 +61,46 @@ export default function AdminAdvertiseProperty() {
 			<h2 className='text-2xl font-semibold'>Advertise Property</h2>
 
 			{/* stats card */}
-			<div className='p-4 bg-surface rounded shadow flex items-center justify-between'>
+			<div className='p-4 bg-surface rounded-lg border flex items-center justify-between'>
 				<div>
 					<p className='text-sm text-muted-foreground'>Total Advertised</p>
-					<p className='text-3xl font-bold'>{stats?.total ?? 0}</p>
+					<p className='text-3xl font-semibold tabular-nums'>{stats?.total ?? 0}</p>
 				</div>
 			</div>
 
-			<Table className='shadow-md'>
-				<TableHeader>
-					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
-						<TableHead>Image</TableHead>
-						<TableHead>Title</TableHead>
-						<TableHead>Price</TableHead>
-						<TableHead>Agent</TableHead>
-						<TableHead>Action</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{properties.map((p, i) => (
-						<TableRow
-							key={p._id}
-							className={`${
-								i % 2 === 0
-									? 'bg-surface dark:bg-background'
-									: 'bg-muted dark:bg-muted'
-							} rounded-md shadow-sm transition-colors duration-200
-              hover:bg-muted dark:hover:bg-muted`}
-						>
-							<TableCell>
-								<img
-									src={p.images[0].url}
-									alt={p.title}
-									className='w-16 h-12 object-cover rounded border'
-								/>
-							</TableCell>
-							<TableCell>{p.title}</TableCell>
-							<TableCell>
-								৳{p.minPrice.toLocaleString()} - ৳{p.maxPrice.toLocaleString()}
-							</TableCell>
-							<TableCell>{p.agentName}</TableCell>
-							<TableCell>
-								{p.isAdvertised ? (
-									<Button
-										variant='outline'
-										size='sm'
-										onClick={() =>
-											setSelected({
-												id: p._id,
-												title: p.title,
-												isAdvertised: true,
-											})
-										}
-									>
-										Un‑advertise
-									</Button>
-								) : (
-									<Button
-										size='sm'
-										onClick={() =>
-											setSelected({
-												id: p._id,
-												title: p.title,
-												isAdvertised: false,
-											})
-										}
-									>
-										Advertise
-									</Button>
-								)}
-							</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+			<div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6'>
+				{properties.map((p) => (
+					<PropertyCard key={p._id} property={p}>
+						{p.isAdvertised ? (
+							<Button
+								variant='outline'
+								onClick={() =>
+									setSelected({
+										id: p._id,
+										title: p.title,
+										isAdvertised: true,
+									})
+								}
+							>
+								Un‑advertise
+							</Button>
+						) : (
+							<Button
+								variant='accent'
+								onClick={() =>
+									setSelected({
+										id: p._id,
+										title: p.title,
+										isAdvertised: false,
+									})
+								}
+							>
+								Advertise
+							</Button>
+						)}
+					</PropertyCard>
+				))}
+			</div>
 
 			{/* Confirmation Modal */}
 			{selected && (

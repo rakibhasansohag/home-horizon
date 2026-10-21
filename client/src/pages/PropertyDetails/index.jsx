@@ -84,7 +84,7 @@ export default function PropertyDetails() {
 				<div className='lg:col-span-2 space-y-6'>
 					<Card className='space-y-2 px-4 gap-1'>
 						<p>
-							<span className='inline-block w-2 h-2 bg-success-soft0 rounded-full animate-pulse mr-2'></span>
+							<span className='inline-block w-2 h-2 bg-success-fill rounded-full mr-2'></span>
 							{property.dealStatus === 'sold' ? 'Sold' : 'For Sale'}
 						</p>
 						<h1 className='text-3xl font-bold'>{property.title}</h1>

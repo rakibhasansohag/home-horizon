@@ -1,5 +1,7 @@
 # HomeHorizon UI audit
 
+Phase 2 primitives are restyled: buttons, fields, cards, badges, tables, dialogs, and one `PropertyCard` for home, all properties, wishlist, my properties, advertise, and dashboard lists. Checkbox, tabs, and pagination components are not in the app.
+
 Phase 1 tokens are in `src/index.css` and `index.html`. Ink, paper, line, and one green accent drive the shadcn variables. Instrument Sans is the UI face. Fraunces is loaded for later display titles (`font-display`). Palette utilities (`blue`, `gray`, `green`, `red`, `yellow`) in components now point at those tokens. Layout, type size misuse, and table overflow are still open.
 
 Phase 0 notes follow.

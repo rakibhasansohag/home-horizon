@@ -1,11 +1,10 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import PropertyCard from '@/components/Shared/PropertyCard';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Link } from 'react-router';
 
 import useMyProperties from '@/hooks/useMyProperties';
-import { Bed, Bath, Ruler, Car } from 'lucide-react';
 
 import { useState } from 'react';
 import UpdatePropertyModal from '../../../components/Shared/UpdatePropertyModal';
@@ -49,7 +48,6 @@ export default function MyProperties() {
 	return (
 		<div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 px-2'>
 			{properties.map((property) => {
-				const isVerified = property.verificationStatus === 'verified';
 				const isRejected = property.verificationStatus === 'rejected';
 
 				return (
@@ -59,89 +57,35 @@ export default function MyProperties() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.3 }}
 					>
-						<Card
-							className={`border pt-0 w-full rounded-t-2xl ${
-								isVerified ? 'border-green-500' : 'border-border'
-							}`}
-						>
-							<img
-								src={
-									property.images[0]?.url || 'https://via.placeholder.com/300'
-								}
-								alt={property.title}
-								className='h-56 w-full object-cover rounded-t-2xl'
-							/>
-							<CardContent className='p-4 pt-0 space-y-2'>
-								<h2 className='font-semibold text-lg'>{property.title}</h2>
-								<p className='text-sm text-muted-foreground'>
-									Location: <strong>{property.location}</strong>
-								</p>
-								<div className='text-sm flex items-center'>
-									<img
-										src={
-											property.agentImage || 'https://via.placeholder.com/40'
-										}
-										alt={property.agentName}
-										className='h-10 w-10 rounded-full mr-2'
-									/>
-									Agent: <strong>{property.agentName}</strong>
-								</div>
-								<div className='text-xs'>
-									Status:{' '}
-									<span
-										className={`px-2 py-1 rounded text-white ${
-											isVerified
-												? 'bg-success-soft0'
-												: isRejected
-												? 'bg-danger-fill'
-												: 'bg-warning'
-										}`}
-									>
-										{property.verificationStatus || 'pending'}
-									</span>
-								</div>
-								<div className='text-sm flex items-center'>
-									Price: {property.minPrice} - {property.maxPrice} BDT
-								</div>
-								<div className='text-sm flex items-center'>
-									<Bed className='w-4 h-4 mr-1 text-muted-foreground' />
-									{property.bedrooms} bed |{' '}
-									<Bath className='w-4 h-4 mr-1 text-muted-foreground' />
-									{property.bathrooms} bath
-								</div>
-								<div className='text-sm flex items-center'>
-									<Ruler className='w-4 h-4 mr-1 text-muted-foreground' />
-									{property.squareMeters} sq feet |{' '}
-									<Car className='w-4 h-4 mr-1 text-muted-foreground' />
-									Parking: {property.parking}
-								</div>
-								<div className='flex gap-2 mt-4'>
-									<Button>
-										<Link to={`/all-properties/${property._id}`}>
-											View Details
-										</Link>
-									</Button>
-									{!isRejected && (
-										<Button
-											variant='outline'
-											size='sm'
-											onClick={() => handleUpdate(property)}
-										>
-											Update
-										</Button>
-									)}
+						<PropertyCard property={property}>
+							<p className='text-base text-muted-foreground'>
+								{property.bedrooms} bed · {property.bathrooms} bath ·{' '}
+								{property.squareMeters} sq ft · Parking: {property.parking}
+							</p>
+							<div className='flex flex-wrap gap-2'>
+								<Button asChild>
+									<Link to={`/all-properties/${property._id}`}>
+										View Details
+									</Link>
+								</Button>
+								{!isRejected && (
 									<Button
-										variant='destructive'
-										size='sm'
-										onClick={() =>
-											handleDelete(property._id?.$oid || property._id)
-										}
+										variant='outline'
+										onClick={() => handleUpdate(property)}
 									>
-										Delete
+										Update
 									</Button>
-								</div>
-							</CardContent>
-						</Card>
+								)}
+								<Button
+									variant='destructive'
+									onClick={() =>
+										handleDelete(property._id?.$oid || property._id)
+									}
+								>
+									Delete
+								</Button>
+							</div>
+						</PropertyCard>
 					</motion.div>
 				);
 			})}

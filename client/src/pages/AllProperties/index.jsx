@@ -3,10 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'motion/react';
-import { FaMapMarkerAlt } from 'react-icons/fa';
-import { MdVerified } from 'react-icons/md';
-
 import { Button } from '@/components/ui/button';
+import PropertyCard from '@/components/Shared/PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router';
 import useAxios from '../../hooks/useAxios';
@@ -108,50 +106,20 @@ export default function AllProperties() {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ duration: 0.3 }}
-									className={`rounded-xl shadow hover:shadow-lg transition-all bg-card text-card-foreground ${
-										activeId === prop._id
-											? 'ring-4 ring-brand scale-105'
-											: 'hover:shadow-lg'
-									}`}
 									onClick={() => setActiveId(prop._id)}
 								>
-									<img
-										src={prop.images?.[0]?.url}
-										alt={prop.title}
-										className='h-40 w-full object-cover rounded-t-xl'
-									/>
-									<div className='p-4 space-y-2'>
-										<h3 className='font-semibold text-lg line-clamp-1'>
-											{prop.title}
-										</h3>
-										<p className='text-sm text-muted-foreground flex items-center gap-1'>
-											<FaMapMarkerAlt /> {prop.location}
-										</p>
-										<div className='flex items-center gap-2 text-sm'>
-											<img
-												src={prop.agentImage}
-												alt={prop.agentName}
-												className='w-6 h-6 rounded-full'
-											/>
-											<span>{prop.agentName}</span>
-										</div>
-										<div className='flex justify-between items-center text-sm'>
-											<span className='text-brand font-medium'>
-												{parseInt(prop.minPrice).toLocaleString()} -{' '}
-												{parseInt(prop.maxPrice).toLocaleString()} BDT
-											</span>
-											<span className='flex items-center text-success'>
-												<MdVerified /> Verified
-											</span>
-										</div>
+									<PropertyCard
+										property={prop}
+										selected={activeId === prop._id}
+									>
 										<Link
 											to={`/all-properties/${prop._id}`}
-											className='inline-block mt-2 text-sm font-medium text-brand hover:underline'
+											className='inline-flex min-h-11 items-center text-base font-medium text-brand hover:underline'
 											onClick={(e) => e.stopPropagation()}
 										>
 											View Details
 										</Link>
-									</div>
+									</PropertyCard>
 								</motion.div>
 						  ))}
 					{!isLoading && properties.length === 0 && (

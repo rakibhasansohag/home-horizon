@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import useAxios from '../../hooks/useAxios';
 import { Link } from 'react-router';
+import PropertyCard from '@/components/Shared/PropertyCard';
 
 export default function AdvertisedProperties() {
 	const axiosInstance = useAxios();
@@ -19,47 +20,19 @@ export default function AdvertisedProperties() {
 	if (!properties.length) return null;
 
 	return (
-		<section className='px-4 py-8 bg-accent'>
-			<div className=' space-y-4 section'>
-				<h2 className='text-2xl font-bold text-center mb-10'>
-					Advertised Properties
-				</h2>
+		<section className='px-4 py-16 bg-background'>
+			<div className='space-y-4 section'>
+				<h2 className='text-2xl font-semibold mb-10'>Advertised Properties</h2>
 				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
 					{properties.map((p) => (
-						<div
-							key={p._id}
-							className='bg-surface border rounded-md shadow hover:shadow-lg transition'
-						>
-							<img
-								src={p.images?.[0]?.url}
-								alt={p.title}
-								className='h-48 w-full object-cover rounded-t'
-							/>
-							<div className='p-4 space-y-1'>
-								<p className='font-semibold'>{p.location}</p>
-								<p className='text-sm text-muted-foreground'>
-									৳{p.minPrice.toLocaleString()} – ৳
-									{p.maxPrice.toLocaleString()}
-								</p>
-								<p
-									className={`inline-block text-xs font-medium rounded-full px-2 py-1 ${
-										p.verificationStatus === 'verified'
-											? 'bg-success-soft text-success'
-											: 'bg-warning-soft text-warning'
-									}`}
-								>
-									{p.verificationStatus}
-								</p>
-								<div className='pt-2'>
-									<Link
-										to={`/all-properties/${p._id}`}
-										className='text-brand text-sm underline'
-									>
-										View Details
-									</Link>
-								</div>
-							</div>
-						</div>
+						<PropertyCard key={p._id} property={p}>
+							<Link
+								to={`/all-properties/${p._id}`}
+								className='inline-flex min-h-11 items-center text-base font-medium text-brand hover:underline'
+							>
+								View Details
+							</Link>
+						</PropertyCard>
 					))}
 				</div>
 			</div>
