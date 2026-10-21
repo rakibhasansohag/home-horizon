@@ -1,5 +1,9 @@
 # HomeHorizon UI audit
 
+Dark mode uses the same tokens as light: paper, surface, ink, and the accent all switch. Map pins follow that accent. Checked home, the property list, and a listing page in both themes.
+
+Property details: one 16:9 photo, grouped taka prices, and the offer button uses the theme text color on hover.
+
 Home hero: the photograph sits beside the title on paper. There is no darkened full-bleed photo and no floating card.
 
 Home follow-up: advertised listings request 4 compact cards, not the full catalog. Reviews request 8 and run in a marquee, without email addresses. Cards and service rows use a 200ms border transition.

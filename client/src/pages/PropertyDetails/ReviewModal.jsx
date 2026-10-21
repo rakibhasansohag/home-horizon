@@ -56,7 +56,7 @@ export default function ReviewModal({
 					</div>
 					<textarea
 						{...register('reviewText')}
-						className='w-full border rounded-md p-2'
+						className='w-full rounded-md border border-border bg-surface p-3 text-base text-foreground'
 						placeholder='Write your review...'
 						required
 					/>

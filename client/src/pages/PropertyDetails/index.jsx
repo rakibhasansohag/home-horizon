@@ -1,9 +1,8 @@
 import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
+import { formatMoney } from '@/components/Shared/PropertyCard';
 import ImageGallery from './ImageGallery';
 import StickySidebar from './StickySidebar';
 import ReviewCard from './ReviewCard';
@@ -76,33 +75,31 @@ export default function PropertyDetails() {
 	// TODO : we will check if the proprety status is paid/sold/accipted we will make this property add to wihs list or make an offer it will be disbled or do somehting that user can not make any changes  if it's for sale and also we will make the staus as sold if the user paid the price
 
 	return (
-		<section>
-			<div className='w-full '>
-				<ImageGallery images={property.images} />
-			</div>
-			<div className='grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 section relative '>
-				<div className='lg:col-span-2 space-y-6'>
-					<Card className='space-y-2 px-4 gap-1'>
-						<p>
-							<span className='inline-block w-2 h-2 bg-success-fill rounded-full mr-2'></span>
+		<section className='pb-16'>
+			<ImageGallery images={property.images} />
+			<div className='section relative grid grid-cols-1 gap-8 py-8 lg:grid-cols-3'>
+				<div className='space-y-6 lg:col-span-2'>
+					<div className='space-y-2'>
+						<p className='text-sm text-success'>
 							{property.dealStatus === 'sold' ? 'Sold' : 'For Sale'}
 						</p>
-						<h1 className='text-3xl font-bold'>{property.title}</h1>
-
-						<p className='text-lg font-medium'>
-							Price: {property.minPrice} - {property.maxPrice} BDT
+						<h1 className='font-display text-3xl'>{property.title}</h1>
+						<p className='text-xl font-semibold tabular-nums'>
+							{formatMoney(property.minPrice)} – {formatMoney(property.maxPrice)}
 						</p>
-						<p>Agent: {property.agentName}</p>
-					</Card>
+						<p className='text-base text-muted-foreground'>
+							Agent: {property.agentName}
+						</p>
+					</div>
 
-					<Card className='border shadow-sm'>
+					<Card className='border shadow-none'>
 						<CardHeader>
-							<CardTitle className='text-2xl font-semibold text-brand'>
-								🏡 Property Overview
+							<CardTitle className='text-2xl font-semibold'>
+								Property Overview
 							</CardTitle>
 						</CardHeader>
 
-						<CardContent className='space-y-4 text-sm text-muted-foreground'>
+						<CardContent className='space-y-4 text-base text-muted-foreground'>
 							<p>{property.description}</p>
 
 							<div className='grid grid-cols-2 md:grid-cols-3 gap-4 mt-2'>
@@ -129,7 +126,11 @@ export default function PropertyDetails() {
 								<BadgeDetail
 									icon={Tag}
 									label='Price/Sq.Ft'
-									value={`${pricePerSqft} BDT`}
+									value={
+										Number.isFinite(pricePerSqft)
+											? formatMoney(pricePerSqft)
+											: '—'
+									}
 								/>
 								<BadgeDetail
 									icon={Car}
@@ -191,7 +192,7 @@ function BadgeDetail({ icon: Icon, label, value }) {
 			<Icon className='w-5 h-5 text-brand' />
 			<div>
 				<p className='text-base font-medium text-foreground'>{value}</p>
-				<p className='text-xs text-muted-foreground'>{label}</p>
+				<p className='text-sm text-muted-foreground'>{label}</p>
 			</div>
 		</div>
 	);
