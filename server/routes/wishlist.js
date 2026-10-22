@@ -3,6 +3,7 @@ const router = express.Router();
 const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
+const { attachHomes } = require('../utils/attachHomes');
 
 // Add to wishlist (user)
 router.post(
@@ -46,7 +47,7 @@ router.get(
 			const list = await Wishlist.find({ userId })
 				.sort({ createdAt: -1 })
 				.toArray();
-			res.send(list);
+			res.send(await attachHomes(list));
 		} catch (err) {
 			console.error('wishlist.get error', err);
 			res.status(500).send({ error: 'Internal server error' });

@@ -1,16 +1,23 @@
+import { useState } from 'react';
 import { keepPreviousData, useQuery, useMutation } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
-
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
+import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
-import { Link } from 'react-router';
-import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import ConfirmPaymentModal from '../../../components/Shared/ConfirmPaymentModal';
+
+const STATUS_TONE = {
+	pending: 'text-warning',
+	accepted: 'text-brand',
+	bought: 'text-success',
+	rejected: 'text-destructive',
+};
 
 export default function PropertyBought() {
 	const { user } = useAuth();
@@ -48,28 +55,7 @@ export default function PropertyBought() {
 		},
 	});
 
-	if (gateQuery(offersQuery) === 'loading') {
-		return (
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
-				{Array.from({ length: 6 }).map((_, i) => (
-					<SkeletonCard key={i} />
-				))}
-			</div>
-		);
-	}
-
-	const getStatusColor = (status) => {
-		switch (status) {
-			case 'pending':
-				return 'bg-warning-soft text-warning';
-			case 'accepted':
-				return 'bg-brand-soft text-brand';
-			case 'bought':
-				return 'bg-success-soft text-success';
-			default:
-				return 'bg-danger-fill text-surface';
-		}
-	};
+	if (gateQuery(offersQuery) === 'loading') return <OfferSkeleton />;
 
 	if (gateQuery(offersQuery) === 'error') {
 		return <p className='text-destructive'>Could not load your offers.</p>;
@@ -79,7 +65,7 @@ export default function PropertyBought() {
 		return (
 			<p className='text-base text-muted-foreground'>
 				You have not made an offer yet.{' '}
-				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+				<Link to='/all-properties' className='font-medium text-brand'>
 					Browse properties
 				</Link>
 			</p>
@@ -87,59 +73,23 @@ export default function PropertyBought() {
 	}
 
 	return (
-		<div className='w-full max-w-7xl space-y-4'>
-			<div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-				{offers?.map((offer) => (
-					<Card key={offer._id} className='overflow-hidden border border-border bg-surface pt-0 shadow-none'>
-						<img
-							src={offer.propertyImage}
-							alt={offer.propertyTitle || 'Property'}
-							className='aspect-[4/3] w-full object-cover'
-						/>
-						<CardHeader>
-							<CardTitle className='text-lg'>{offer.propertyTitle}</CardTitle>
-							<p className='text-muted-foreground'>{offer.propertyLocation}</p>
-						</CardHeader>
-						<CardContent className='space-y-2'>
-							<p>
-								<span className='font-medium'>Agent:</span> {offer.agentName}
-							</p>
-							<p>
-								<span className='font-medium'>Offer:</span> ৳{offer.offerAmount}
-							</p>
-							<div>
-								<Badge
-									className={`capitalize ${getStatusColor(
-										offer.status,
-									)} px-2 py-1 rounded-md text-sm`}
-								>
-									{offer.status}
-								</Badge>
-							</div>
-
-							{offer?.status === 'accepted' && (
-								<Button
-									className='mt-3 w-full'
-									onClick={() => {
-										setSelectedOffer(offer);
-										setModalOpen(true);
-									}}
-								>
-									{isPaying && currentPayingId === offer._id
-										? 'Redirecting...'
-										: 'Pay Now'}
-								</Button>
-							)}
-
-							{offer?.status === 'bought' && (
-								<p className='text-success font-semibold mt-2'>
-									Transaction ID: {offer.transactionId}
-								</p>
-							)}
-						</CardContent>
-					</Card>
+		<div className='w-full space-y-6'>
+			<p className='text-sm text-muted-foreground'>
+				{offers.length} {offers.length === 1 ? 'offer' : 'offers'}
+			</p>
+			<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+				{offers.map((offer) => (
+					<OfferRow
+						key={offer._id}
+						offer={offer}
+						paying={isPaying && currentPayingId === offer._id}
+						onPay={() => {
+							setSelectedOffer(offer);
+							setModalOpen(true);
+						}}
+					/>
 				))}
-			</div>
+			</ul>
 			<ConfirmPaymentModal
 				open={modalOpen}
 				onCancel={() => {
@@ -155,6 +105,114 @@ export default function PropertyBought() {
 				propertyTitle={selectedOffer?.propertyTitle}
 				offerAmount={selectedOffer?.offerAmount}
 			/>
+		</div>
+	);
+}
+
+function OfferRow({ offer, paying, onPay }) {
+	const photo = offer.property?.image || offer.propertyImage || '';
+	const title = offer.property?.title || offer.propertyTitle || 'Listing';
+	const location = offer.property?.location || offer.propertyLocation || '';
+	const agent = offer.property?.agentName || offer.agentName || '';
+
+	return (
+		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
+			{offer.propertyId ? (
+				<Link
+					to={`/all-properties/${offer.propertyId}`}
+					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
+				>
+					<FillPhoto src={photo} alt={title} />
+				</Link>
+			) : (
+				<div className='w-2/5 max-w-72 shrink-0 bg-muted' />
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
+				<div className='flex items-start justify-between gap-3'>
+					{offer.propertyId ? (
+						<Link
+							to={`/all-properties/${offer.propertyId}`}
+							className='line-clamp-2 font-medium leading-snug transition-colors duration-200 hover:text-brand'
+						>
+							{title}
+						</Link>
+					) : (
+						<p className='line-clamp-2 font-medium leading-snug'>{title}</p>
+					)}
+					<p
+						className={cn(
+							'shrink-0 text-sm capitalize',
+							STATUS_TONE[offer.status] || 'text-muted-foreground',
+						)}
+					>
+						{offer.status}
+					</p>
+				</div>
+				{location ? (
+					<p className='truncate text-sm text-muted-foreground'>{location}</p>
+				) : null}
+				<p className='text-base font-medium tabular-nums'>
+					{formatMoney(offer.offerAmount)}
+				</p>
+				<div className='mt-auto flex flex-wrap items-center justify-between gap-2 pt-3'>
+					{agent ? (
+						<div className='flex min-w-0 items-center gap-2'>
+							<PersonAvatar
+								name={agent}
+								src={offer.property?.agentImage}
+								className='size-8'
+							/>
+							<p className='truncate text-sm'>{agent}</p>
+						</div>
+					) : (
+						<span />
+					)}
+					{offer.status === 'accepted' ? (
+						<Button size='sm' variant='accent' onClick={onPay} disabled={paying}>
+							{paying ? 'Redirecting...' : 'Pay now'}
+						</Button>
+					) : null}
+				</div>
+				{offer.status === 'bought' && offer.transactionId ? (
+					<p className='text-sm text-success'>
+						Transaction {offer.transactionId}
+					</p>
+				) : null}
+			</div>
+		</li>
+	);
+}
+
+function FillPhoto({ src, alt }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	return (
+		<img
+			src={src}
+			alt={alt || ''}
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
+	);
+}
+
+function OfferSkeleton() {
+	return (
+		<div className='grid grid-cols-1 gap-4 xl:grid-cols-2' aria-busy='true'>
+			<span className='sr-only'>Loading offers</span>
+			{Array.from({ length: 4 }, (_, index) => (
+				<div
+					key={index}
+					className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'
+				>
+					<Skeleton className='w-2/5 max-w-72 rounded-none' />
+					<div className='flex-1 space-y-2 p-4'>
+						<Skeleton className='h-4 w-3/4' />
+						<Skeleton className='h-3 w-1/2' />
+						<Skeleton className='h-4 w-2/3' />
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }

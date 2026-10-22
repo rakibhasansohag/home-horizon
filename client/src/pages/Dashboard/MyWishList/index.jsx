@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
 import { toast } from 'react-toastify';
-import PropertyCard from '@/components/Shared/PropertyCard';
 import { Button } from '@/components/ui/button';
-import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
+import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
 
 export default function MyWishlist() {
@@ -19,13 +21,7 @@ export default function MyWishlist() {
 		placeholderData: keepPreviousData,
 		queryFn: async () => {
 			const res = await axiosSecure.get(`/wishlist?userId=${user?.uid}`);
-			const propertyIds = res.data.map((item) => item.propertyId);
-
-			// Fetch properties based on IDs
-			const propsRes = await axiosSecure.post('/wishlist/properties', {
-				propertyIds,
-			});
-			return propsRes.data;
+			return res.data;
 		},
 		enabled: !!user?.uid,
 	});
@@ -46,15 +42,7 @@ export default function MyWishlist() {
 		},
 	});
 
-	if (gateQuery(wishlistQuery) === 'loading') {
-		return (
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
-				{Array.from({ length: 6 }).map((_, i) => (
-					<SkeletonCard key={i} />
-				))}
-			</div>
-		);
-	}
+	if (gateQuery(wishlistQuery) === 'loading') return <HomeSkeleton />;
 
 	if (gateQuery(wishlistQuery) === 'error') {
 		return <p className='text-destructive'>Could not load your wishlist.</p>;
@@ -64,7 +52,7 @@ export default function MyWishlist() {
 		return (
 			<p className='text-base text-muted-foreground'>
 				Your wishlist is empty.{' '}
-				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+				<Link to='/all-properties' className='font-medium text-brand'>
 					Browse properties
 				</Link>
 			</p>
@@ -72,31 +60,130 @@ export default function MyWishlist() {
 	}
 
 	return (
-		<div className='w-full max-w-7xl space-y-4'>
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-center justify-center  '>
-				{wishlist.map((property) => (
-					<PropertyCard key={property._id} property={property}>
-						<div className='flex gap-2 mt-4'>
-							<Button
-								onClick={() => navigate(`/dashboard/offer/${property._id}`)}
-								size='sm'
-								className=''
-							>
-								Make Offer
-							</Button>
-							<Button
-								variant='destructive'
-								onClick={() => removeFromWishlist(property._id)}
-								disabled={removing}
-								size='sm'
-								className=''
-							>
-								Remove
-							</Button>
-						</div>
-					</PropertyCard>
+		<div className='w-full space-y-6'>
+			<p className='text-sm text-muted-foreground'>
+				{wishlist.length} {wishlist.length === 1 ? 'home' : 'homes'}
+			</p>
+			<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+				{wishlist.map((item) => (
+					<WishlistRow
+						key={item._id || item.propertyId}
+						item={item}
+						onOffer={() =>
+							navigate(`/dashboard/offer/${item.property?._id || item.propertyId}`)
+						}
+						onRemove={() => removeFromWishlist(item.propertyId)}
+						removing={removing}
+					/>
 				))}
+			</ul>
+		</div>
+	);
+}
+
+function WishlistRow({ item, onOffer, onRemove, removing }) {
+	const home = item.property;
+	const title = home?.title || 'This listing is no longer available';
+	const price = home
+		? `${formatMoney(home.minPrice)}${
+				home.maxPrice != null && String(home.maxPrice) !== String(home.minPrice)
+					? ` – ${formatMoney(home.maxPrice)}`
+					: ''
+			}`
+		: '';
+
+	return (
+		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
+			{item.propertyId ? (
+				<Link
+					to={`/all-properties/${item.propertyId}`}
+					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
+				>
+					<FillPhoto src={home?.image} alt={title} />
+				</Link>
+			) : (
+				<div className='w-2/5 max-w-72 shrink-0 bg-muted' />
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
+				{item.propertyId ? (
+					<Link
+						to={`/all-properties/${item.propertyId}`}
+						className='line-clamp-2 font-medium leading-snug transition-colors duration-200 hover:text-brand'
+					>
+						{title}
+					</Link>
+				) : (
+					<p className='font-medium'>{title}</p>
+				)}
+				{home?.location ? (
+					<p className='truncate text-sm text-muted-foreground'>{home.location}</p>
+				) : null}
+				{price ? <p className='text-base font-medium tabular-nums'>{price}</p> : null}
+				<div className='mt-auto flex flex-wrap items-center justify-between gap-2 pt-3'>
+					{home?.agentName ? (
+						<div className='flex min-w-0 items-center gap-2'>
+							<PersonAvatar
+								name={home.agentName}
+								src={home.agentImage}
+								className='size-8'
+							/>
+							<p className='truncate text-sm'>{home.agentName}</p>
+						</div>
+					) : (
+						<span />
+					)}
+					<div className='flex flex-wrap gap-2'>
+						{item.propertyId ? (
+							<Button size='sm' variant='accent' onClick={onOffer}>
+								Make offer
+							</Button>
+						) : null}
+						<Button
+							size='sm'
+							variant='ghost'
+							className='text-destructive'
+							onClick={onRemove}
+							disabled={removing}
+						>
+							Remove
+						</Button>
+					</div>
+				</div>
 			</div>
+		</li>
+	);
+}
+
+function FillPhoto({ src, alt }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	return (
+		<img
+			src={src}
+			alt={alt || ''}
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
+	);
+}
+
+function HomeSkeleton() {
+	return (
+		<div className='grid grid-cols-1 gap-4 xl:grid-cols-2' aria-busy='true'>
+			<span className='sr-only'>Loading wishlist</span>
+			{Array.from({ length: 4 }, (_, index) => (
+				<div
+					key={index}
+					className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'
+				>
+					<Skeleton className='w-2/5 max-w-72 rounded-none' />
+					<div className='flex-1 space-y-2 p-4'>
+						<Skeleton className='h-4 w-3/4' />
+						<Skeleton className='h-3 w-1/2' />
+						<Skeleton className='h-4 w-2/3' />
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }

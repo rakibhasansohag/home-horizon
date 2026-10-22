@@ -1,20 +1,19 @@
+import { useState } from 'react';
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import useAxiosSecure from '@/hooks/useAxiosSecure';
-import useAuth from '@/hooks/useAuth';
+import { Link } from 'react-router';
+import { Star } from 'lucide-react';
 import moment from 'moment';
 import { toast } from 'react-toastify';
-import SkeletonCard from '@/components/Shared/skeletons/SkeletonCard';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import useAxiosSecure from '@/hooks/useAxiosSecure';
+import useAuth from '@/hooks/useAuth';
 import { gateQuery } from '@/lib/queryWait';
-import { Link, useNavigate } from 'react-router';
-import { Star } from 'lucide-react';
 
 export default function MyReviews() {
 	const { user } = useAuth();
 	const axiosSecure = useAxiosSecure();
 	const queryClient = useQueryClient();
-	const navigate = useNavigate();
 
 	const reviewsQuery = useQuery({
 		queryKey: ['my-reviews', user?.uid],
@@ -41,15 +40,7 @@ export default function MyReviews() {
 	console.log(user);
 	console.log(reviews);
 
-	if (gateQuery(reviewsQuery) === 'loading') {
-		return (
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl'>
-				{Array.from({ length: 6 }).map((_, i) => (
-					<SkeletonCard key={i} />
-				))}
-			</div>
-		);
-	}
+	if (gateQuery(reviewsQuery) === 'loading') return <ReviewSkeleton />;
 
 	if (gateQuery(reviewsQuery) === 'error')
 		return <p className='text-destructive'>Could not load your reviews.</p>;
@@ -58,7 +49,7 @@ export default function MyReviews() {
 		return (
 			<p className='text-base text-muted-foreground'>
 				You have not written a review yet.{' '}
-				<Link to='/all-properties' className='font-medium text-brand hover:underline'>
+				<Link to='/all-properties' className='font-medium text-brand'>
 					Browse properties
 				</Link>
 			</p>
@@ -66,68 +57,141 @@ export default function MyReviews() {
 	}
 
 	return (
-		<div className='w-full max-w-7xl space-y-4'>
-			<p className='text-base text-muted-foreground'>
-				{reviews.length} reviews
+		<div className='w-full space-y-6'>
+			<p className='text-sm text-muted-foreground'>
+				{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
 			</p>
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-				{reviews?.map((review) => (
-					<Card key={review._id}>
-						<CardHeader>
-							<CardTitle className='text-lg'>
-								<Link
-									to={`/all-properties/${review.propertyId}`}
-									className='font-medium text-brand'
-								>
-									{review.property?.title || review.propertyTitle || 'Listing'}
-								</Link>
-							</CardTitle>
-							{review.property?.image ? (
-								<img
-									src={review.property.image}
-									alt=''
-									className='mt-2 h-28 w-full rounded-md object-cover'
-								/>
-							) : null}
-							<p className='text-sm text-muted-foreground'>
-								Agent: {review.agentName || 'Unknown'}
-							</p>
-							<p className='text-sm text-muted-foreground'>
-								Reviewed on:{' '}
-								{moment(review.createdAt).format('DD-MM-YYYY HH:mm:ss')}
-							</p>
-						</CardHeader>
-						<CardContent className='space-y-3'>
-							<p className='text-base'>{review.reviewText}</p>
-
-							<div className='flex items-center justify-between'>
-								<p className='flex items-center gap-1 text-sm text-foreground'>
-									<Star className='size-4 fill-brand text-brand' aria-hidden='true' />
-									{review.rating}/5
-								</p>
-								<div className='flex gap-2'>
-									<Button
-										size={'sm'}
-										onClick={() =>
-											navigate(`/all-properties/${review.propertyId}`)
-										}
-									>
-										View
-									</Button>
-									<Button
-										variant='destructive'
-										size='sm'
-										onClick={() => deleteReview(review._id)}
-										disabled={isDeleting}
-									>
-										Delete
-									</Button>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+			<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+				{reviews.map((review) => (
+					<MyReviewRow
+						key={review._id}
+						review={review}
+						onDelete={() => deleteReview(review._id)}
+						deleting={isDeleting}
+					/>
 				))}
+			</ul>
+		</div>
+	);
+}
+
+function MyReviewRow({ review, onDelete, deleting }) {
+	const home = review.property;
+	const title = home?.title || review.propertyTitle || 'Open the listing';
+	const photo = home?.image || '';
+	const when = review.createdAt ? moment(review.createdAt).format('LL') : '';
+
+	return (
+		<li className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'>
+			{review.propertyId ? (
+				<Link
+					to={`/all-properties/${review.propertyId}`}
+					className='relative w-2/5 max-w-56 shrink-0 bg-muted'
+				>
+					<FillPhoto src={photo} alt={title} />
+				</Link>
+			) : (
+				<div className='w-2/5 max-w-56 shrink-0 bg-muted' />
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-2 p-4'>
+				{review.propertyId ? (
+					<Link
+						to={`/all-properties/${review.propertyId}`}
+						className='truncate font-medium transition-colors duration-200 hover:text-brand'
+					>
+						{title}
+					</Link>
+				) : (
+					<p className='truncate font-medium'>{title}</p>
+				)}
+				{home?.location ? (
+					<p className='truncate text-sm text-muted-foreground'>{home.location}</p>
+				) : null}
+				<p className='text-base'>{review.reviewText}</p>
+				<div className='mt-auto flex items-end justify-between gap-3 pt-2'>
+					<div className='min-w-0'>
+						<ReviewStars rating={review.rating} />
+						{review.agentName ? (
+							<p className='truncate text-sm text-muted-foreground'>
+								{review.agentName}
+							</p>
+						) : null}
+						{when ? (
+							<p className='text-sm text-muted-foreground'>{when}</p>
+						) : null}
+					</div>
+					<div className='flex shrink-0 gap-2'>
+						{review.propertyId ? (
+							<Button size='sm' variant='outline' asChild>
+								<Link to={`/all-properties/${review.propertyId}`}>View</Link>
+							</Button>
+						) : null}
+						<Button
+							variant='ghost'
+							size='sm'
+							className='text-destructive'
+							onClick={onDelete}
+							disabled={deleting}
+						>
+							Delete
+						</Button>
+					</div>
+				</div>
 			</div>
+		</li>
+	);
+}
+
+function FillPhoto({ src, alt }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	return (
+		<img
+			src={src}
+			alt={alt || ''}
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
+	);
+}
+
+function ReviewStars({ rating }) {
+	const value = Number(rating);
+	const known = Number.isInteger(value) && value >= 1 && value <= 5;
+	if (!known) return null;
+	return (
+		<p className='flex items-center gap-1'>
+			<span className='sr-only'>{value} out of 5</span>
+			{Array.from({ length: 5 }, (_, index) => (
+				<Star
+					key={index}
+					aria-hidden='true'
+					className={`size-4 ${
+						index < value ? 'fill-warning text-warning' : 'text-line'
+					}`}
+				/>
+			))}
+		</p>
+	);
+}
+
+function ReviewSkeleton() {
+	return (
+		<div className='grid grid-cols-1 gap-4 xl:grid-cols-2' aria-busy='true'>
+			<span className='sr-only'>Loading reviews</span>
+			{Array.from({ length: 4 }, (_, index) => (
+				<div
+					key={index}
+					className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'
+				>
+					<Skeleton className='w-2/5 max-w-56 rounded-none' />
+					<div className='flex-1 space-y-2 p-4'>
+						<Skeleton className='h-4 w-2/3' />
+						<Skeleton className='h-3 w-full' />
+						<Skeleton className='h-3 w-1/2' />
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }

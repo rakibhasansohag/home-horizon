@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
-const { ObjectId } = require('mongodb');
+const { attachHomes } = require('../utils/attachHomes');
 
 // POST /api/v1/offers  — submit an offer (user)
 router.post(
@@ -90,7 +90,7 @@ router.get('/', verifyFireBaseToken, verifyRole(['user']), async (req, res) => {
 
 		const Offer = getCollection('offers');
 		const offers = await Offer.find({ buyerEmail: email }).toArray();
-		res.send(offers);
+		res.send(await attachHomes(offers));
 	} catch (err) {
 		console.error('offers.get error', err);
 		res.status(500).send({ error: 'Internal server error' });
