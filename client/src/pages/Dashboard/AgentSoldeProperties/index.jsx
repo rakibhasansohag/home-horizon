@@ -1,20 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import useAxiosSecure from '@/hooks/useAxiosSecure';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from 'react';
 import { Link } from 'react-router';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
+import { formatMoney } from '@/components/Shared/PropertyCard';
+import useAxiosSecure from '@/hooks/useAxiosSecure';
+import { gateQuery } from '@/lib/queryWait';
 import {
 	FilterSection,
-	ResultSummary,
 	ShowMore,
 	usePreview,
 } from '@/pages/Dashboard/Components/DashboardFilter';
@@ -32,24 +25,17 @@ export default function AgentSoldProperties() {
 	const axiosSecure = useAxiosSecure();
 	const { filter, choose, visible, showMore } = usePreview('all');
 
-	const { data: sold = [], isLoading } = useQuery({
+	const soldQuery = useQuery({
 		queryKey: ['agent-sold-properties'],
+		placeholderData: keepPreviousData,
 		queryFn: async () => {
 			const res = await axiosSecure.get('/agent/sold-properties');
 			return res.data;
 		},
 	});
+	const sold = soldQuery.data ?? [];
+	const gate = gateQuery(soldQuery);
 
-	if (isLoading)
-		return (
-			<div className='p-4 space-y-2 max-w-full'>
-				{[...Array(6)].map((_, i) => (
-					<Skeleton key={i} className='h-10 rounded-md w-full' />
-				))}
-			</div>
-		);
-
-	// Total sold amount calculation
 	const filtered =
 		filter === 'month' ? sold.filter((item) => inThisMonth(item.paidAt)) : sold;
 	const rows = filtered.slice(0, visible);
@@ -69,121 +55,134 @@ export default function AgentSoldProperties() {
 					{ value: 'month', label: 'This month' },
 				]}
 			/>
-			<ResultSummary
-				label={filter === 'month' ? 'Sold this month' : 'Sold, all time'}
-				value={`৳${totalSold.toLocaleString()}`}
-			/>
-
-			<div className='space-y-3 md:hidden'>
-				{rows.map((item) => (
-					<article
-						key={item._id}
-						className='space-y-2 rounded-lg border border-border bg-surface p-4'
-					>
-						<div className='flex gap-3'>
-							<img
-								src={item.propertyImage}
-								alt={item.propertyTitle || item.title}
-								className='h-16 w-20 rounded-md object-cover'
-							/>
-							<div className='min-w-0'>
-								<Link
-									to={`/all-properties/${item.propertyId}`}
-									className='font-medium text-brand hover:underline'
-								>
-									{item.propertyTitle}
-								</Link>
-								<p className='text-sm text-muted-foreground'>
-									{item.propertyLocation}
-								</p>
-							</div>
-						</div>
-						<p className='text-sm'>
-							{item.buyerName}
-							<span className='text-muted-foreground'> · {item.buyerEmail}</span>
+			{gate === 'error' ? (
+				<p className='text-destructive'>Could not load sold properties.</p>
+			) : gate === 'loading' ? (
+				<SoldSkeleton />
+			) : (
+				<>
+					<p className='text-sm text-muted-foreground'>
+						{filtered.length} sold
+						{filtered.length ? ` · ${formatMoney(totalSold)}` : ''}
+					</p>
+					{rows.length === 0 ? (
+						<p className='text-base text-muted-foreground'>
+							No sales in this period.
 						</p>
-						<div className='flex items-center justify-between text-sm'>
-							<span className='font-semibold tabular-nums text-success'>
-								৳{parseInt(item.offerAmount).toLocaleString()}
-							</span>
-							<span className='text-muted-foreground'>
-								{new Date(item.paidAt).toLocaleDateString('en-BD')}
-							</span>
+					) : (
+						<div className='space-y-6'>
+							<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+								{rows.map((item) => (
+									<SoldRow key={item._id} item={item} />
+								))}
+							</ul>
+							<ShowMore
+								shown={rows.length}
+								total={filtered.length}
+								onMore={showMore}
+							/>
 						</div>
-					</article>
-				))}
+					)}
+				</>
+			)}
+		</div>
+	);
+}
+
+function SoldRow({ item }) {
+	const title = item.propertyTitle || item.title || 'Listing';
+	const when = item.paidAt
+		? new Date(item.paidAt).toLocaleDateString('en-BD')
+		: '';
+
+	return (
+		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
+			{item.propertyId ? (
+				<Link
+					to={`/all-properties/${item.propertyId}`}
+					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
+				>
+					<FillPhoto src={item.propertyImage} alt={title} />
+				</Link>
+			) : (
+				<div className='relative w-2/5 max-w-72 shrink-0 bg-muted'>
+					<FillPhoto src={item.propertyImage} alt={title} />
+				</div>
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
+				{item.propertyId ? (
+					<Link
+						to={`/all-properties/${item.propertyId}`}
+						className='line-clamp-2 font-medium leading-snug transition-colors duration-200 hover:text-brand'
+					>
+						{title}
+					</Link>
+				) : (
+					<p className='line-clamp-2 font-medium leading-snug'>{title}</p>
+				)}
+				{item.propertyLocation ? (
+					<p className='truncate text-sm text-muted-foreground'>
+						{item.propertyLocation}
+					</p>
+				) : null}
+				<p className='text-base font-medium tabular-nums text-success'>
+					{formatMoney(item.offerAmount)}
+				</p>
+				<div className='mt-auto flex flex-wrap items-center justify-between gap-2 pt-3'>
+					<div className='flex min-w-0 items-center gap-2'>
+						<PersonAvatar
+							name={item.buyerName}
+							src={item.buyerImage}
+							className='size-8'
+						/>
+						<div className='min-w-0'>
+							<p className='truncate text-sm'>{item.buyerName}</p>
+							{item.buyerEmail ? (
+								<p className='truncate text-sm text-muted-foreground'>
+									{item.buyerEmail}
+								</p>
+							) : null}
+						</div>
+					</div>
+					{when ? (
+						<p className='shrink-0 text-sm text-muted-foreground'>{when}</p>
+					) : null}
+				</div>
 			</div>
+		</li>
+	);
+}
 
-			<div className='hidden md:block'>
-			<Table className='w-full'>
-				<TableHeader>
-					<TableRow className='bg-muted dark:bg-muted hover:bg-muted'>
-						<TableHead>Property</TableHead>
-						<TableHead>Title</TableHead>
-						<TableHead>Location</TableHead>
-						<TableHead>Buyer</TableHead>
-						<TableHead>Sold Price</TableHead>
-						<TableHead>Sold At</TableHead>
-					</TableRow>
-				</TableHeader>
+function FillPhoto({ src, alt }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	return (
+		<img
+			src={src}
+			alt={alt || ''}
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
+	);
+}
 
-				<TableBody>
-					{rows.map((item, idx) => (
-						<TableRow
-							key={item._id}
-							className={`${
-								idx % 2 === 0
-									? 'bg-surface dark:bg-background'
-									: 'bg-muted dark:bg-muted'
-							} hover:bg-muted dark:hover:bg-muted transition-colors`}
-						>
-							<TableCell>
-								<img
-									src={item.propertyImage}
-									alt={item.title}
-									className='w-16 h-12 rounded-md object-cover border border-gray-300 dark:border-gray-700'
-								/>
-							</TableCell>
-							<TableCell className='font-medium text-foreground'>
-								<Link to={`/all-properties/${item.propertyId}`}>
-									{item.propertyTitle}
-								</Link>
-							</TableCell>
-							<TableCell className='text-muted-foreground'>
-								<div className='flex items-center gap-1'>
-									<MapPin className='size-4' aria-hidden='true' />
-									<span>{item.propertyLocation}</span>
-								</div>
-							</TableCell>
-							<TableCell>
-								<div className='flex items-center gap-3'>
-									<Avatar className='w-8 h-8'>
-										<AvatarImage src={item?.buyerImage || ''} />
-										<AvatarFallback>
-											{item.buyerName?.[0] || 'B'}
-										</AvatarFallback>
-									</Avatar>
-									<div className='leading-tight'>
-										<p className='text-foreground text-sm'>{item.buyerName}</p>
-										<p className='text-sm text-muted-foreground'>
-											{item.buyerEmail}
-										</p>
-									</div>
-								</div>
-							</TableCell>
-
-							<TableCell className='text-success font-semibold'>
-								৳{parseInt(item.offerAmount).toLocaleString()}
-							</TableCell>
-							<TableCell className='text-muted-foreground text-sm'>
-								{new Date(item.paidAt).toLocaleDateString('en-BD')}
-							</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-			</div>
-			<ShowMore shown={rows.length} total={filtered.length} onMore={showMore} />
+function SoldSkeleton() {
+	return (
+		<div className='grid grid-cols-1 gap-4 xl:grid-cols-2' aria-busy='true'>
+			<span className='sr-only'>Loading sold properties</span>
+			{Array.from({ length: 4 }, (_, index) => (
+				<div
+					key={index}
+					className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'
+				>
+					<Skeleton className='w-2/5 max-w-72 rounded-none' />
+					<div className='flex-1 space-y-2 p-4'>
+						<Skeleton className='h-4 w-3/4' />
+						<Skeleton className='h-3 w-1/2' />
+						<Skeleton className='h-4 w-2/3' />
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }
