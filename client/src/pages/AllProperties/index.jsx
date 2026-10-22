@@ -9,6 +9,7 @@ import { Link, useSearchParams } from 'react-router';
 import { cn } from '@/lib/utils';
 import useAxios from '../../hooks/useAxios';
 import MapView from './MapView';
+import { listingSnapshot, readSnapshot, writeSnapshot } from '@/lib/querySnapshot';
 
 const compactView = {
 	swLat: 23.7,
@@ -54,10 +55,14 @@ export default function AllProperties() {
 		setSearch(searchParams.get('search') || '');
 	}, [searchParams]);
 
+	const propertiesKey = locationSearch
+		? ['all-properties', 'search', locationSearch, sort, forceFetch]
+		: ['all-properties', search, sort, bounds, forceFetch];
+	const savedProperties =
+		!forceFetch && (locationSearch || bounds) ? readSnapshot(propertiesKey) : undefined;
+
 	const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
-		queryKey: locationSearch
-			? ['all-properties', 'search', locationSearch, sort, forceFetch]
-			: ['all-properties', search, sort, bounds, forceFetch],
+		queryKey: propertiesKey,
 		queryFn: async () => {
 			const params = new URLSearchParams({
 				search: locationSearch.toLowerCase(),
@@ -72,12 +77,17 @@ export default function AllProperties() {
 			const res = await axiosInstance.get(
 				`/properties/verified?${params.toString()}`,
 			);
-			return res.data;
+			const list = Array.isArray(res.data) ? res.data : [];
+			if (!forceFetch) writeSnapshot(propertiesKey, listingSnapshot(list));
+			return list;
 		},
 		enabled: !!locationSearch || !!bounds,
 		placeholderData: keepPreviousData,
-		staleTime: 5 * 60 * 1000,
+		initialData: savedProperties?.data,
+		initialDataUpdatedAt: savedProperties?.updatedAt,
+		staleTime: 10 * 60 * 1000,
 		gcTime: 30 * 60 * 1000,
+		refetchOnWindowFocus: false,
 	});
 
 	const shown = useMemo(() => {

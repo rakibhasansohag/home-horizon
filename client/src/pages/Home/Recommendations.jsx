@@ -1,8 +1,10 @@
-import recommendationImg from '@/assets/recomand.webp';
+import recommendationImg from '@/assets/recommendation-house.webp';
 import useAuth from '@/hooks/useAuth';
 import useAxios from '@/hooks/useAxios';
 import { formatMoney } from '@/components/Shared/PropertyCard';
+import { homeFacts, listedAmenities } from '@/lib/amenities';
 import { useQuery } from '@tanstack/react-query';
+import { readSnapshot, writeSnapshot, listingSnapshot } from '@/lib/querySnapshot';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router';
@@ -13,14 +15,21 @@ const dhakaView = {
 	neLat: 23.9,
 	neLng: 90.5,
 };
+const recommendationKey = ['home-recommendations', 'dhaka'];
+const RECOMMENDATION_LIMIT = 3;
 
 function Recommendations() {
 	const { user } = useAuth();
 	const axiosInstance = useAxios();
+	const saved = readSnapshot(recommendationKey);
 	const { data: homes = [], isLoading } = useQuery({
-		queryKey: ['home-recommendations', 'dhaka'],
+		queryKey: recommendationKey,
 		enabled: !!user,
-		staleTime: 5 * 60 * 1000,
+		staleTime: 10 * 60 * 1000,
+		gcTime: 30 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		initialData: saved?.data,
+		initialDataUpdatedAt: saved?.updatedAt,
 		queryFn: async () => {
 			const params = new URLSearchParams({
 				search: '',
@@ -30,7 +39,11 @@ function Recommendations() {
 			const res = await axiosInstance.get(
 				`/properties/verified?${params.toString()}`,
 			);
-			return Array.isArray(res.data) ? res.data.slice(0, 4) : [];
+			const list = Array.isArray(res.data)
+				? listingSnapshot(res.data).slice(0, RECOMMENDATION_LIMIT)
+				: [];
+			writeSnapshot(recommendationKey, list);
+			return list;
 		},
 	});
 
@@ -64,36 +77,56 @@ function Recommendations() {
 								Verified homes around Dhaka.
 							</p>
 							<ul className='mt-5 space-y-3'>
-								{homes.map((home) => {
+								{homes.slice(0, RECOMMENDATION_LIMIT).map((home) => {
 									const price = `${formatMoney(home.minPrice)}${
 										home.maxPrice != null &&
 										String(home.maxPrice) !== String(home.minPrice)
 											? ` – ${formatMoney(home.maxPrice)}`
 											: ''
 									}`;
+									const facts = homeFacts(home);
+									const extras = [
+										home.propertyType,
+										...listedAmenities(home.amenities)
+											.slice(0, 2)
+											.map((item) => item.label),
+									].filter(Boolean);
+									const photo = home.images?.[0]?.url;
 									return (
 										<li key={home._id}>
 											<Link
 												to={`/all-properties/${home._id}`}
-												className='flex items-center gap-3 rounded-lg border border-border p-2 transition-colors duration-200 hover:border-brand'
+												className='flex gap-3 rounded-lg border border-border p-2 transition-colors duration-200 hover:border-brand'
 											>
-												{home.images?.[0]?.url ? (
-													<img
-														src={home.images[0].url}
-														alt=''
-														className='h-16 w-20 shrink-0 rounded-md object-cover'
-													/>
-												) : (
-													<div className='h-16 w-20 shrink-0 rounded-md bg-muted' />
-												)}
-												<span className='min-w-0'>
-													<span className='block truncate font-semibold'>
+												<div className='relative min-h-24 w-28 shrink-0 self-stretch overflow-hidden rounded-md bg-muted'>
+													{photo ? (
+														<img
+															src={photo}
+															alt=''
+															className='absolute inset-0 h-full w-full object-cover'
+														/>
+													) : null}
+												</div>
+												<span className='flex min-w-0 flex-1 flex-col justify-center gap-0.5 py-1'>
+													<span className='truncate font-semibold'>
 														{home.title || 'Property'}
 													</span>
-													<span className='block truncate text-sm text-muted-foreground'>
-														{home.location}
-													</span>
-													<span className='mt-1 block text-sm font-semibold tabular-nums'>
+													{home.location ? (
+														<span className='truncate text-sm text-muted-foreground'>
+															{home.location}
+														</span>
+													) : null}
+													{facts ? (
+														<span className='truncate text-sm text-muted-foreground'>
+															{facts}
+														</span>
+													) : null}
+													{extras.length ? (
+														<span className='truncate text-sm capitalize text-muted-foreground'>
+															{extras.join(' · ')}
+														</span>
+													) : null}
+													<span className='mt-1 text-sm font-semibold tabular-nums'>
 														{price}
 													</span>
 												</span>
@@ -117,8 +150,8 @@ function Recommendations() {
 				<div className='w-full md:w-1/2'>
 					<img
 						src={recommendationImg}
-						alt='Sample recommendation cards laid over a brick house'
-						className='mx-auto h-auto w-full max-w-md'
+						alt='A gray brick house with a front porch'
+						className='mx-auto aspect-[4/3] w-full max-w-md rounded-lg object-cover'
 					/>
 				</div>
 			</div>
