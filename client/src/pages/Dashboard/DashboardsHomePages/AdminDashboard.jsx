@@ -4,7 +4,7 @@ import StatCard from '@/pages/Dashboard/Components/StatCard';
 import RevenueChart from '@/pages/Dashboard/Components/RevenueChart';
 import SaleAmountChart from '@/pages/Dashboard/Components/SaleAmountChart';
 import ChartFallback from '@/pages/Dashboard/Components/ChartFallback';
-import SmallListCard from '@/pages/Dashboard/Components/SmallListCard';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
 import {
 	Table,
 	TableBody,
@@ -200,11 +200,7 @@ export default function AdminDashboard() {
 								{sales.map((sale, index) => (
 									<TableRow
 										key={sale._id || sale.transactionId || index}
-										className={
-											index % 2 === 0
-												? 'bg-surface hover:bg-muted'
-												: 'bg-muted hover:bg-muted'
-										}
+										className={zebra(index)}
 									>
 										<TableCell className='max-w-xs font-medium'>
 											<Link
@@ -234,14 +230,84 @@ export default function AdminDashboard() {
 			) : null}
 
 			{showPeople ? (
-				<div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-					<section className='rounded-lg border border-border bg-surface p-4'>
+				<div className='grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2'>
+					<section className='min-w-0 rounded-lg border border-border bg-surface p-4'>
 						<h3 className='mb-3 font-semibold'>Top agents</h3>
-						<SmallListCard items={agents} type='agents' />
+						{agents.length === 0 ? (
+							<p className='text-sm text-muted-foreground'>No agents yet.</p>
+						) : (
+							<Table className='table-fixed'>
+								<TableHeader>
+									<TableRow className='bg-muted hover:bg-muted'>
+										<TableHead>Name</TableHead>
+										<TableHead className='w-16 text-right'>Sales</TableHead>
+										<TableHead className='w-28 text-right'>Earned</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{agents.map((agent, index) => (
+										<TableRow
+											key={agent.id || agent._id || index}
+											className={zebra(index)}
+										>
+											<TableCell className='overflow-hidden'>
+												<PersonName name={agent.name} src={agent.avatar} />
+											</TableCell>
+											<TableCell className='text-right tabular-nums'>
+												{agent.count || 0}
+											</TableCell>
+											<TableCell className='text-right font-semibold tabular-nums'>
+												৳{Number(agent.total || 0).toLocaleString()}
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						)}
 					</section>
-					<section className='rounded-lg border border-border bg-surface p-4'>
+					<section className='min-w-0 rounded-lg border border-border bg-surface p-4'>
 						<h3 className='mb-3 font-semibold'>Pending agent approvals</h3>
-						<SmallListCard items={pending} type='pendingAgents' />
+						{pending.length === 0 ? (
+							<p className='text-sm text-muted-foreground'>
+								No agents are waiting.
+							</p>
+						) : (
+							<Table className='table-fixed'>
+								<TableHeader>
+									<TableRow className='bg-muted hover:bg-muted'>
+										<TableHead>Name</TableHead>
+										<TableHead>Email</TableHead>
+										<TableHead className='w-20 text-right'> </TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{pending.map((person, index) => (
+										<TableRow
+											key={person._id || person.uid || index}
+											className={zebra(index)}
+										>
+											<TableCell className='overflow-hidden'>
+												<PersonName
+													name={person.name || person.email}
+													src={person.profilePic}
+												/>
+											</TableCell>
+											<TableCell className='truncate text-muted-foreground'>
+												{person.email}
+											</TableCell>
+											<TableCell className='text-right'>
+												<Link
+													to='/dashboard/manage-users'
+													className='text-sm font-medium text-brand hover:underline'
+												>
+													Review
+												</Link>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						)}
 						<div className='mt-3'>
 							<Link to='/dashboard/manage-users' className='text-brand'>
 								Review agents
@@ -257,28 +323,27 @@ export default function AdminDashboard() {
 					{users.length === 0 ? (
 						<p className='text-sm text-muted-foreground'>No users yet.</p>
 					) : (
-						<Table>
+						<Table className='table-fixed'>
 							<TableHeader>
 								<TableRow className='bg-muted hover:bg-muted'>
 									<TableHead>Name</TableHead>
 									<TableHead>Email</TableHead>
-									<TableHead>Role</TableHead>
+									<TableHead className='w-24'>Role</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{users.map((person, index) => (
 									<TableRow
 										key={person._id || person.uid || index}
-										className={
-											index % 2 === 0
-												? 'bg-surface hover:bg-muted'
-												: 'bg-muted hover:bg-muted'
-										}
+										className={zebra(index)}
 									>
-										<TableCell className='font-medium'>
-											{person.name || 'User'}
+										<TableCell className='overflow-hidden'>
+											<PersonName
+												name={person.name}
+												src={person.profilePic || person.photoURL}
+											/>
 										</TableCell>
-										<TableCell className='text-muted-foreground'>
+										<TableCell className='truncate text-muted-foreground'>
 											{person.email}
 										</TableCell>
 										<TableCell className='capitalize'>
@@ -324,6 +389,22 @@ export default function AdminDashboard() {
 					/>
 				</section>
 			) : null}
+		</div>
+	);
+}
+
+function zebra(index) {
+	return index % 2 === 0
+		? 'bg-surface hover:bg-muted'
+		: 'bg-muted hover:bg-muted';
+}
+
+function PersonName({ name, src, fallback = 'User' }) {
+	const label = name || fallback;
+	return (
+		<div className='flex min-w-0 items-center gap-2'>
+			<PersonAvatar name={label} src={src} className='size-8' />
+			<span className='truncate font-medium'>{label}</span>
 		</div>
 	);
 }

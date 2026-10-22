@@ -30,6 +30,7 @@ import NotFoundPage from '../components/Shared/NotFound/NotFoundPage';
 import AdminAdvertiseProperty from '../pages/Dashboard/AdminAdvertiseProperty';
 import ComingSoonPaymentPage from '../components/Shared/NotFound/ComingSoonPayment';
 import ComingSoon from '../components/Shared/NotFound/ComingSoon';
+import Contact from '../pages/Contact';
 
 const router = createBrowserRouter([
 	{
@@ -71,7 +72,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'contact',
-				Component: ComingSoon,
+				Component: Contact,
 			},
 		],
 	},

@@ -9,10 +9,6 @@ const pages = {
 		title: 'About',
 		line: 'A short note about HomeHorizon is on the way.',
 	},
-	'/contact': {
-		title: 'Contact',
-		line: 'A contact form is on the way. Leave an email and we will write when it is ready.',
-	},
 	'/legal/terms-of-service': {
 		title: 'Terms of service',
 		line: 'The terms are being written.',
