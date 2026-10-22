@@ -16,7 +16,7 @@ import {
 import ViewAllCard from '@/pages/Dashboard/Components/ViewAllCard';
 import { FilterSection } from '@/pages/Dashboard/Components/DashboardFilter';
 import { Link } from 'react-router';
-import PropertyCard from '../Components/PropertyCard';
+import ListingStrip from '../Components/ListingStrip';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const PREVIEW = 6;
@@ -298,19 +298,28 @@ export default function AdminDashboard() {
 			{showListings ? (
 				<section className='rounded-lg border border-border bg-surface p-4'>
 					<h3 className='mb-3 font-semibold'>Recent properties</h3>
-					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+					<div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 						{properties.map((property) => (
-							<PropertyCard property={property} key={property._id} />
-						))}
-						<div>
-							<ViewAllCard
-								to='/dashboard/manage-properties'
-								count={totals.properties}
-								label='View all properties'
-								showCount={properties.length}
+							<ListingStrip
+								key={property._id}
+								property={property}
+								status={property.verificationStatus}
+								statusClassName={
+									property.verificationStatus === 'verified'
+										? 'text-brand'
+										: property.verificationStatus === 'rejected'
+											? 'text-destructive'
+											: 'text-warning'
+								}
 							/>
-						</div>
+						))}
 					</div>
+					<ViewAllCard
+						to='/dashboard/manage-properties'
+						count={totals.properties}
+						label='View all properties'
+						showCount={properties.length}
+					/>
 				</section>
 			) : null}
 		</div>

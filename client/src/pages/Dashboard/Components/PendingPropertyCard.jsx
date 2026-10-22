@@ -1,69 +1,75 @@
 import { Link } from 'react-router';
-import { MapPin, User } from 'lucide-react';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
+import { formatMoney } from '@/components/Shared/PropertyCard';
+import { cn } from '@/lib/utils';
+import { StripPhoto } from './ListingStrip';
+
+const STATUS_TONE = {
+	pending: 'text-warning',
+	accepted: 'text-brand',
+	bought: 'text-success',
+	rejected: 'text-destructive',
+};
 
 export default function PendingPropertyCard({ property }) {
-	console.log(property);
+	const home = property?.property || {};
+	const id = home._id || property?.propertyId;
+	const title = home.title || property?.propertyTitle || 'Listing';
+	const location = home.location || property?.propertyLocation || '';
+	const photo = home.images?.[0]?.url || property?.propertyImage || '';
+	const agent = property?.agentName || home.agentName || '';
+	const status = property?.status || '';
+
 	return (
-		<div className='flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-brand'>
-			{/* Image */}
-			<div className='relative w-full h-48 flex-shrink-0'>
-				<img
-					src={
-						property?.property?.images?.[0]?.url ||
-						property?.propertyImage ||
-						'/placeholder.jpg'
-					}
-					alt={property.property.title}
-					className='h-full w-full object-cover'
-				/>
-			</div>
-
-			{/* Content */}
-			<div className='p-4 flex flex-col flex-grow'>
-				{/* Title */}
-				<div>
-					<Link
-						to={`/all-properties/${property.property._id}`}
-						className='font-bold text-lg text-foreground group-hover:text-brand transition-colors duration-300 line-clamp-2'
-					>
-						{property.property.title}
-					</Link>
+		<article className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'>
+			{id ? (
+				<Link
+					to={`/all-properties/${id}`}
+					className='relative w-2/5 max-w-56 shrink-0 bg-muted'
+				>
+					<StripPhoto src={photo} alt={title} />
+				</Link>
+			) : (
+				<div className='relative w-2/5 max-w-56 shrink-0 bg-muted'>
+					<StripPhoto src={photo} alt={title} />
 				</div>
-
-				{/* Location & Agent */}
-				<div className='space-y-1 text-muted-foreground text-sm mt-2 mb-4'>
-					<p className='flex items-center gap-2'>
-						<MapPin className='size-4 text-brand' aria-hidden='true' />
-						{property.property.location}
-					</p>
-					<p className='flex items-center gap-2'>
-						<User className='size-4 text-brand' aria-hidden='true' />
-						<span className='font-medium'>Agent:</span> {property.agentName}
-					</p>
-				</div>
-
-				{/* Offer Info */}
-				<div className='mt-auto pt-4 border-t border-brand/20'>
-					<div className='flex items-center justify-between'>
-						<span className='font-medium text-sm'>Offer Amount</span>
-						<span className='font-bold text-lg text-brand'>
-							৳{property.offerAmount?.toLocaleString()}
-						</span>
-					</div>
-					<div className='flex items-center justify-between mt-1'>
-						<span className='font-medium text-sm'>Status</span>
-						<span
-							className={`rounded-md px-2 py-1 text-sm font-medium ${
-								property?.status?.toLowerCase() === 'pending'
-									? 'bg-warning-soft text-warning'
-									: 'bg-success-soft text-success'
-							}`}
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
+				<div className='flex items-start justify-between gap-3'>
+					{id ? (
+						<Link
+							to={`/all-properties/${id}`}
+							className='line-clamp-2 font-medium leading-snug transition-colors duration-200 hover:text-brand'
 						>
-							{property?.status}
-						</span>
-					</div>
+							{title}
+						</Link>
+					) : (
+						<p className='line-clamp-2 font-medium leading-snug'>{title}</p>
+					)}
+					{status ? (
+						<p
+							className={cn(
+								'shrink-0 text-sm capitalize',
+								STATUS_TONE[status.toLowerCase()] || 'text-muted-foreground',
+							)}
+						>
+							{status}
+						</p>
+					) : null}
 				</div>
+				{location ? (
+					<p className='truncate text-sm text-muted-foreground'>{location}</p>
+				) : null}
+				<p className='text-base font-medium tabular-nums'>
+					{formatMoney(property?.offerAmount)}
+				</p>
+				{agent ? (
+					<div className='mt-auto flex min-w-0 items-center gap-2 pt-3'>
+						<PersonAvatar name={agent} className='size-8' />
+						<p className='truncate text-sm'>{agent}</p>
+					</div>
+				) : null}
 			</div>
-		</div>
+		</article>
 	);
 }

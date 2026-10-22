@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import PropertyCard from '../Components/PropertyCard';
 import DashboardSkeleton from '@/components/Shared/skeletons/DashboardSkeleton';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { gateQuery } from '@/lib/queryWait';
 import useUserDashboard from '@/hooks/useUserDashboard';
 import { Clock, Heart, ShoppingBag, Wallet } from 'lucide-react';
 import { Link } from 'react-router';
 import BoughtPropertyCard from '../Components/BoughtPropertyCard';
+import ListingStrip from '../Components/ListingStrip';
 import PendingPropertyCard from '../Components/PendingPropertyCard';
 import MonthlyBarChart from '../Components/MonthlyBarChart';
 import ChartFallback from '../Components/ChartFallback';
@@ -40,10 +41,10 @@ const UserDashboard = () => {
 	return (
 		<div className='space-y-8'>
 			<div className='flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 sm:flex-row'>
-				<img
-					src={dashboard.user.avatar || '/default-avatar.png'}
-					alt=''
-					className='size-16 rounded-full object-cover'
+				<PersonAvatar
+					name={dashboard.user.name}
+					src={dashboard.user.avatar}
+					className='size-16'
 				/>
 				<div className='text-center sm:text-left'>
 					<h2 className='font-display text-3xl text-foreground'>
@@ -125,6 +126,7 @@ const UserDashboard = () => {
 				<Section
 					title='Wishlist'
 					properties={dashboard.wishlistProperties}
+					CardComponent={ListingStrip}
 					to='/dashboard/wishlist'
 				/>
 			)}
@@ -152,8 +154,7 @@ const StatBox = ({ title, value, icon: Icon }) => (
 	</div>
 );
 
-// eslint-disable-next-line no-unused-vars
-const Section = ({ title, properties = [], CardComponent = PropertyCard, to }) => {
+const Section = ({ title, properties = [], CardComponent = ListingStrip, to }) => {
 	const [visible, setVisible] = useState(PREVIEW_LIMIT);
 	const shown = properties.slice(0, visible);
 
@@ -162,7 +163,7 @@ const Section = ({ title, properties = [], CardComponent = PropertyCard, to }) =
 			<h3 className='mb-3 text-xl font-semibold'>{title}</h3>
 			{shown.length > 0 ? (
 				<div className='space-y-4'>
-					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+					<div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 						{shown.map((property) => (
 							<CardComponent key={property._id} property={property} />
 						))}

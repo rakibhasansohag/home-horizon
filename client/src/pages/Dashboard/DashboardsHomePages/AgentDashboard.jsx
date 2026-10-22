@@ -6,7 +6,8 @@ import { toast } from 'react-toastify';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import AgentPendingCard from '../Components/AgentPendingCard';
 import AgentSoldCard from '../Components/AgentSoldCard';
-import PropertyCard from '../Components/PropertyCard';
+import ListingStrip from '../Components/ListingStrip';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
 
 import ViewAllCard from '../Components/ViewAllCard';
 import RevenueChart from '../Components/RevenueChart';
@@ -28,7 +29,6 @@ export default function AgentDashboard() {
 		return <div className='p-6 text-destructive'>Could not load your dashboard.</div>;
 
 	const { agent, stats, listings, leads, sold, earningsSparkline } = dashboard;
-	console.log(dashboard);
 	async function handleOfferAction(offerId, status, propertyId) {
 		try {
 			await axios.patch(`/agent/offers/${offerId}/status`, {
@@ -58,18 +58,16 @@ export default function AgentDashboard() {
 
 	return (
 		<div className='space-y-6'>
-			<div className='flex items-center justify-between w-full'>
-				<div>
-					<h1 className='text-2xl font-bold'>Welcome back, {agent.name}</h1>
-					<p className='text-sm text-muted-foreground'>
+			<div className='flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 sm:flex-row sm:justify-between'>
+				<div className='text-center sm:text-left'>
+					<h1 className='font-display text-3xl text-foreground'>
+						Welcome back, {agent.name}
+					</h1>
+					<p className='mt-1 text-base text-muted-foreground'>
 						Agent dashboard overview
 					</p>
 				</div>
-				<img
-					src={agent.avatar || '/placeholder-avatar.png'}
-					alt=''
-					className='size-12 rounded-full object-cover'
-				/>
+				<PersonAvatar name={agent.name} src={agent.avatar} className='size-16' />
 			</div>
 			<FilterSection
 				label='Show'
@@ -132,24 +130,19 @@ export default function AgentDashboard() {
 						{totalCount ? `(Showing ${previews.length} of ${totalCount})` : ''}
 					</h3>
 
-					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
-						{previews.map((l) => (
-							<div key={l._id} className='h-full'>
-								<PropertyCard property={l} />
-							</div>
+					<div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+						{previews.map((listing) => (
+							<ListingStrip key={listing._id} property={listing} />
 						))}
-
-						<div className='h-full'>
-							<ViewAllCard
-								to='/dashboard/my-property'
-								count={totalCount}
-								showCount={previews.length}
-								label={
-									totalCount > 0 ? `View all ${totalCount}` : 'No listings yet'
-								}
-							/>
-						</div>
 					</div>
+					<ViewAllCard
+						to='/dashboard/my-property'
+						count={totalCount}
+						showCount={previews.length}
+						label={
+							totalCount > 0 ? `View all ${totalCount}` : 'No listings yet'
+						}
+					/>
 				</div>
 				) : null}
 
@@ -190,7 +183,7 @@ export default function AgentDashboard() {
 						</div>
 					</div>
 
-					<div className='max-w-[320px] sm:max-w-[450px] mx-auto mt-4'>
+					<div className='mt-4'>
 						<ReviewsCarousel
 							reviews={dashboard.reviewsPreview ?? dashboard.reviews ?? []}
 						/>
@@ -200,58 +193,44 @@ export default function AgentDashboard() {
 			{showLeads ? (
 			<div className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='font-semibold mb-3'>Recent Leads ({leads.length}) </h3>
-				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
+				<div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 					{take6(leads).map((lead) => (
-						<div
+						<AgentPendingCard
 							key={lead._id}
-							className='h-full flex flex-col justify-between'
-						>
-							<AgentPendingCard
-								offer={lead}
-								onAccept={(offerId, propertyId) =>
-									handleOfferAction(offerId, 'accepted', propertyId)
-								}
-								onReject={(offerId, propertyId) =>
-									handleOfferAction(offerId, 'rejected', propertyId)
-								}
-							/>
-						</div>
-					))}
-					<div className='h-full'>
-						<ViewAllCard
-							to='/dashboard/agent-offer-properties'
-							count={leads.length}
-							showCount={take6(leads).length}
-							label={
-								leads.length > 0
-									? `View all ${leads.length}`
-									: 'No listings yet'
+							offer={lead}
+							onAccept={(offerId, propertyId) =>
+								handleOfferAction(offerId, 'accepted', propertyId)
+							}
+							onReject={(offerId, propertyId) =>
+								handleOfferAction(offerId, 'rejected', propertyId)
 							}
 						/>
-					</div>
+					))}
 				</div>
+				<ViewAllCard
+					to='/dashboard/agent-offer-properties'
+					count={leads.length}
+					showCount={take6(leads).length}
+					label={
+						leads.length > 0 ? `View all ${leads.length}` : 'No listings yet'
+					}
+				/>
 			</div>
 			) : null}
 			{showSold ? (
 			<div className='rounded-lg border border-border bg-surface p-4'>
 				<h3 className='font-semibold mb-3'>Recent Sold</h3>
-				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch'>
-					{take6(sold).map((s) => (
-						<div key={s._id} className='h-full'>
-							<AgentSoldCard sale={s} />
-						</div>
+				<div className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+					{take6(sold).map((sale) => (
+						<AgentSoldCard key={sale._id} sale={sale} />
 					))}
-					<div className='h-full'>
-						<ViewAllCard
-							to='/dashboard/sold-properties'
-							count={sold.length}
-							showCount={take6(sold).length}
-							label={
-								sold.length > 0 ? `View all ${sold.length}` : 'No listings yet'
-							}
-						/>
-					</div>
 				</div>
+				<ViewAllCard
+					to='/dashboard/sold-properties'
+					count={sold.length}
+					showCount={take6(sold).length}
+					label={sold.length > 0 ? `View all ${sold.length}` : 'No listings yet'}
+				/>
 			</div>
 			) : null}
 		</div>

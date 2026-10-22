@@ -10,17 +10,18 @@ export default function ViewAllCard({
 	return (
 		<Link
 			to={to}
-			className='flex h-full flex-col justify-center rounded-lg border border-border bg-surface p-6 transition-colors duration-200 hover:border-brand hover:bg-brand-soft'
+			className='mt-4 flex min-h-14 items-center justify-between gap-3 rounded-lg border border-border px-4 transition-colors duration-200 hover:border-brand'
 			aria-label={label}
 		>
-			<h4 className='text-lg font-semibold text-foreground'>{label}</h4>
-			<p className='mt-2 text-sm text-muted-foreground'>
-				{count > 0 ? `Showing ${showCount} of ${count}` : 'No more items'}
-			</p>
-			<span className='mt-4 inline-flex items-center gap-2 font-medium text-brand'>
-				Open
-				<ArrowRight className='size-4' />
+			<span>
+				<span className='font-medium text-foreground'>{label}</span>
+				<span className='mt-0.5 block text-sm text-muted-foreground'>
+					{count > 0
+						? `Showing ${showCount} of ${count}`
+						: 'Open the full list'}
+				</span>
 			</span>
+			<ArrowRight className='size-4 shrink-0 text-brand' aria-hidden='true' />
 		</Link>
 	);
 }

@@ -1,60 +1,73 @@
 import { Link } from 'react-router';
-import { Calendar, MapPin, Receipt, User } from 'lucide-react';
+import PersonAvatar from '@/components/Shared/PersonAvatar';
+import { formatMoney } from '@/components/Shared/PropertyCard';
+import { StripPhoto } from './ListingStrip';
+
+function formatDay(value) {
+	if (!value) return '';
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return '';
+	return date.toLocaleDateString(undefined, {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+	});
+}
 
 export default function BoughtPropertyCard({ property }) {
+	const title = property?.title || 'Listing';
+	const photo = property?.images?.[0]?.url || '';
+	const boughtOn = formatDay(property?.buyingDate);
+
 	return (
-		<div className='flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface transition-colors duration-200 hover:border-brand'>
-			{/* Image */}
-			<div className='relative w-full h-48 flex-shrink-0'>
-				<img
-					src={property.images?.[0]?.url || '/placeholder.jpg'}
-					alt={property.title}
-					className='h-full w-full object-cover'
-				/>
-			</div>
-
-			{/* Content */}
-			<div className='p-5 space-y-3 flex flex-col flex-grow'>
-				{/* Title */}
-				<div>
-					<Link
-						to={`/all-properties/${property._id}`}
-						className='font-bold text-xl text-foreground group-hover:text-brand transition-colors duration-300 line-clamp-2'
-					>
-						{property.title}
-					</Link>
+		<article className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'>
+			{property?._id ? (
+				<Link
+					to={`/all-properties/${property._id}`}
+					className='relative w-2/5 max-w-56 shrink-0 bg-muted'
+				>
+					<StripPhoto src={photo} alt={title} />
+				</Link>
+			) : (
+				<div className='relative w-2/5 max-w-56 shrink-0 bg-muted' />
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
+				<div className='flex items-start justify-between gap-3'>
+					{property?._id ? (
+						<Link
+							to={`/all-properties/${property._id}`}
+							className='line-clamp-2 font-medium leading-snug transition-colors duration-200 hover:text-brand'
+						>
+							{title}
+						</Link>
+					) : (
+						<p className='line-clamp-2 font-medium leading-snug'>{title}</p>
+					)}
+					<p className='shrink-0 text-sm text-success'>Bought</p>
 				</div>
-
-				{/* Location & Agent */}
-				<div className='space-y-1 text-muted-foreground text-sm'>
-					<p className='flex items-center gap-2'>
-						<MapPin className='size-4 text-brand' aria-hidden='true' />
+				{property?.location ? (
+					<p className='truncate text-sm text-muted-foreground'>
 						{property.location}
 					</p>
-					<p className='flex items-center gap-2'>
-						<User className='size-4 text-brand' aria-hidden='true' />
-						<span className='font-medium'>Agent:</span> {property.agentName}
+				) : null}
+				<p className='text-base font-medium tabular-nums'>
+					{formatMoney(property?.offerAmount)}
+				</p>
+				{boughtOn ? (
+					<p className='text-sm text-muted-foreground'>Bought {boughtOn}</p>
+				) : null}
+				{property?.transactionId ? (
+					<p className='truncate text-sm text-success'>
+						Transaction {property.transactionId}
 					</p>
-				</div>
-
-				{/* Offer Info */}
-				<div className='space-y-1 text-sm text-foreground/80 mt-auto'>
-					<p className='flex items-center gap-2'>
-						<span className='font-medium'>Offer Amount:</span> ৳
-						{property.offerAmount?.toLocaleString()}
-					</p>
-					<p className='flex items-center gap-2'>
-						<Calendar className='size-4 text-brand' aria-hidden='true' />
-						<span className='font-medium'>Buying Date:</span>{' '}
-						{new Date(property.buyingDate).toLocaleDateString()}
-					</p>
-					<p className='flex items-center gap-2'>
-						<Receipt className='size-4 text-muted-foreground' aria-hidden='true' />
-						<span className='font-medium'>Transaction ID:</span>{' '}
-						{property.transactionId}
-					</p>
-				</div>
+				) : null}
+				{property?.agentName ? (
+					<div className='mt-auto flex min-w-0 items-center gap-2 pt-3'>
+						<PersonAvatar name={property.agentName} className='size-8' />
+						<p className='truncate text-sm'>{property.agentName}</p>
+					</div>
+				) : null}
 			</div>
-		</div>
+		</article>
 	);
 }
