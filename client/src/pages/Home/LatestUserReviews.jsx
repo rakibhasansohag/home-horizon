@@ -55,15 +55,22 @@ export default function LatestUserReviews() {
 				{preview.map((review) => (
 					<article
 						key={review._id}
-						className='mx-2 flex h-28 w-72 shrink-0 flex-col justify-between rounded-lg border border-border bg-surface p-4'
+						className='mx-2 flex min-h-32 w-72 shrink-0 flex-col justify-between gap-2 rounded-lg border border-border bg-surface p-4'
 					>
 						<p className='line-clamp-2 text-base text-foreground'>
 							{review.reviewText}
 						</p>
 						<div className='flex items-center justify-between gap-3'>
-							<p className='truncate text-sm text-muted-foreground'>
-								{review.userName}
-							</p>
+							<div className='min-w-0'>
+								<p className='truncate text-sm text-muted-foreground'>
+									{review.userName}
+								</p>
+								{review.property?.title ? (
+									<p className='truncate text-sm text-muted-foreground'>
+										{review.property.title}
+									</p>
+								) : null}
+							</div>
 							{Number.isFinite(Number(review.rating)) ? (
 								<p className='flex shrink-0 items-center gap-1 text-sm text-foreground'>
 									<Star

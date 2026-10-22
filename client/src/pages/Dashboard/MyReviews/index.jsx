@@ -75,11 +75,20 @@ export default function MyReviews() {
 					<Card key={review._id}>
 						<CardHeader>
 							<CardTitle className='text-lg'>
-								Property:{' '}
-								<span className='font-medium text-brand'>
-									{review.propertyTitle || 'N/A'}
-								</span>
+								<Link
+									to={`/all-properties/${review.propertyId}`}
+									className='font-medium text-brand'
+								>
+									{review.property?.title || review.propertyTitle || 'Listing'}
+								</Link>
 							</CardTitle>
+							{review.property?.image ? (
+								<img
+									src={review.property.image}
+									alt=''
+									className='mt-2 h-28 w-full rounded-md object-cover'
+								/>
+							) : null}
 							<p className='text-sm text-muted-foreground'>
 								Agent: {review.agentName || 'Unknown'}
 							</p>

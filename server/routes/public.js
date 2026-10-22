@@ -2,6 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const { getCollection } = require('../config/db');
+const { withReviewCredits } = require('../utils/reviewCredits');
 
 router.get('/advertised-properties', async (req, res) => {
 	const propertiesCollection = getCollection('properties');
@@ -32,7 +33,7 @@ router.get('/latest-reviews', async (req, res) => {
 			.limit(limit)
 			.toArray();
 
-		res.send(reviews);
+		res.send(await withReviewCredits(reviews));
 	} catch (err) {
 		console.error('legacy.latest-reviews error', err);
 		res.status(500).send({ message: 'Failed to fetch latest reviews' });

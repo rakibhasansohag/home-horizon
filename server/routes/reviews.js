@@ -3,6 +3,7 @@ const router = express.Router();
 const { getCollection } = require('../config/db');
 const { verifyFireBaseToken } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
+const { withReviewCredits } = require('../utils/reviewCredits');
 
 // POST /api/v1/reviews
 router.post('/', verifyFireBaseToken, async (req, res) => {
@@ -59,7 +60,7 @@ router.get('/my', verifyFireBaseToken, async (req, res) => {
 
 		const reviews = await Review.find({ userId: uid }).toArray();
 		console.log(reviews);
-		res.send(reviews);
+		res.send(await withReviewCredits(reviews));
 	} catch (err) {
 		console.error('reviews.my error', err);
 		res.status(500).send({ error: 'Internal server error' });
@@ -72,7 +73,7 @@ router.get('/:propertyId', verifyFireBaseToken, async (req, res) => {
 		const propertyId = req.params.propertyId;
 		const Review = getCollection('reviews');
 		const reviews = await Review.find({ propertyId }).toArray();
-		res.send(reviews);
+		res.send(await withReviewCredits(reviews));
 	} catch (err) {
 		console.error('reviews.get error', err);
 		res.status(500).send({ error: 'Internal server error' });

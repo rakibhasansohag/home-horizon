@@ -14,7 +14,6 @@ import {
 	PREVIEW_LIMIT,
 	ShowMore,
 } from '@/pages/Dashboard/Components/DashboardFilter';
-import PropertyPreview from './PropertyPreview';
 
 export default function AdminManageReviews() {
 	const axiosSecure = useAxiosSecure();
@@ -35,19 +34,6 @@ export default function AdminManageReviews() {
 	const { data: reviews = [] } = reviewsQuery;
 	const gate = gateQuery(reviewsQuery);
 
-	const homesQuery = useQuery({
-		queryKey: ['admin-properties'],
-		queryFn: async () => {
-			const res = await axiosSecure.get('/admin/properties');
-			return res.data;
-		},
-		placeholderData: keepPreviousData,
-		staleTime: 60 * 1000,
-	});
-	const homes = new Map(
-		(homesQuery.data || []).map((home) => [String(home._id), home]),
-	);
-
 	const deleteMutation = useMutation({
 		mutationFn: async (id) => {
 			await axiosSecure.delete(`/reviews/${id}`);
@@ -62,12 +48,11 @@ export default function AdminManageReviews() {
 
 	const term = query.trim().toLowerCase();
 	const filtered = term
-		? reviews.filter((review) => {
-				const home = homes.get(String(review.propertyId));
-				return `${review.userName || ''} ${review.reviewText || ''} ${home?.title || review.propertyTitle || ''}`
+		? reviews.filter((review) =>
+				`${review.userName || ''} ${review.reviewText || ''} ${review.property?.title || review.propertyTitle || ''}`
 					.toLowerCase()
-					.includes(term);
-			})
+					.includes(term),
+			)
 		: reviews;
 	const rows = filtered.slice(0, visible);
 
@@ -109,7 +94,6 @@ export default function AdminManageReviews() {
 									<ReviewRow
 										key={review._id}
 										review={review}
-										home={homes.get(String(review.propertyId))}
 										onDelete={() => setSelectedReview(review)}
 									/>
 								))}
@@ -133,9 +117,30 @@ export default function AdminManageReviews() {
 						<p>
 							Delete the review from {selectedReview?.userName || 'this person'}?
 						</p>
-						{selectedReview?.propertyId && (
-							<PropertyPreview propertyId={selectedReview.propertyId} />
-						)}
+						{selectedReview?.property ? (
+							<Link
+								to={`/all-properties/${selectedReview.property._id}`}
+								className='flex items-center gap-3 rounded-lg border border-border p-2'
+							>
+								{selectedReview.property.image ? (
+									<img
+										src={selectedReview.property.image}
+										alt=''
+										className='size-12 rounded-md object-cover'
+									/>
+								) : (
+									<div className='size-12 rounded-md bg-muted' />
+								)}
+								<span className='min-w-0'>
+									<span className='block truncate text-sm font-medium'>
+										{selectedReview.property.title}
+									</span>
+									<span className='block truncate text-sm text-muted-foreground'>
+										{selectedReview.property.location}
+									</span>
+								</span>
+							</Link>
+						) : null}
 					</>
 				}
 				actionLabel='Delete'
@@ -147,9 +152,10 @@ export default function AdminManageReviews() {
 	);
 }
 
-function ReviewRow({ review, home, onDelete }) {
+function ReviewRow({ review, onDelete }) {
+	const home = review.property;
 	const title = home?.title || review.propertyTitle || 'Open the listing';
-	const photo = home?.images?.[0]?.url;
+	const photo = home?.image || '';
 	const date = reviewDate(review.createdAt);
 
 	return (

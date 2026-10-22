@@ -4,6 +4,7 @@ const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
 const seedGenerator = require('../utils/seedProperties');
+const { withReviewCredits } = require('../utils/reviewCredits');
 
 router.use(verifyFireBaseToken, verifyRole(['admin', 'super-admin']));
 
@@ -149,7 +150,7 @@ router.get('/reviews', async (req, res) => {
 	try {
 		const Review = getCollection('reviews');
 		const reviews = await Review.find({}).toArray();
-		res.send(reviews);
+		res.send(await withReviewCredits(reviews));
 	} catch (err) {
 		console.error('reviews.post error', err);
 		res.status(500).send({ error: 'Internal server error' });
