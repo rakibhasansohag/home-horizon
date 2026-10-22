@@ -8,6 +8,12 @@ import StickySidebar from './StickySidebar';
 import ReviewCard from './ReviewCard';
 import ReviewModal from './ReviewModal';
 import AroundHome from './AroundHome';
+import Amenities from './Amenities';
+import ReviewsDialog, {
+	REVIEW_PREVIEW,
+	ReviewSummary,
+	ShowAllReviews,
+} from './ReviewsDialog';
 
 import {
 	Card,
@@ -26,6 +32,7 @@ export default function PropertyDetails() {
 	const { id } = useParams();
 	const axiosSecure = useAxiosSecure();
 	const [showReviewModal, setShowReviewModal] = useState(false);
+	const [showAllReviews, setShowAllReviews] = useState(false);
 
 	const { data: offer } = useQuery({
 		queryKey: ['property-offer', user?.email, id],
@@ -98,6 +105,14 @@ export default function PropertyDetails() {
 						<p className='text-xl font-semibold tabular-nums'>
 							{formatMoney(property.minPrice)} – {formatMoney(property.maxPrice)}
 						</p>
+						{property.location ? (
+							<p className='text-base text-muted-foreground'>{property.location}</p>
+						) : null}
+						{listingFacts(property) ? (
+							<p className='text-base text-muted-foreground'>
+								{listingFacts(property)}
+							</p>
+						) : null}
 						<p className='text-base text-muted-foreground'>
 							Agent: {property.agentName}
 						</p>
@@ -152,24 +167,34 @@ export default function PropertyDetails() {
 						</CardContent>
 					</Card>
 
+					<Amenities ids={property.amenities} />
+
 					<AroundHome property={property} />
 
 					{/* Review Section */}
-					<div>
-						<h2 className='text-xl font-semibold mt-10'>User Reviews</h2>
-						<div className='grid sm:grid-cols-2 gap-4 mt-4'>
-							{reviews.length === 0 ? (
-								<p className='text-muted-foreground'>
-									No reviews yet. Be the first!
-								</p>
-							) : (
-								reviews
-									.slice(0, 6)
-									.map((review) => (
-										<ReviewCard key={review._id} review={review} />
-									))
-							)}
-						</div>
+					<div className='space-y-4'>
+						<h2 className='text-xl font-semibold'>Reviews</h2>
+						<ReviewSummary reviews={reviews} />
+						{reviews.length === 0 ? (
+							<p className='text-muted-foreground'>
+								No reviews yet. Be the first!
+							</p>
+						) : (
+							<div className='grid gap-4 sm:grid-cols-2'>
+								{reviews.slice(0, REVIEW_PREVIEW).map((review) => (
+									<ReviewCard key={review._id} review={review} />
+								))}
+							</div>
+						)}
+						<ShowAllReviews
+							count={reviews.length}
+							onClick={() => setShowAllReviews(true)}
+						/>
+						<ReviewsDialog
+							open={showAllReviews}
+							onOpenChange={setShowAllReviews}
+							reviews={reviews}
+						/>
 						{hasBought ? (
 							<Button className='mt-4' onClick={() => setShowReviewModal(true)}>
 								Add a Review
@@ -205,6 +230,24 @@ export default function PropertyDetails() {
 }
 
 // eslint-disable-next-line no-unused-vars
+function listingFacts(property) {
+	const parts = [];
+	if (property?.bedrooms != null && property.bedrooms !== '') {
+		parts.push(
+			`${property.bedrooms} ${Number(property.bedrooms) === 1 ? 'bedroom' : 'bedrooms'}`,
+		);
+	}
+	if (property?.bathrooms != null && property.bathrooms !== '') {
+		parts.push(
+			`${property.bathrooms} ${Number(property.bathrooms) === 1 ? 'bathroom' : 'bathrooms'}`,
+		);
+	}
+	if (property?.squareMeters != null && property.squareMeters !== '') {
+		parts.push(`${Number(property.squareMeters).toLocaleString('en-US')} sq ft`);
+	}
+	return parts.join(' · ');
+}
+
 function BadgeDetail({ icon: Icon, label, value }) {
 	return (
 		<div className='flex items-center gap-3 p-3 bg-accent rounded-md'>

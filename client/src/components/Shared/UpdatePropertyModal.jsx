@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Bed, Bath, Ruler, MapPin, Tag, X } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import AmenityPicker from '@/components/Shared/AmenityPicker';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { toast } from 'react-toastify';
@@ -25,6 +26,7 @@ export default function UpdatePropertyModal({
 }) {
 	const { user } = useAuth();
 	const axiosSecure = useAxiosSecure();
+	const [amenities, setAmenities] = useState([]);
 
 	const {
 		register,
@@ -59,6 +61,7 @@ export default function UpdatePropertyModal({
 				...property,
 				categories: property.categories || [],
 			});
+			setAmenities(Array.isArray(property.amenities) ? property.amenities : []);
 		}
 	}, [property, reset]);
 
@@ -78,7 +81,7 @@ export default function UpdatePropertyModal({
 	});
 
 	const onSubmit = (data) => {
-		mutation.mutate(data);
+		mutation.mutate({ ...data, amenities });
 	};
 
 	const handleAddCategory = (e) => {
@@ -297,6 +300,8 @@ export default function UpdatePropertyModal({
 							</div>
 						</div>
 					</div>
+
+					<AmenityPicker value={amenities} onChange={setAmenities} />
 
 					<div className='grid grid-cols-2 gap-4'>
 						<div className='space-y-2'>

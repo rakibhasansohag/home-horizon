@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/components/Shared/PropertyCard';
+import { homeFacts } from '@/lib/amenities';
 import { Input } from '@/components/ui/input';
 import { Link, useSearchParams } from 'react-router';
 import { cn } from '@/lib/utils';
@@ -231,6 +232,11 @@ export default function AllProperties() {
 											{prop.location ? (
 												<p className='truncate text-sm text-muted-foreground'>
 													{prop.location}
+												</p>
+											) : null}
+											{homeFacts(prop) ? (
+												<p className='truncate text-sm text-muted-foreground'>
+													{homeFacts(prop)}
 												</p>
 											) : null}
 											<div className='mt-1 flex items-center justify-between gap-3'>

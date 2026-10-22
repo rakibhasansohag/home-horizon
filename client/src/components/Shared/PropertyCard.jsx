@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { Card } from '@heroui/react/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { homeFacts, listedAmenities } from '@/lib/amenities';
 
 export function formatMoney(value) {
 	const amount = Number(value);
@@ -36,6 +37,11 @@ export default function PropertyCard({
 			: ''
 	}`;
 	const linked = Boolean(href && !children);
+	const facts = homeFacts(property);
+	const offered = listedAmenities(property?.amenities)
+		.slice(0, 2)
+		.map((item) => item.label)
+		.join(' · ');
 
 	const titleNode =
 		href && !linked ? (
@@ -105,6 +111,12 @@ export default function PropertyCard({
 					>
 						{property.location}
 					</Card.Description>
+				) : null}
+				{!compact && facts ? (
+					<p className='text-sm text-muted-foreground'>{facts}</p>
+				) : null}
+				{!compact && offered ? (
+					<p className='truncate text-sm text-muted-foreground'>{offered}</p>
 				) : null}
 				<p
 					className={cn(

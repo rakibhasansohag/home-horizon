@@ -36,6 +36,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Link } from 'react-router';
 import MapPicker from './MapPicker';
+import AmenityPicker from '@/components/Shared/AmenityPicker';
 
 function AddProperties() {
 	const { user } = useAuth();
@@ -44,6 +45,7 @@ function AddProperties() {
 	const [uploading, setUploading] = useState(false);
 	const [imageUrls, setImageUrls] = useState([]);
 	const [categories, setCategories] = useState([]);
+	const [amenities, setAmenities] = useState([]);
 	const [deletingIds, setDeletingIds] = useState([]);
 	const [showMap, setShowMap] = useState(false);
 
@@ -106,6 +108,7 @@ function AddProperties() {
 			agentEmail: user?.email,
 			agentId: user?.uid,
 			categories,
+			amenities,
 			verificationStatus: 'pending',
 			isAdvertised: false,
 			createdAt: new Date().toISOString(),
@@ -126,6 +129,7 @@ function AddProperties() {
 				reset();
 				setImageUrls([]);
 				setCategories([]);
+				setAmenities([]);
 			}
 		} catch (err) {
 			toast.error('Failed to add property');
@@ -279,6 +283,8 @@ function AddProperties() {
 							))}
 						</div>
 					</div>
+
+					<AmenityPicker value={amenities} onChange={setAmenities} />
 
 					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 						<div className='space-y-2'>

@@ -3,6 +3,7 @@ const router = express.Router();
 const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
+const { AMENITY_GROUPS, sanitizeAmenities } = require('../utils/amenities');
 
 // GET /api/v1/properties/verified
 router.get('/verified', async (req, res) => {
@@ -41,6 +42,11 @@ router.get('/verified', async (req, res) => {
 	}
 });
 
+// GET /api/v1/properties/amenities
+router.get('/amenities', (req, res) => {
+	res.send(AMENITY_GROUPS);
+});
+
 // Point: -------- Private ------------
 
 // POST /api/v1/properties  - create: agent or super-admin
@@ -57,6 +63,7 @@ router.post(
 			newProperty.isAdvertised = false;
 			newProperty.reviews = [];
 			newProperty.dealStatus = null;
+			newProperty.amenities = sanitizeAmenities(newProperty.amenities);
 			const Properties = getCollection('properties');
 			const result = await Properties.insertOne(newProperty);
 			res.status(201).send(result);
@@ -96,6 +103,9 @@ router.put(
 			const updatedData = req.body;
 			const Properties = getCollection('properties');
 			delete updatedData._id;
+			if (Object.prototype.hasOwnProperty.call(updatedData, 'amenities')) {
+				updatedData.amenities = sanitizeAmenities(updatedData.amenities);
+			}
 			const result = await Properties.updateOne(
 				{ _id: new ObjectId(propertyId), agentId: req.decoded.uid },
 				{ $set: { ...updatedData, updatedAt: new Date().toISOString() } },
