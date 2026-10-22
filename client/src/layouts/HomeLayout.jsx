@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import { Outlet, useNavigation, useLocation } from 'react-router';
 import Header from '@/components/Shared/Header';
 import Footer from '../components/Shared/Footer';
-import useDynamicTitle from '../hooks/useDynamicTitle';
+import { useRouteSeo } from '../hooks/useSeo';
 
 const HomeLayout = () => {
 	const navigation = useNavigation();
 	const location = useLocation();
-	useDynamicTitle();
+	useRouteSeo();
 
 	const isLoading = navigation.state === 'loading';
 

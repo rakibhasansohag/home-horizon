@@ -1,7 +1,10 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
+import useSeo from '@/hooks/useSeo';
 
 function Forbidden() {
+	useSeo();
+
 	return (
 		<div className='flex min-h-[60vh] items-center justify-center bg-paper px-4'>
 			<div className='text-center'>

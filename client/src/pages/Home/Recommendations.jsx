@@ -1,13 +1,12 @@
 import recommendationImg from '@/assets/recommendation-house.webp';
 import useAuth from '@/hooks/useAuth';
 import useAxios from '@/hooks/useAxios';
-import { formatMoney } from '@/components/Shared/PropertyCard';
-import { homeFacts, listedAmenities } from '@/lib/amenities';
 import { useQuery } from '@tanstack/react-query';
 import { readSnapshot, writeSnapshot, listingSnapshot } from '@/lib/querySnapshot';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router';
+import HomeRow from './HomeRow';
 
 const dhakaView = {
 	swLat: 23.7,
@@ -77,63 +76,9 @@ function Recommendations() {
 								Verified homes around Dhaka.
 							</p>
 							<ul className='mt-5 space-y-3'>
-								{homes.slice(0, RECOMMENDATION_LIMIT).map((home) => {
-									const price = `${formatMoney(home.minPrice)}${
-										home.maxPrice != null &&
-										String(home.maxPrice) !== String(home.minPrice)
-											? ` – ${formatMoney(home.maxPrice)}`
-											: ''
-									}`;
-									const facts = homeFacts(home);
-									const extras = [
-										home.propertyType,
-										...listedAmenities(home.amenities)
-											.slice(0, 2)
-											.map((item) => item.label),
-									].filter(Boolean);
-									const photo = home.images?.[0]?.url;
-									return (
-										<li key={home._id}>
-											<Link
-												to={`/all-properties/${home._id}`}
-												className='flex gap-3 rounded-lg border border-border p-2 transition-colors duration-200 hover:border-brand'
-											>
-												<div className='relative min-h-24 w-28 shrink-0 self-stretch overflow-hidden rounded-md bg-muted'>
-													{photo ? (
-														<img
-															src={photo}
-															alt=''
-															className='absolute inset-0 h-full w-full object-cover'
-														/>
-													) : null}
-												</div>
-												<span className='flex min-w-0 flex-1 flex-col justify-center gap-0.5 py-1'>
-													<span className='truncate font-semibold'>
-														{home.title || 'Property'}
-													</span>
-													{home.location ? (
-														<span className='truncate text-sm text-muted-foreground'>
-															{home.location}
-														</span>
-													) : null}
-													{facts ? (
-														<span className='truncate text-sm text-muted-foreground'>
-															{facts}
-														</span>
-													) : null}
-													{extras.length ? (
-														<span className='truncate text-sm capitalize text-muted-foreground'>
-															{extras.join(' · ')}
-														</span>
-													) : null}
-													<span className='mt-1 text-sm font-semibold tabular-nums'>
-														{price}
-													</span>
-												</span>
-											</Link>
-										</li>
-									);
-								})}
+								{homes.slice(0, RECOMMENDATION_LIMIT).map((home) => (
+									<HomeRow key={home._id} home={home} />
+								))}
 							</ul>
 						</div>
 					) : (

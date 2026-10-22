@@ -2,6 +2,7 @@ import Banner from './Banner';
 import Recommendations from './Recommendations';
 import ServicesSection from './ServiceSection';
 import AdvertisedProperties from './AdvertisedProperties';
+import NewestHomes from './NewestHomes';
 import LatestUserReviews from './LatestUserReviews';
 
 function Home() {
@@ -10,7 +11,7 @@ function Home() {
 			<Banner />
 			<Recommendations />
 			<ServicesSection />
-			{/* TODO : Will added dynamic newst home from database or show some dummy data if there is none  */}
+			<NewestHomes />
 			<AdvertisedProperties />
 			<LatestUserReviews />
 		</div>

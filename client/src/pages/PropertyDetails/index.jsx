@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import ImageGallery from './ImageGallery';
@@ -26,6 +26,8 @@ import { PropertyDetailsSkeleton } from '../../components/Shared/skeletons/prope
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useAuth from '../../hooks/useAuth';
 import EmptyProperties from '../../components/Shared/NotFound/EmptyPerperties';
+import useSeo from '@/hooks/useSeo';
+import { absoluteUrl, clip } from '@/lib/seo';
 
 export default function PropertyDetails() {
 	const { user } = useAuth();
@@ -72,13 +74,7 @@ export default function PropertyDetails() {
 
 	const pricePerSqft = Math.floor(property?.minPrice / property?.squareMeters);
 
-	useEffect(() => {
-		if (property?.title) {
-			document.title = `${property.title} | HomeHorizon`;
-		} else {
-			document.title = `Property Details | HomeHorizon`;
-		}
-	}, [property]);
+	useSeo(property?.title ? propertySeo(property, reviews) : undefined);
 
 	if (LoadingProperty || LoadingReviews) {
 		return <PropertyDetailsSkeleton />;
@@ -218,6 +214,71 @@ export default function PropertyDetails() {
 			</div>
 		</section>
 	);
+}
+
+function propertySeo(property, reviews) {
+	const path = `/all-properties/${property._id}`;
+	const images = (property.images || []).map((image) => image?.url).filter(Boolean);
+	const price =
+		property.maxPrice != null && String(property.maxPrice) !== String(property.minPrice)
+			? `${formatMoney(property.minPrice)} – ${formatMoney(property.maxPrice)}`
+			: formatMoney(property.minPrice);
+	const status = property.dealStatus === 'sold' ? 'Sold' : 'For sale';
+	const summary = `${[
+		property.location ? `${status} in ${property.location}` : status,
+		price,
+		listingFacts(property),
+	]
+		.filter(Boolean)
+		.join(' · ')}.`;
+	const ratings = reviews
+		.map((review) => Number(review?.rating))
+		.filter((rating) => Number.isFinite(rating) && rating > 0);
+
+	return {
+		title: property.location ? `${property.title}, ${property.location}` : property.title,
+		description: `${summary} ${property.description || ''}`,
+		image: images[0],
+		imageAlt: property.title,
+		path,
+		jsonLd: {
+			'@context': 'https://schema.org',
+			'@type': 'RealEstateListing',
+			name: property.title,
+			description: clip(property.description, 500),
+			url: absoluteUrl(path),
+			image: images,
+			datePosted: property.createdAt || undefined,
+			offers: {
+				'@type': 'Offer',
+				priceCurrency: 'BDT',
+				price: Number(property.minPrice) || undefined,
+				priceSpecification: {
+					'@type': 'PriceSpecification',
+					priceCurrency: 'BDT',
+					minPrice: Number(property.minPrice) || undefined,
+					maxPrice: Number(property.maxPrice) || undefined,
+				},
+				availability:
+					property.dealStatus === 'sold'
+						? 'https://schema.org/SoldOut'
+						: 'https://schema.org/InStock',
+				seller: property.agentName
+					? { '@type': 'RealEstateAgent', name: property.agentName }
+					: undefined,
+			},
+			aggregateRating: ratings.length
+				? {
+						'@type': 'AggregateRating',
+						ratingValue: (
+							ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+						).toFixed(1),
+						bestRating: 5,
+						reviewCount: ratings.length,
+				  }
+				: undefined,
+		},
+	};
 }
 
 // eslint-disable-next-line no-unused-vars

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router';
 import moment from 'moment';
 import {
@@ -18,6 +17,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import useUserProfile from '@/hooks/useUserProfile';
 import useAuth from '@/hooks/useAuth';
+import useSeo from '@/hooks/useSeo';
 import { Skeleton } from '@/components/ui/skeleton';
 import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { gateQuery } from '@/lib/queryWait';
@@ -30,11 +30,7 @@ export default function ProfilePage() {
 
 	console.log(user);
 
-	useEffect(() => {
-		document.title = user
-			? `${user.displayName || 'Profile'} | Home Horizon`
-			: 'Profile | Home Horizon';
-	}, [user]);
+	useSeo(user?.displayName ? { title: user.displayName } : undefined);
 
 	if (gate === 'error') {
 		return (

@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router';
 import AuthImage from '../assets/auth.jpg';
-import useDynamicTitle from '../hooks/useDynamicTitle';
+import { useRouteSeo } from '../hooks/useSeo';
 
 function AuthLayout() {
-	useDynamicTitle();
+	useRouteSeo();
 	return (
 		<div className='min-h-screen bg-paper'>
 			<div className='grid min-h-screen grid-cols-1 md:grid-cols-2'>

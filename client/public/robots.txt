@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /auth/
+Disallow: /forbidden
+Disallow: /unauthorized
+
+Sitemap: https://homehorizon-by-rakib.netlify.app/sitemap.xml

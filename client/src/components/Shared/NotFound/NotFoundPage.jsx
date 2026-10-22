@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router';
+import useSeo from '@/hooks/useSeo';
 
 export default function NotFoundPage() {
+	useSeo();
+
 	return (
 		<div className='flex min-h-[60vh] flex-col items-center justify-center px-4 py-16 text-center'>
 			<p className='font-display text-6xl text-foreground'>404</p>

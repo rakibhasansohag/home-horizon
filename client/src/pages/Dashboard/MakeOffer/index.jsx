@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { gateQuery } from '@/lib/queryWait';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
+import useSeo from '@/hooks/useSeo';
 import { useParams, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
@@ -63,9 +64,7 @@ export default function MakeOffer() {
 		},
 	});
 
-	useEffect(() => {
-		document.title = 'Make Offer | HomeHorizon';
-	}, []);
+	useSeo(property?.title ? { title: `Make an Offer: ${property.title}` } : undefined);
 
 	const onSubmit = (data) => {
 		const price = Number(data.offerAmount);

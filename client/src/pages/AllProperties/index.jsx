@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Link, useSearchParams } from 'react-router';
 import { cn } from '@/lib/utils';
 import useAxios from '../../hooks/useAxios';
+import useSeo from '@/hooks/useSeo';
 import MapView from './MapView';
 import { listingSnapshot, readSnapshot, writeSnapshot } from '@/lib/querySnapshot';
 
@@ -50,6 +51,16 @@ export default function AllProperties() {
 	const cardRefs = useRef({});
 	const selectFromMap = useRef(false);
 	const locationSearch = search.trim();
+	const searchedPlace = (searchParams.get('search') || '').trim();
+
+	useSeo(
+		searchedPlace
+			? {
+					title: `Homes for Sale in ${searchedPlace}`,
+					description: `Verified homes for sale in ${searchedPlace}. Compare prices, photos, and locations on the HomeHorizon map.`,
+			  }
+			: undefined,
+	);
 
 	useEffect(() => {
 		setSearch(searchParams.get('search') || '');

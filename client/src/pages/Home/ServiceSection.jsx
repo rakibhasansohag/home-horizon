@@ -1,4 +1,5 @@
 import { Building2, Home, KeyRound, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router';
 import { Button } from '../../components/ui/button';
 
 const services = [
@@ -8,7 +9,7 @@ const services = [
 			'Explore listings, virtual tours, and tools to find your perfect home easily.',
 		icon: Home,
 		button: 'Browse Homes',
-		link: '/buy',
+		link: '/all-properties',
 	},
 	{
 		title: 'Sell Your Property',
@@ -16,7 +17,7 @@ const services = [
 			'Get expert tips and valuation support to sell your property successfully.',
 		icon: KeyRound,
 		button: 'Sell Now',
-		link: '/sell',
+		link: '/dashboard/add-property',
 	},
 	{
 		title: 'Rent a Place',
@@ -24,14 +25,15 @@ const services = [
 			'Browse thousands of rental listings and apply online with ease.',
 		icon: Building2,
 		button: 'Find Rentals',
-		link: '/rent',
+		link: '/all-properties',
 	},
 	{
 		title: 'Invest Smartly',
-		description: 'Discover profitable investment opportunities in real estate.',
+		description:
+			'Discover profitable investment opportunities in real estate. Those homes are listed with the properties for sale.',
 		icon: TrendingUp,
-		button: 'Start Investing',
-		link: '/invest',
+		button: null,
+		link: null,
 	},
 ];
 
@@ -55,9 +57,11 @@ function ServicesSection() {
 								<p className='flex-1 text-base text-muted-foreground'>
 									{item.description}
 								</p>
-								<Button variant='rounded' href={item.link} className='self-start'>
-									{item.button}
-								</Button>
+								{item.link ? (
+									<Button variant='rounded' asChild className='self-start'>
+										<Link to={item.link}>{item.button}</Link>
+									</Button>
+								) : null}
 							</li>
 						);
 					})}

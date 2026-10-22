@@ -2,12 +2,79 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HomeHorizon | Verified Homes for Sale in Dhaka</title>
+    <meta name="description" content="Find verified homes for sale in Dhaka. Search listings on a map, compare prices, read buyer reviews, and make offers to trusted agents on HomeHorizon." />
+    <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
+    <meta name="application-name" content="HomeHorizon" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <meta property="og:site_name" content="HomeHorizon" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HomeHorizon | Verified Homes for Sale in Dhaka" />
+    <meta property="og:description" content="Find verified homes for sale in Dhaka. Search listings on a map, compare prices, read buyer reviews, and make offers to trusted agents on HomeHorizon." />
+    <meta property="og:image" content="https://homehorizon-by-rakib.netlify.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Row of family houses on a quiet street" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HomeHorizon | Verified Homes for Sale in Dhaka" />
+    <meta name="twitter:description" content="Find verified homes for sale in Dhaka. Search listings on a map, compare prices, read buyer reviews, and make offers to trusted agents on HomeHorizon." />
+    <meta name="twitter:image" content="https://homehorizon-by-rakib.netlify.app/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Row of family houses on a quiet street" />
+
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,620&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" />
-    <title>Home Horizon</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://homehorizon-by-rakib.netlify.app/#website",
+            "name": "HomeHorizon",
+            "url": "https://homehorizon-by-rakib.netlify.app/",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://homehorizon-by-rakib.netlify.app/#organization" },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://homehorizon-by-rakib.netlify.app/all-properties?search={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://homehorizon-by-rakib.netlify.app/#organization",
+            "name": "HomeHorizon",
+            "url": "https://homehorizon-by-rakib.netlify.app/",
+            "description": "Verified listings, maps, and reviews for buying and selling homes in Dhaka.",
+            "email": "homehorizon.support@gmail.com",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "customer support",
+              "email": "homehorizon.support@gmail.com",
+              "telephone": "+8801760169982",
+              "areaServed": "BD",
+              "availableLanguage": ["en", "bn"]
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <h1>HomeHorizon: Verified Homes for Sale in Dhaka</h1>
+      <p>Search verified listings on a map, compare prices, read buyer reviews, and make offers to trusted agents. Please enable JavaScript to use HomeHorizon.</p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
