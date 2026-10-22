@@ -3,20 +3,27 @@ import {
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
-	DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Bed, Bath, Ruler, MapPin, Tag, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import AmenityPicker from '@/components/Shared/AmenityPicker';
+import ListingSteps from '@/components/Shared/ListingSteps';
 import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { toast } from 'react-toastify';
+
+function categoryObjects(categories) {
+	return (Array.isArray(categories) ? categories : [])
+		.map((item) => (typeof item === 'string' ? item : item?.value))
+		.filter((item) => typeof item === 'string' && item.trim())
+		.map((value) => ({ value: value.trim() }));
+}
 
 export default function UpdatePropertyModal({
 	isOpen,
@@ -27,6 +34,7 @@ export default function UpdatePropertyModal({
 	const { user } = useAuth();
 	const axiosSecure = useAxiosSecure();
 	const [amenities, setAmenities] = useState([]);
+	const [step, setStep] = useState(0);
 
 	const {
 		register,
@@ -35,8 +43,10 @@ export default function UpdatePropertyModal({
 		reset,
 		control,
 		watch,
+		trigger,
 	} = useForm({
-		defaultValues: property || {
+		shouldUnregister: false,
+		defaultValues: {
 			title: '',
 			location: '',
 			minPrice: '',
@@ -58,10 +68,19 @@ export default function UpdatePropertyModal({
 	useEffect(() => {
 		if (property) {
 			reset({
-				...property,
-				categories: property.categories || [],
+				title: property.title || '',
+				location: property.location || '',
+				minPrice: property.minPrice ?? '',
+				maxPrice: property.maxPrice ?? '',
+				bedrooms: property.bedrooms ?? '',
+				bathrooms: property.bathrooms ?? '',
+				squareMeters: property.squareMeters ?? '',
+				googleMap: property.googleMap || '',
+				description: property.description || '',
+				categories: categoryObjects(property.categories),
 			});
 			setAmenities(Array.isArray(property.amenities) ? property.amenities : []);
+			setStep(0);
 		}
 	}, [property, reset]);
 
@@ -81,7 +100,38 @@ export default function UpdatePropertyModal({
 	});
 
 	const onSubmit = (data) => {
-		mutation.mutate({ ...data, amenities });
+		mutation.mutate({
+			title: data.title,
+			location: data.location,
+			minPrice: data.minPrice,
+			maxPrice: data.maxPrice,
+			bedrooms: data.bedrooms,
+			bathrooms: data.bathrooms,
+			squareMeters: data.squareMeters,
+			googleMap: data.googleMap,
+			description: data.description,
+			categories: categoryObjects(data.categories).map((item) => item.value),
+			amenities,
+		});
+	};
+
+	const goNext = async () => {
+		const fields = [
+			['title', 'location', 'description'],
+			[
+				'minPrice',
+				'maxPrice',
+				'bedrooms',
+				'bathrooms',
+				'squareMeters',
+				'googleMap',
+			],
+		][step];
+		if (fields) {
+			const ok = await trigger(fields);
+			if (!ok) return;
+		}
+		setStep((current) => Math.min(current + 1, 2));
 	};
 
 	const handleAddCategory = (e) => {
@@ -95,241 +145,263 @@ export default function UpdatePropertyModal({
 		}
 	};
 
-	const handleRemoveCategory = (index) => {
-		remove(index);
-	};
-
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className='!max-w-3xl overflow-y-auto max-h-[90vh]'>
 				<DialogHeader>
 					<DialogTitle>Update Property</DialogTitle>
 				</DialogHeader>
+				<ListingSteps
+					steps={['Home', 'Price', 'Offers']}
+					step={step}
+					onStep={setStep}
+				/>
 
-				<form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<div className='space-y-2'>
-							<Label>
-								<MapPin className='w-4 h-4 mr-1 inline' /> Property Title
-							</Label>
-							<Input
-								{...register('title', {
-									required: 'Property title is required',
-									minLength: {
-										value: 5,
-										message: 'Title must be at least 5 characters',
-									},
-								})}
-							/>
-							{errors.title && (
-								<p className='text-destructive text-sm'>{errors.title.message}</p>
-							)}
-						</div>
-
-						<div className='space-y-2'>
-							<Label>
-								<MapPin className='w-4 h-4 mr-1 inline' /> Location
-							</Label>
-							<Input
-								{...register('location', { required: 'Location is required' })}
-							/>
-							{errors.location && (
-								<p className='text-destructive text-sm'>
-									{errors.location.message}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className='grid grid-cols-2 gap-4'>
-						<div className='space-y-2'>
-							<Label>Min Price (BDT)</Label>
-							<Input
-								type='number'
-								{...register('minPrice', {
-									required: 'Min price is required',
-									min: { value: 0, message: 'Min price must be at least 0' },
-								})}
-							/>
-							{errors.minPrice && (
-								<p className='text-destructive text-sm'>
-									{errors.minPrice.message}
-								</p>
-							)}
-						</div>
-
-						<div className='space-y-2'>
-							<Label>Max Price (BDT)</Label>
-							<Input
-								type='number'
-								{...register('maxPrice', {
-									required: 'Max price is required',
-									min: { value: 0, message: 'Max price must be at least 0' },
-									validate: (value) =>
-										Number(value) >= Number(watch('minPrice')) ||
-										'Max price must be ≥ Min price',
-								})}
-							/>
-							{errors.maxPrice && (
-								<p className='text-destructive text-sm'>
-									{errors.maxPrice.message}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<div className='space-y-2'>
-							<Label>
-								<Bed className='w-4 h-4 mr-1 inline' /> Bedrooms
-							</Label>
-							<Input
-								type='number'
-								{...register('bedrooms', {
-									required: 'Number of bedrooms is required',
-									min: { value: 1, message: 'Must be at least 1' },
-								})}
-							/>
-							{errors.bedrooms && (
-								<p className='text-destructive text-sm'>
-									{errors.bedrooms.message}
-								</p>
-							)}
-						</div>
-
-						<div className='space-y-2'>
-							<Label>
-								<Bath className='w-4 h-4 mr-1 inline' /> Bathrooms
-							</Label>
-							<Input
-								type='number'
-								{...register('bathrooms', {
-									required: 'Number of bathrooms is required',
-									min: { value: 1, message: 'Must be at least 1' },
-								})}
-							/>
-							{errors.bathrooms && (
-								<p className='text-destructive text-sm'>
-									{errors.bathrooms.message}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<div className='space-y-2'>
-							<Label>
-								<Ruler className='w-4 h-4 mr-1 inline' /> Square Meters
-							</Label>
-							<Input
-								type='number'
-								{...register('squareMeters', {
-									required: 'Area is required',
-									min: {
-										value: 1,
-										message: 'Square meters must be at least 1',
-									},
-								})}
-							/>
-							{errors.squareMeters && (
-								<p className='text-destructive text-sm'>
-									{errors.squareMeters.message}
-								</p>
-							)}
-						</div>
-
-						<div className='space-y-2'>
-							<Label>
-								<MapPin className='w-4 h-4 mr-1 inline' /> Google Map Location
-							</Label>
-							<Input
-								type='text'
-								{...register('googleMap', {
-									required: 'Google Maps link is required',
-								})}
-								placeholder='https://maps.google.com/maps?q=...'
-							/>
-							{errors.googleMap && (
-								<p className='text-destructive text-sm'>
-									{errors.googleMap.message}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<div className='space-y-2'>
-							<Label>
-								<Tag className='w-4 h-4 mr-1 inline' /> Description
-							</Label>
-							<Textarea
-								{...register('description', {
-									required: 'Description is required',
-									minLength: {
-										value: 20,
-										message: 'Description must be at least 20 characters',
-									},
-								})}
-							/>
-							{errors.description && (
-								<p className='text-destructive text-sm'>
-									{errors.description.message}
-								</p>
-							)}
-						</div>
-
-						<div className='space-y-2'>
-							<Label>
-								<Tag className='w-4 h-4 mr-1 inline' /> Categories
-							</Label>
-							<Input
-								type='text'
-								placeholder='Type and press Enter or comma'
-								onKeyDown={handleAddCategory}
-							/>
-							<div className='flex flex-wrap gap-2 mt-2'>
-								{fields.map((field, index) => (
-									<span
-										key={field.id}
-										className='px-2 py-1 text-sm bg-muted dark:bg-muted rounded cursor-pointer flex justify-center items-center'
-										onClick={() => handleRemoveCategory(index)}
-									>
-										{field.value} <X />
-									</span>
-								))}
+				<form
+					onSubmit={(event) => {
+						if (step < 2) {
+							event.preventDefault();
+							goNext();
+							return;
+						}
+						handleSubmit(onSubmit)(event);
+					}}
+					className='space-y-4'
+				>
+					{step === 0 && (
+						<div className='space-y-4'>
+							<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+								<div className='space-y-2'>
+									<Label>Property Title</Label>
+									<Input
+										{...register('title', {
+											required: 'Property title is required',
+											minLength: {
+												value: 5,
+												message: 'Title must be at least 5 characters',
+											},
+										})}
+									/>
+									{errors.title && (
+										<p className='text-sm text-destructive'>
+											{errors.title.message}
+										</p>
+									)}
+								</div>
+								<div className='space-y-2'>
+									<Label>Location</Label>
+									<Input
+										{...register('location', {
+											required: 'Location is required',
+										})}
+									/>
+									{errors.location && (
+										<p className='text-sm text-destructive'>
+											{errors.location.message}
+										</p>
+									)}
+								</div>
+							</div>
+							<div className='space-y-2'>
+								<Label>Description</Label>
+								<Textarea
+									{...register('description', {
+										required: 'Description is required',
+										minLength: {
+											value: 20,
+											message: 'Description must be at least 20 characters',
+										},
+									})}
+								/>
+								{errors.description && (
+									<p className='text-sm text-destructive'>
+										{errors.description.message}
+									</p>
+								)}
 							</div>
 						</div>
-					</div>
+					)}
 
-					<AmenityPicker value={amenities} onChange={setAmenities} />
-
-					<div className='grid grid-cols-2 gap-4'>
-						<div className='space-y-2'>
-							<Label>Agent Name</Label>
-							<Input
-								value={user?.displayName || property?.agentName || ''}
-								readOnly
-								className='bg-muted'
-							/>
+					{step === 1 && (
+						<div className='space-y-4'>
+							<div className='grid grid-cols-2 gap-4'>
+								<div className='space-y-2'>
+									<Label>Min Price (BDT)</Label>
+									<Input
+										type='number'
+										{...register('minPrice', {
+											required: 'Min price is required',
+											min: { value: 0, message: 'Min price must be at least 0' },
+										})}
+									/>
+									{errors.minPrice && (
+										<p className='text-sm text-destructive'>
+											{errors.minPrice.message}
+										</p>
+									)}
+								</div>
+								<div className='space-y-2'>
+									<Label>Max Price (BDT)</Label>
+									<Input
+										type='number'
+										{...register('maxPrice', {
+											required: 'Max price is required',
+											min: { value: 0, message: 'Max price must be at least 0' },
+											validate: (value) =>
+												Number(value) >= Number(watch('minPrice')) ||
+												'Max price must be ≥ Min price',
+										})}
+									/>
+									{errors.maxPrice && (
+										<p className='text-sm text-destructive'>
+											{errors.maxPrice.message}
+										</p>
+									)}
+								</div>
+							</div>
+							<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+								<div className='space-y-2'>
+									<Label>Bedrooms</Label>
+									<Input
+										type='number'
+										{...register('bedrooms', {
+											required: 'Number of bedrooms is required',
+											min: { value: 1, message: 'Must be at least 1' },
+										})}
+									/>
+									{errors.bedrooms && (
+										<p className='text-sm text-destructive'>
+											{errors.bedrooms.message}
+										</p>
+									)}
+								</div>
+								<div className='space-y-2'>
+									<Label>Bathrooms</Label>
+									<Input
+										type='number'
+										{...register('bathrooms', {
+											required: 'Number of bathrooms is required',
+											min: { value: 1, message: 'Must be at least 1' },
+										})}
+									/>
+									{errors.bathrooms && (
+										<p className='text-sm text-destructive'>
+											{errors.bathrooms.message}
+										</p>
+									)}
+								</div>
+							</div>
+							<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+								<div className='space-y-2'>
+									<Label>Square Meters</Label>
+									<Input
+										type='number'
+										{...register('squareMeters', {
+											required: 'Area is required',
+											min: {
+												value: 1,
+												message: 'Square meters must be at least 1',
+											},
+										})}
+									/>
+									{errors.squareMeters && (
+										<p className='text-sm text-destructive'>
+											{errors.squareMeters.message}
+										</p>
+									)}
+								</div>
+								<div className='space-y-2'>
+									<Label>Google Map Location</Label>
+									<Input
+										type='text'
+										{...register('googleMap', {
+											required: 'Google Maps link is required',
+										})}
+										placeholder='https://maps.google.com/maps?q=...'
+									/>
+									{errors.googleMap && (
+										<p className='text-sm text-destructive'>
+											{errors.googleMap.message}
+										</p>
+									)}
+								</div>
+							</div>
 						</div>
-						<div className='space-y-2'>
-							<Label>Agent Email</Label>
-							<Input
-								value={user?.email || property?.agentEmail || ''}
-								readOnly
-								className='bg-muted'
-							/>
+					)}
+
+					{step === 2 && (
+						<div className='space-y-4'>
+							<div className='space-y-2'>
+								<Label>Categories</Label>
+								<Input
+									type='text'
+									placeholder='Type and press Enter or comma'
+									onKeyDown={handleAddCategory}
+								/>
+								<div className='mt-2 flex flex-wrap gap-2'>
+									{fields.map((field, index) => (
+										<button
+											key={field.id}
+											type='button'
+											className='flex items-center rounded-md bg-muted px-2 py-1 text-sm'
+											onClick={() => remove(index)}
+										>
+											{field.value} <X className='size-4' />
+										</button>
+									))}
+								</div>
+							</div>
+							<AmenityPicker value={amenities} onChange={setAmenities} />
+							<div className='grid grid-cols-2 gap-4'>
+								<div className='space-y-2'>
+									<Label>Agent Name</Label>
+									<Input
+										value={user?.displayName || property?.agentName || ''}
+										readOnly
+										className='bg-muted'
+									/>
+								</div>
+								<div className='space-y-2'>
+									<Label>Agent Email</Label>
+									<Input
+										value={user?.email || property?.agentEmail || ''}
+										readOnly
+										className='bg-muted'
+									/>
+								</div>
+							</div>
+						</div>
+					)}
+
+					<div className='flex items-center justify-between gap-3'>
+						<Button
+							type='button'
+							variant='outline'
+							onClick={() => setStep((current) => Math.max(current - 1, 0))}
+							disabled={step === 0 || mutation.isPending}
+						>
+							Back
+						</Button>
+						<div className='flex gap-2'>
+							<Button
+								type='button'
+								variant='ghost'
+								onClick={onClose}
+								disabled={mutation.isPending}
+							>
+								Cancel
+							</Button>
+							{step < 2 ? (
+								<Button type='button' onClick={goNext}>
+									Next
+								</Button>
+							) : (
+								<Button type='submit' disabled={mutation.isPending}>
+									{mutation.isPending ? 'Saving...' : 'Save Changes'}
+								</Button>
+							)}
 						</div>
 					</div>
-
-					<DialogFooter>
-						<Button type='submit' disabled={mutation.isLoading}>
-							{mutation.isLoading ? 'Updating...' : 'Save Changes'}
-						</Button>
-						<Button variant='outline' onClick={onClose}>
-							Cancel
-						</Button>
-					</DialogFooter>
 				</form>
 			</DialogContent>
 		</Dialog>

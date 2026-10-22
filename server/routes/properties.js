@@ -4,6 +4,7 @@ const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
 const { AMENITY_GROUPS, sanitizeAmenities } = require('../utils/amenities');
+const { listingPatch } = require('../utils/listingWrite');
 
 // GET /api/v1/properties/verified
 router.get('/verified', async (req, res) => {
@@ -100,17 +101,12 @@ router.put(
 			const propertyId = req.params.id;
 			if (!ObjectId.isValid(propertyId))
 				return res.status(400).send({ error: 'Invalid property ID' });
-			const updatedData = req.body;
 			const Properties = getCollection('properties');
-			delete updatedData._id;
-			if (Object.prototype.hasOwnProperty.call(updatedData, 'amenities')) {
-				updatedData.amenities = sanitizeAmenities(updatedData.amenities);
-			}
 			const result = await Properties.updateOne(
 				{ _id: new ObjectId(propertyId), agentId: req.decoded.uid },
-				{ $set: { ...updatedData, updatedAt: new Date().toISOString() } },
+				{ $set: listingPatch(req.body) },
 			);
-			if (result.modifiedCount === 0)
+			if (result.matchedCount === 0)
 				return res
 					.status(404)
 					.send({ error: 'Property not updated or not found' });

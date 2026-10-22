@@ -37,6 +37,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Link } from 'react-router';
 import MapPicker from './MapPicker';
 import AmenityPicker from '@/components/Shared/AmenityPicker';
+import ListingSteps from '@/components/Shared/ListingSteps';
 
 function AddProperties() {
 	const { user } = useAuth();
@@ -48,6 +49,8 @@ function AddProperties() {
 	const [amenities, setAmenities] = useState([]);
 	const [deletingIds, setDeletingIds] = useState([]);
 	const [showMap, setShowMap] = useState(false);
+	const [step, setStep] = useState(0);
+	const [saving, setSaving] = useState(false);
 
 	const {
 		register,
@@ -56,7 +59,8 @@ function AddProperties() {
 		formState: { errors },
 		watch,
 		setValue,
-	} = useForm();
+		trigger,
+	} = useForm({ shouldUnregister: false });
 
 	const handleImageUpload = async (e) => {
 		const files = Array.from(e.target.files);
@@ -74,26 +78,25 @@ function AddProperties() {
 		}
 
 		setUploading(true);
-		const urls = [];
+		const uploaded = await Promise.all(
+			files.map(async (file) => {
+				const formData = new FormData();
+				formData.append('file', file);
+				try {
+					const res = await axiosInstance.post('/upload', formData);
+					return {
+						url: res.data.url,
+						public_id: res.data.public_id,
+					};
+				} catch (err) {
+					toast.error('Image upload failed');
+					console.log(err);
+					return null;
+				}
+			}),
+		);
 
-		for (const file of files) {
-			const formData = new FormData();
-			formData.append('file', file);
-
-			try {
-				const res = await axiosInstance.post('/upload', formData);
-
-				urls.push({
-					url: res.data.url,
-					public_id: res.data.public_id,
-				});
-			} catch (err) {
-				toast.error('Image upload failed');
-				console.log(err);
-			}
-		}
-
-		setImageUrls((prev) => [...prev, ...urls]);
+		setImageUrls((prev) => [...prev, ...uploaded.filter(Boolean)]);
 		setUploading(false);
 	};
 
@@ -109,6 +112,7 @@ function AddProperties() {
 			agentId: user?.uid,
 			categories,
 			amenities,
+			parking: data.parking || 'no',
 			verificationStatus: 'pending',
 			isAdvertised: false,
 			createdAt: new Date().toISOString(),
@@ -122,6 +126,7 @@ function AddProperties() {
 			},
 		};
 
+		setSaving(true);
 		try {
 			const res = await axiosSecure.post('/properties', property);
 			if (res.data.insertedId) {
@@ -130,11 +135,32 @@ function AddProperties() {
 				setImageUrls([]);
 				setCategories([]);
 				setAmenities([]);
+				setStep(0);
 			}
 		} catch (err) {
 			toast.error('Failed to add property');
 			console.log(err);
+		} finally {
+			setSaving(false);
 		}
+	};
+
+	const goNext = async () => {
+		const fields = [
+			['title', 'location', 'propertyType', 'description'],
+			['minPrice', 'maxPrice', 'bedrooms', 'bathrooms', 'squareMeters'],
+			[],
+			['googleMap', 'lat', 'lng'],
+		][step];
+		if (step === 2 && imageUrls.length === 0) {
+			toast.error('Please upload at least one image');
+			return;
+		}
+		if (fields?.length) {
+			const ok = await trigger(fields);
+			if (!ok) return;
+		}
+		setStep((current) => Math.min(current + 1, 4));
 	};
 
 	const handleTagInput = (e) => {
@@ -196,11 +222,28 @@ function AddProperties() {
 		);
 	};
 
+	const steps = ['Home', 'Price', 'Photos', 'Place', 'Offers'];
+
 	return (
 		<Card className='w-full mx-auto my-10 p-6'>
-			<CardHeader className='text-2xl font-bold'>Add New Property</CardHeader>
+			<CardHeader className='space-y-4'>
+				<p className='text-2xl font-bold'>Add New Property</p>
+				<ListingSteps steps={steps} step={step} onStep={setStep} />
+			</CardHeader>
 			<CardContent>
-				<form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+				<form
+					onSubmit={(event) => {
+						if (step < 4) {
+							event.preventDefault();
+							goNext();
+							return;
+						}
+						handleSubmit(onSubmit)(event);
+					}}
+					className='space-y-6'
+				>
+					{step === 0 && (
+					<div className='space-y-6'>
 					<div className='space-y-2'>
 						<Label>Property Title</Label>
 						<Input
@@ -224,7 +267,10 @@ function AddProperties() {
 							<p className='text-destructive text-sm'>This field is required</p>
 						)}
 					</div>
+					</div>
+					)}
 
+					{step === 2 && (
 					<div className='space-y-2'>
 						<Label>Upload Images</Label>
 
@@ -262,7 +308,10 @@ function AddProperties() {
 							</SortableContext>
 						</DndContext>
 					</div>
+					)}
 
+					{step === 4 && (
+					<div className='space-y-6'>
 					<div className='space-y-2'>
 						<Label>Tags/Categories</Label>
 						<Input
@@ -285,7 +334,11 @@ function AddProperties() {
 					</div>
 
 					<AmenityPicker value={amenities} onChange={setAmenities} />
+					</div>
+					)}
 
+					{step === 1 && (
+					<div className='space-y-6'>
 					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 						<div className='space-y-2'>
 							<Label>Min Price</Label>
@@ -354,7 +407,7 @@ function AddProperties() {
 							)}
 						</div>
 					</div>
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 						<div className='space-y-2'>
 							<Label>Square Meters</Label>
 							<Input
@@ -374,22 +427,43 @@ function AddProperties() {
 							)}
 						</div>
 						<div className='space-y-2'>
-							<Label>Google Map Location</Label>
-							<Input
-								type='text'
-								{...register('googleMap', {
-									required: 'Google Maps link is required',
-								})}
-								placeholder='https://maps.google.com/maps?q=...'
-							/>
-							{errors.googleMap && (
-								<p className='text-destructive text-sm'>
-									{errors.googleMap.message}
-								</p>
-							)}
+							<Label>Parking Available</Label>
+							<RadioGroup
+								className='flex gap-4'
+								value={watch('parking') || 'no'}
+								onValueChange={(val) => setValue('parking', val)}
+							>
+								<div className='flex items-center space-x-2'>
+									<RadioGroupItem value='yes' id='parking-yes' />
+									<Label htmlFor='parking-yes'>Yes</Label>
+								</div>
+								<div className='flex items-center space-x-2'>
+									<RadioGroupItem value='no' id='parking-no' />
+									<Label htmlFor='parking-no'>No</Label>
+								</div>
+							</RadioGroup>
 						</div>
 					</div>
-					{/* For Lat and Lng */}
+					</div>
+					)}
+
+					{step === 3 && (
+					<div className='space-y-6'>
+					<div className='space-y-2'>
+						<Label>Google Map Location</Label>
+						<Input
+							type='text'
+							{...register('googleMap', {
+								required: 'Google Maps link is required',
+							})}
+							placeholder='https://maps.google.com/maps?q=...'
+						/>
+						{errors.googleMap && (
+							<p className='text-destructive text-sm'>
+								{errors.googleMap.message}
+							</p>
+						)}
+					</div>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 						<div className='space-y-2'>
 							<Label>Latitude</Label>
@@ -444,54 +518,40 @@ function AddProperties() {
 							/>
 						)}
 					</div>
-
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						{/* Property Type */}
-						<div className='space-y-2'>
-							<Label>Property Type</Label>
-							<Select
-								{...register('propertyType', {
-									required: 'Property type is required',
-								})}
-								onValueChange={(val) => setValue('propertyType', val)}
-							>
-								<SelectTrigger className='w-full'>
-									<SelectValue placeholder='Select property type' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value='apartment'>Apartment</SelectItem>
-									<SelectItem value='house'>House</SelectItem>
-									<SelectItem value='studio'>Studio</SelectItem>
-								</SelectContent>
-							</Select>
-							{errors.propertyType && (
-								<p className='text-sm text-destructive'>
-									{errors.propertyType.message}
-								</p>
-							)}
-						</div>
-
-						{/* Parking Available */}
-						<div className='space-y-2'>
-							<Label>Parking Available</Label>
-							<RadioGroup
-								className='flex gap-4'
-								defaultValue='no'
-								{...register('parking')}
-								onValueChange={(val) => setValue('parking', val)}
-							>
-								<div className='flex items-center space-x-2'>
-									<RadioGroupItem value='yes' id='yes' />
-									<Label htmlFor='yes'>Yes</Label>
-								</div>
-								<div className='flex items-center space-x-2'>
-									<RadioGroupItem value='no' id='no' />
-									<Label htmlFor='no'>No</Label>
-								</div>
-							</RadioGroup>
-						</div>
 					</div>
+					)}
 
+					{step === 0 && (
+					<div className='space-y-6'>
+					<div className='space-y-2'>
+						<Label>Property Type</Label>
+						<Select
+							value={watch('propertyType') || undefined}
+							onValueChange={(val) =>
+								setValue('propertyType', val, { shouldValidate: true })
+							}
+						>
+							<SelectTrigger className='w-full'>
+								<SelectValue placeholder='Select property type' />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value='apartment'>Apartment</SelectItem>
+								<SelectItem value='house'>House</SelectItem>
+								<SelectItem value='studio'>Studio</SelectItem>
+							</SelectContent>
+						</Select>
+						<input
+							type='hidden'
+							{...register('propertyType', {
+								required: 'Property type is required',
+							})}
+						/>
+						{errors.propertyType && (
+							<p className='text-sm text-destructive'>
+								{errors.propertyType.message}
+							</p>
+						)}
+					</div>
 					<div className='space-y-2'>
 						<Label>Description</Label>
 						<Textarea
@@ -509,7 +569,10 @@ function AddProperties() {
 							</p>
 						)}
 					</div>
+					</div>
+					)}
 
+					{step === 4 && (
 					<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 						<div className='space-y-2'>
 							<Label>Agent Name</Label>
@@ -524,11 +587,26 @@ function AddProperties() {
 							<Input value={user?.email || ''} readOnly className='bg-muted' />
 						</div>
 					</div>
+					)}
 
-					<div className='sticky bottom-0 -mx-6 border-t border-border bg-surface px-6 py-3'>
-						<Button type='submit' className='w-full sm:w-auto'>
-							Add Property
+					<div className='sticky bottom-0 -mx-6 flex items-center justify-between gap-3 border-t border-border bg-surface px-6 py-3'>
+						<Button
+							type='button'
+							variant='outline'
+							onClick={() => setStep((current) => Math.max(current - 1, 0))}
+							disabled={step === 0 || saving}
+						>
+							Back
 						</Button>
+						{step < 4 ? (
+							<Button type='button' onClick={goNext} disabled={uploading}>
+								Next
+							</Button>
+						) : (
+							<Button type='submit' disabled={saving || uploading}>
+								{saving ? 'Saving...' : 'Add Property'}
+							</Button>
+						)}
 					</div>
 				</form>
 			</CardContent>
