@@ -10,10 +10,11 @@ import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-toastify';
+import { listParams, viewList } from '@/lib/pageList';
 import {
 	FilterSection,
-	ShowMore,
-	usePreview,
+	Pager,
+	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 export default function AdminAdvertiseProperty() {
@@ -21,14 +22,26 @@ export default function AdminAdvertiseProperty() {
 	const qc = useQueryClient();
 
 	const [selected, setSelected] = useState(null);
-	const { filter, choose, visible, showMore } = usePreview('all');
+	const { filter, choose, page, setPage } = useListControls('all');
 
 	const propertiesQuery = useQuery({
-		queryKey: ['admin‐verified-properties'],
-		queryFn: () => axios.get('/admin/verified-properties').then((r) => r.data),
+		queryKey: ['admin‐verified-properties', page, filter],
+		queryFn: () =>
+			axios
+				.get('/admin/verified-properties', {
+					params: listParams({ page, filter }),
+				})
+				.then((r) => r.data),
 		placeholderData: keepPreviousData,
 	});
-	const { data: properties = [] } = propertiesQuery;
+	const view = viewList(propertiesQuery.data, page, (items) =>
+		filter === 'advertised'
+			? items.filter((property) => property.isAdvertised)
+			: filter === 'available'
+				? items.filter((property) => !property.isAdvertised)
+				: items,
+	);
+	const rows = view?.items || [];
 	const gate = gateQuery(propertiesQuery);
 
 	const advertiseM = useMutation({
@@ -53,13 +66,6 @@ export default function AdminAdvertiseProperty() {
 		onError: () => toast.error('Failed to un‑advertise'),
 	});
 
-	const filtered =
-		filter === 'advertised'
-			? properties.filter((property) => property.isAdvertised)
-			: filter === 'available'
-				? properties.filter((property) => !property.isAdvertised)
-				: properties;
-	const rows = filtered.slice(0, visible);
 	const ask = (property) =>
 		setSelected({
 			id: property._id,
@@ -90,10 +96,7 @@ export default function AdminAdvertiseProperty() {
 				<ListingSkeleton />
 			) : (
 				<>
-					<p className='text-sm text-muted-foreground'>
-						{filtered.length} {filtered.length === 1 ? 'home' : 'homes'}
-					</p>
-					{rows.length === 0 ? (
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>
 							No listings for this filter.
 						</p>
@@ -108,10 +111,12 @@ export default function AdminAdvertiseProperty() {
 									/>
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={showMore}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}

@@ -5,6 +5,13 @@ const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
 const seedGenerator = require('../utils/seedProperties');
 const { withReviewCredits } = require('../utils/reviewCredits');
+const {
+	wantsPage,
+	readPage,
+	searchPattern,
+	matchingHomeIds,
+	paged,
+} = require('../utils/pageList');
 
 router.use(verifyFireBaseToken, verifyRole(['admin', 'super-admin']));
 
@@ -12,10 +19,27 @@ router.use(verifyFireBaseToken, verifyRole(['admin', 'super-admin']));
 router.get('/properties', async (req, res) => {
 	try {
 		const Properties = getCollection('properties');
-		const properties = await Properties.find({})
-			.sort({ createdAt: -1 })
-			.toArray();
-		res.send(properties);
+		const filter = {};
+		const status = String(req.query.filter || 'all');
+		if (['pending', 'verified', 'rejected'].includes(status)) {
+			filter.verificationStatus = status;
+		}
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			filter.$or = [{ title: pattern }, { location: pattern }, { agentName: pattern }];
+		}
+		if (!wantsPage(req.query)) {
+			const properties = await Properties.find(filter)
+				.sort({ createdAt: -1 })
+				.toArray();
+			return res.send(properties);
+		}
+		res.send(
+			await paged(Properties, filter, {
+				...readPage(req.query),
+				sort: { createdAt: -1 },
+			}),
+		);
 	} catch (err) {
 		console.error('admin.properties error', err);
 		res.status(500).send({ error: 'Internal server error' });
@@ -72,8 +96,21 @@ router.patch('/properties/reject/:id', async (req, res) => {
 router.get('/users', async (req, res) => {
 	try {
 		const Users = getCollection('users');
-		const users = await Users.find({}).sort({ last_log_in: -1 }).toArray();
-		res.send(users);
+		const filter = {};
+		const role = String(req.query.filter || 'all');
+		if (['user', 'agent', 'admin', 'fraud'].includes(role)) filter.role = role;
+		const pattern = searchPattern(req.query.q);
+		if (pattern) filter.$or = [{ name: pattern }, { email: pattern }];
+		if (!wantsPage(req.query)) {
+			const users = await Users.find(filter).sort({ last_log_in: -1 }).toArray();
+			return res.send(users);
+		}
+		res.send(
+			await paged(Users, filter, {
+				...readPage(req.query),
+				sort: { last_log_in: -1 },
+			}),
+		);
 	} catch (err) {
 		console.error('admin.users error', err);
 		res.status(500).send({ error: 'Internal server error' });
@@ -149,8 +186,28 @@ router.post('/seed-properties', async (req, res) => {
 router.get('/reviews', async (req, res) => {
 	try {
 		const Review = getCollection('reviews');
-		const reviews = await Review.find({}).toArray();
-		res.send(await withReviewCredits(reviews));
+		const filter = {};
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			const homeIds = await matchingHomeIds(pattern);
+			filter.$or = [
+				{ reviewText: pattern },
+				{ userName: pattern },
+				{ userEmail: pattern },
+				{ propertyTitle: pattern },
+				{ propertyId: { $in: homeIds } },
+			];
+		}
+		if (!wantsPage(req.query)) {
+			const reviews = await Review.find(filter).sort({ createdAt: -1 }).toArray();
+			return res.send(await withReviewCredits(reviews));
+		}
+		const result = await paged(Review, filter, {
+			...readPage(req.query),
+			sort: { createdAt: -1 },
+		});
+		result.items = await withReviewCredits(result.items);
+		res.send(result);
 	} catch (err) {
 		console.error('reviews.post error', err);
 		res.status(500).send({ error: 'Internal server error' });
@@ -164,14 +221,26 @@ router.get(
 	async (req, res) => {
 		try {
 			const Properties = getCollection('properties');
-
-			const properties = await Properties.find({
-				verificationStatus: 'verified',
-			})
-				.sort({ createdAt: -1 })
-				.toArray();
-
-			res.send(properties);
+			const filter = { verificationStatus: 'verified' };
+			const listing = String(req.query.filter || 'all');
+			if (listing === 'advertised') filter.isAdvertised = true;
+			if (listing === 'available') filter.isAdvertised = { $ne: true };
+			const pattern = searchPattern(req.query.q);
+			if (pattern) {
+				filter.$or = [{ title: pattern }, { location: pattern }];
+			}
+			if (!wantsPage(req.query)) {
+				const properties = await Properties.find(filter)
+					.sort({ createdAt: -1 })
+					.toArray();
+				return res.send(properties);
+			}
+			res.send(
+				await paged(Properties, filter, {
+					...readPage(req.query),
+					sort: { createdAt: -1 },
+				}),
+			);
 		} catch (err) {
 			console.error(err);
 			res.status(500).send({ message: 'Error getting verified properties' });

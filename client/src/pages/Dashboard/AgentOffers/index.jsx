@@ -10,10 +10,11 @@ import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
 import { gateQuery } from '@/lib/queryWait';
 import { cn } from '@/lib/utils';
+import { listParams, viewList } from '@/lib/pageList';
 import {
 	FilterSection,
-	ShowMore,
-	usePreview,
+	Pager,
+	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 const STATUS_TONE = {
@@ -27,19 +28,30 @@ export default function AgentOffersPage() {
 	const { user } = useAuth();
 	const axios = useAxiosSecure();
 	const queryClient = useQueryClient();
-	const { filter, choose, visible, showMore } = usePreview('all');
+	const { filter, choose, page, setPage } = useListControls('all');
 
 	const offersQuery = useQuery({
-		queryKey: ['agent-offers', user?.uid],
+		queryKey: ['agent-offers', user?.uid, page, filter],
 		enabled: !!user?.uid,
 		placeholderData: keepPreviousData,
 		queryFn: async () => {
-			const res = await axios.get(`/agent/offers?uid=${user.uid}`);
+			const res = await axios.get('/agent/offers', {
+				params: { uid: user.uid, ...listParams({ page, filter }) },
+			});
 			return res.data;
 		},
 	});
-	const offers = offersQuery.data ?? [];
 	const gate = gateQuery(offersQuery);
+	const view = viewList(
+		offersQuery.data,
+		page,
+		(items) =>
+			filter === 'all' ? items : items.filter((offer) => offer.status === filter),
+		(items) =>
+			items.reduce((sum, offer) => sum + Number(offer.offerAmount || 0), 0),
+	);
+	const rows = view?.items || [];
+	const offerTotal = Number(view?.amount || 0);
 
 	const mutation = useMutation({
 		mutationFn: ({ offerId, newStatus, propertyId }) =>
@@ -54,14 +66,6 @@ export default function AgentOffersPage() {
 		onError: (err) =>
 			toast.error(err.response.data.error || 'Something went wrong'),
 	});
-
-	const filtered =
-		filter === 'all' ? offers : offers.filter((offer) => offer.status === filter);
-	const rows = filtered.slice(0, visible);
-	const offerTotal = filtered.reduce(
-		(sum, offer) => sum + Number(offer.offerAmount || 0),
-		0,
-	);
 
 	return (
 		<div className='w-full space-y-6'>
@@ -82,16 +86,15 @@ export default function AgentOffersPage() {
 				<OfferSkeleton />
 			) : (
 				<>
-					<p className='text-sm text-muted-foreground'>
-						{filtered.length} {filtered.length === 1 ? 'offer' : 'offers'}
-						{filtered.length ? ` · ${formatMoney(offerTotal)}` : ''}
-					</p>
-					{rows.length === 0 ? (
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>
 							No offers in this status.
 						</p>
 					) : (
 						<div className='space-y-6'>
+							<p className='text-sm text-muted-foreground'>
+								{formatMoney(offerTotal)} offered
+							</p>
 							<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 								{rows.map((offer) => (
 									<OfferRow
@@ -115,10 +118,12 @@ export default function AgentOffersPage() {
 									/>
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={showMore}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}
@@ -129,22 +134,19 @@ export default function AgentOffersPage() {
 }
 
 function OfferRow({ offer, busy, onAccept, onReject }) {
-	const title = offer.propertyTitle || 'Listing';
+	const title = offer.property?.title || offer.propertyTitle || 'Listing';
+	const photo = offer.property?.image || offer.propertyImage || '';
 
 	return (
 		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
-			{offer.propertyId ? (
+			{photo && offer.propertyId ? (
 				<Link
 					to={`/all-properties/${offer.propertyId}`}
 					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
 				>
-					<FillPhoto src={offer.propertyImage} alt={title} />
+					<FillPhoto src={photo} alt={title} />
 				</Link>
-			) : (
-				<div className='relative w-2/5 max-w-72 shrink-0 bg-muted'>
-					<FillPhoto src={offer.propertyImage} alt={title} />
-				</div>
-			)}
+			) : null}
 			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
 				<div className='flex items-start justify-between gap-3'>
 					{offer.propertyId ? (

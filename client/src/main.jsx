@@ -9,8 +9,18 @@ import AuthProvider from './context/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ThemeProvider from './context/ThemeProvider';
 
-// Client for query
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			// A 4xx answer will not change on retry; only retry network and server errors.
+			retry: (failureCount, error) => {
+				const status = error?.response?.status;
+				if (status >= 400 && status < 500) return false;
+				return failureCount < 2;
+			},
+		},
+	},
+});
 
 createRoot(document.getElementById('root')).render(
 	<StrictMode>

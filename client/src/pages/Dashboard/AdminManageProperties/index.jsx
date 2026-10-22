@@ -9,10 +9,11 @@ import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
 import { cn } from '@/lib/utils';
+import { listParams, viewList } from '@/lib/pageList';
 import {
 	FilterSection,
-	ShowMore,
-	usePreview,
+	Pager,
+	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 const STATUS_TONE = {
@@ -23,17 +24,25 @@ const STATUS_TONE = {
 
 export default function AdminManageProperties() {
 	const axiosSecure = useAxiosSecure();
-	const { filter, choose, visible, showMore } = usePreview('all');
+	const { filter, choose, page, setPage } = useListControls('all');
 
 	const propertiesQuery = useQuery({
-		queryKey: ['admin-properties'],
+		queryKey: ['admin-properties', page, filter],
 		queryFn: async () => {
-			const res = await axiosSecure.get('/admin/properties');
+			const res = await axiosSecure.get('/admin/properties', {
+				params: listParams({ page, filter }),
+			});
 			return res.data;
 		},
 		placeholderData: keepPreviousData,
 	});
-	const { data: properties = [], refetch } = propertiesQuery;
+	const { refetch } = propertiesQuery;
+	const view = viewList(propertiesQuery.data, page, (items) =>
+		filter === 'all'
+			? items
+			: items.filter((prop) => prop.verificationStatus === filter),
+	);
+	const rows = view?.items || [];
 	const gate = gateQuery(propertiesQuery);
 
 	const verifyMutation = useMutation({
@@ -53,12 +62,6 @@ export default function AdminManageProperties() {
 		},
 		onError: () => toast.error('Rejection failed'),
 	});
-
-	const filtered =
-		filter === 'all'
-			? properties
-			: properties.filter((prop) => prop.verificationStatus === filter);
-	const rows = filtered.slice(0, visible);
 
 	return (
 		<div className='w-full space-y-6'>
@@ -84,10 +87,7 @@ export default function AdminManageProperties() {
 				<ListingSkeleton />
 			) : (
 				<>
-					<p className='text-sm text-muted-foreground'>
-						{filtered.length} {filtered.length === 1 ? 'home' : 'homes'}
-					</p>
-					{rows.length === 0 ? (
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>
 							No properties in this status.
 						</p>
@@ -108,10 +108,12 @@ export default function AdminManageProperties() {
 									/>
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={showMore}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}

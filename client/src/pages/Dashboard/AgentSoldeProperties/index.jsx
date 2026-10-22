@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -6,10 +5,11 @@ import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { gateQuery } from '@/lib/queryWait';
+import { listParams, viewList } from '@/lib/pageList';
 import {
 	FilterSection,
-	ShowMore,
-	usePreview,
+	Pager,
+	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 function inThisMonth(value) {
@@ -23,26 +23,29 @@ function inThisMonth(value) {
 
 export default function AgentSoldProperties() {
 	const axiosSecure = useAxiosSecure();
-	const { filter, choose, visible, showMore } = usePreview('all');
+	const { filter, choose, page, setPage } = useListControls('all');
 
 	const soldQuery = useQuery({
-		queryKey: ['agent-sold-properties'],
+		queryKey: ['agent-sold-properties', page, filter],
 		placeholderData: keepPreviousData,
 		queryFn: async () => {
-			const res = await axiosSecure.get('/agent/sold-properties');
+			const res = await axiosSecure.get('/agent/sold-properties', {
+				params: listParams({ page, filter }),
+			});
 			return res.data;
 		},
 	});
-	const sold = soldQuery.data ?? [];
 	const gate = gateQuery(soldQuery);
-
-	const filtered =
-		filter === 'month' ? sold.filter((item) => inThisMonth(item.paidAt)) : sold;
-	const rows = filtered.slice(0, visible);
-	const totalSold = filtered.reduce(
-		(acc, item) => acc + Number(item.offerAmount || 0),
-		0,
+	const view = viewList(
+		soldQuery.data,
+		page,
+		(items) =>
+			filter === 'month' ? items.filter((item) => inThisMonth(item.paidAt)) : items,
+		(items) =>
+			items.reduce((sum, item) => sum + Number(item.offerAmount || 0), 0),
 	);
+	const rows = view?.items || [];
+	const totalSold = Number(view?.amount || 0);
 
 	return (
 		<div className='w-full space-y-6'>
@@ -61,25 +64,26 @@ export default function AgentSoldProperties() {
 				<SoldSkeleton />
 			) : (
 				<>
-					<p className='text-sm text-muted-foreground'>
-						{filtered.length} sold
-						{filtered.length ? ` · ${formatMoney(totalSold)}` : ''}
-					</p>
-					{rows.length === 0 ? (
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>
 							No sales in this period.
 						</p>
 					) : (
 						<div className='space-y-6'>
+							<p className='text-sm text-muted-foreground'>
+								{formatMoney(totalSold)} sold
+							</p>
 							<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 								{rows.map((item) => (
 									<SoldRow key={item._id} item={item} />
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={showMore}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}
@@ -90,25 +94,22 @@ export default function AgentSoldProperties() {
 }
 
 function SoldRow({ item }) {
-	const title = item.propertyTitle || item.title || 'Listing';
+	const title = item.property?.title || item.propertyTitle || item.title || 'Listing';
+	const photo = item.property?.image || item.propertyImage || '';
 	const when = item.paidAt
 		? new Date(item.paidAt).toLocaleDateString('en-BD')
 		: '';
 
 	return (
 		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
-			{item.propertyId ? (
+			{photo && item.propertyId ? (
 				<Link
 					to={`/all-properties/${item.propertyId}`}
 					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
 				>
-					<FillPhoto src={item.propertyImage} alt={title} />
+					<FillPhoto src={photo} alt={title} />
 				</Link>
-			) : (
-				<div className='relative w-2/5 max-w-72 shrink-0 bg-muted'>
-					<FillPhoto src={item.propertyImage} alt={title} />
-				</div>
-			)}
+			) : null}
 			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
 				{item.propertyId ? (
 					<Link

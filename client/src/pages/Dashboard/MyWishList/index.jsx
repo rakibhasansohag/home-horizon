@@ -5,27 +5,36 @@ import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
 import { toast } from 'react-toastify';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
+import { listParams, viewList } from '@/lib/pageList';
+import { Pager, useListControls } from '@/pages/Dashboard/Components/DashboardFilter';
 
 export default function MyWishlist() {
 	const axiosSecure = useAxiosSecure();
 	const { user } = useAuth();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const { page, setPage, q, query, search } = useListControls();
 
 	const wishlistQuery = useQuery({
-		queryKey: ['user-wishlist', user?.uid],
+		queryKey: ['user-wishlist', user?.uid, page, query],
 		placeholderData: keepPreviousData,
 		queryFn: async () => {
-			const res = await axiosSecure.get(`/wishlist?userId=${user?.uid}`);
+			const res = await axiosSecure.get('/wishlist', {
+				params: { userId: user?.uid, ...listParams({ page, query }) },
+			});
 			return res.data;
 		},
 		enabled: !!user?.uid,
 	});
-	const wishlist = wishlistQuery.data ?? [];
+	const view = viewList(wishlistQuery.data, page, (items) =>
+		matchHome(items, query),
+	);
+	const wishlist = view?.items || [];
 
 	const { mutate: removeFromWishlist, isLoading: removing } = useMutation({
 		mutationFn: async (propertyId) => {
@@ -35,7 +44,7 @@ export default function MyWishlist() {
 		},
 		onSuccess: () => {
 			toast.success('Removed from wishlist');
-			queryClient.invalidateQueries(['user-wishlist', user?.uid]);
+			queryClient.invalidateQueries({ queryKey: ['user-wishlist', user?.uid] });
 		},
 		onError: () => {
 			toast.error('Failed to remove');
@@ -48,36 +57,64 @@ export default function MyWishlist() {
 		return <p className='text-destructive'>Could not load your wishlist.</p>;
 	}
 
-	if (wishlist.length === 0) {
-		return (
-			<p className='text-base text-muted-foreground'>
-				Your wishlist is empty.{' '}
-				<Link to='/all-properties' className='font-medium text-brand'>
-					Browse properties
-				</Link>
-			</p>
-		);
-	}
-
 	return (
 		<div className='w-full space-y-6'>
-			<p className='text-sm text-muted-foreground'>
-				{wishlist.length} {wishlist.length === 1 ? 'home' : 'homes'}
-			</p>
-			<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
-				{wishlist.map((item) => (
-					<WishlistRow
-						key={item._id || item.propertyId}
-						item={item}
-						onOffer={() =>
-							navigate(`/dashboard/offer/${item.property?._id || item.propertyId}`)
-						}
-						onRemove={() => removeFromWishlist(item.propertyId)}
-						removing={removing}
+			<Input
+				value={q}
+				aria-label='Find a saved home'
+				placeholder='Search by home or location'
+				onChange={(event) => search(event.target.value)}
+			/>
+			{!view?.total ? (
+				<p className='text-base text-muted-foreground'>
+					{query ? (
+						'No saved homes match.'
+					) : (
+						<>
+							Your wishlist is empty.{' '}
+							<Link to='/all-properties' className='font-medium text-brand'>
+								Browse properties
+							</Link>
+						</>
+					)}
+				</p>
+			) : (
+				<>
+					<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+						{wishlist.map((item) => (
+							<WishlistRow
+								key={item._id || item.propertyId}
+								item={item}
+								onOffer={() =>
+									navigate(
+										`/dashboard/offer/${item.property?._id || item.propertyId}`,
+									)
+								}
+								onRemove={() => removeFromWishlist(item.propertyId)}
+								removing={removing}
+							/>
+						))}
+					</ul>
+					<Pager
+						page={page}
+						pages={view.pages}
+						total={view.total}
+						limit={view.limit}
+						onPage={setPage}
 					/>
-				))}
-			</ul>
+				</>
+			)}
 		</div>
+	);
+}
+
+function matchHome(items, query) {
+	const term = String(query || '').trim().toLowerCase();
+	if (!term) return items;
+	return items.filter((item) =>
+		`${item.property?.title || item.propertyTitle || ''} ${item.property?.location || item.propertyLocation || ''}`
+			.toLowerCase()
+			.includes(term),
 	);
 }
 
@@ -94,16 +131,14 @@ function WishlistRow({ item, onOffer, onRemove, removing }) {
 
 	return (
 		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
-			{item.propertyId ? (
+			{home?.image && item.propertyId ? (
 				<Link
 					to={`/all-properties/${item.propertyId}`}
 					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
 				>
-					<FillPhoto src={home?.image} alt={title} />
+					<FillPhoto src={home.image} alt={title} />
 				</Link>
-			) : (
-				<div className='w-2/5 max-w-72 shrink-0 bg-muted' />
-			)}
+			) : null}
 			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
 				{item.propertyId ? (
 					<Link

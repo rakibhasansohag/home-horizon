@@ -8,10 +8,11 @@ import { cn } from '@/lib/utils';
 import useMyProperties from '@/hooks/useMyProperties';
 import UpdatePropertyModal from '../../../components/Shared/UpdatePropertyModal';
 import ConfirmDeleteModal from '../../../components/Shared/ConfirmDeleteModal';
+import { viewList } from '@/lib/pageList';
 import {
 	FilterSection,
-	ShowMore,
-	usePreview,
+	Pager,
+	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 const STATUS_TONE = {
@@ -21,20 +22,20 @@ const STATUS_TONE = {
 };
 
 export default function MyProperties() {
-	const propertiesQuery = useMyProperties();
-	const { data: properties = [], refetch } = propertiesQuery;
-	const { filter, choose, visible, showMore } = usePreview('all');
+	const { filter, choose, page, setPage } = useListControls('all');
+	const propertiesQuery = useMyProperties({ page, filter });
+	const { refetch } = propertiesQuery;
+	const view = viewList(propertiesQuery.data, page, (items) =>
+		filter === 'all'
+			? items
+			: items.filter((property) => property.verificationStatus === filter),
+	);
+	const rows = view?.items || [];
 	const [propertyToUpdate, setPropertyToUpdate] = useState(null);
 	const [propertyToDeleteId, setPropertyToDeleteId] = useState(null);
 	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const gate = gateQuery(propertiesQuery);
-
-	const filtered =
-		filter === 'all'
-			? properties
-			: properties.filter((property) => property.verificationStatus === filter);
-	const rows = filtered.slice(0, visible);
 
 	const handleDelete = (id) => {
 		setPropertyToDeleteId(id);
@@ -63,7 +64,7 @@ export default function MyProperties() {
 				<p className='text-destructive'>Could not load your properties.</p>
 			) : gate === 'loading' ? (
 				<HomeSkeleton />
-			) : properties.length === 0 ? (
+			) : !view?.total && filter === 'all' ? (
 				<p className='text-base text-muted-foreground'>
 					No properties yet.{' '}
 					<Link to='/dashboard/add-property' className='font-medium text-brand'>
@@ -72,10 +73,7 @@ export default function MyProperties() {
 				</p>
 			) : (
 				<>
-					<p className='text-sm text-muted-foreground'>
-						{filtered.length} {filtered.length === 1 ? 'home' : 'homes'}
-					</p>
-					{rows.length === 0 ? (
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>
 							No properties in this status.
 						</p>
@@ -93,10 +91,12 @@ export default function MyProperties() {
 									/>
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={showMore}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}

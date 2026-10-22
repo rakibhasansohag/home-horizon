@@ -4,6 +4,13 @@ const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
 const { attachHomes } = require('../utils/attachHomes');
+const {
+	wantsPage,
+	readPage,
+	searchPattern,
+	matchingHomeIds,
+	paged,
+} = require('../utils/pageList');
 
 // Add to wishlist (user)
 router.post(
@@ -55,10 +62,21 @@ router.get(
 			const userId = req.query.userId;
 			if (!userId) return res.status(400).send({ error: 'Missing userId' });
 			const Wishlist = getCollection('wishlist');
-			const list = await Wishlist.find({ userId })
-				.sort({ createdAt: -1 })
-				.toArray();
-			res.send(await attachHomes(list));
+			const filter = { userId };
+			const pattern = searchPattern(req.query.q);
+			if (pattern) {
+				filter.propertyId = { $in: await matchingHomeIds(pattern) };
+			}
+			if (!wantsPage(req.query)) {
+				const list = await Wishlist.find(filter).sort({ createdAt: -1 }).toArray();
+				return res.send(await attachHomes(list));
+			}
+			const result = await paged(Wishlist, filter, {
+				...readPage(req.query),
+				sort: { createdAt: -1 },
+			});
+			result.items = await attachHomes(result.items);
+			res.send(result);
 		} catch (err) {
 			console.error('wishlist.get error', err);
 			res.status(500).send({ error: 'Internal server error' });

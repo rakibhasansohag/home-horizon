@@ -1,30 +1,41 @@
-import { useState } from 'react';
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { Star } from 'lucide-react';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import useAuth from '@/hooks/useAuth';
 import { gateQuery } from '@/lib/queryWait';
+import { listParams, viewList } from '@/lib/pageList';
+import { Pager, useListControls } from '@/pages/Dashboard/Components/DashboardFilter';
+import { StripFrame } from '@/pages/Dashboard/Components/ListingStrip';
 
 export default function MyReviews() {
 	const { user } = useAuth();
 	const axiosSecure = useAxiosSecure();
 	const queryClient = useQueryClient();
+	const { page, setPage, q, query, search } = useListControls();
 
 	const reviewsQuery = useQuery({
-		queryKey: ['my-reviews', user?.uid],
+		queryKey: ['my-reviews', user?.uid, page, query],
 		queryFn: async () => {
-			const res = await axiosSecure.get(`/reviews/my?uid=${user?.uid}`);
+			const res = await axiosSecure.get('/reviews/my', {
+				params: { uid: user?.uid, ...listParams({ page, query }) },
+			});
 			return res.data;
 		},
 		enabled: !!user?.uid,
 		placeholderData: keepPreviousData,
 	});
-	const reviews = reviewsQuery.data ?? [];
+	const view = viewList(reviewsQuery.data, page, (items) =>
+		matchText(items, query, (review) =>
+			`${review.reviewText || ''} ${review.property?.title || review.propertyTitle || ''} ${review.agentName || ''}`,
+		),
+	);
+	const reviews = view?.items || [];
 
 	const { mutate: deleteReview, isPending: isDeleting } = useMutation({
 		mutationFn: async (id) => {
@@ -32,78 +43,92 @@ export default function MyReviews() {
 		},
 		onSuccess: () => {
 			toast.success('Review deleted');
-			queryClient.invalidateQueries(['my-reviews', user?.uid]);
+			queryClient.invalidateQueries({ queryKey: ['my-reviews', user?.uid] });
 		},
 		onError: () => toast.error('Failed to delete review'),
 	});
-
-	console.log(user);
-	console.log(reviews);
 
 	if (gateQuery(reviewsQuery) === 'loading') return <ReviewSkeleton />;
 
 	if (gateQuery(reviewsQuery) === 'error')
 		return <p className='text-destructive'>Could not load your reviews.</p>;
 
-	if (!reviews.length) {
-		return (
-			<p className='text-base text-muted-foreground'>
-				You have not written a review yet.{' '}
-				<Link to='/all-properties' className='font-medium text-brand'>
-					Browse properties
-				</Link>
-			</p>
-		);
-	}
-
 	return (
 		<div className='w-full space-y-6'>
-			<p className='text-sm text-muted-foreground'>
-				{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
-			</p>
-			<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
-				{reviews.map((review) => (
-					<MyReviewRow
-						key={review._id}
-						review={review}
-						onDelete={() => deleteReview(review._id)}
-						deleting={isDeleting}
+			<Input
+				value={q}
+				aria-label='Find a review'
+				placeholder='Search by home or review'
+				onChange={(event) => search(event.target.value)}
+			/>
+			{!view?.total ? (
+				<p className='text-base text-muted-foreground'>
+					{query ? (
+						'No reviews match.'
+					) : (
+						<>
+							You have not written a review yet.{' '}
+							<Link to='/all-properties' className='font-medium text-brand'>
+								Browse properties
+							</Link>
+						</>
+					)}
+				</p>
+			) : (
+				<>
+					<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
+						{reviews.map((review) => (
+							<MyReviewRow
+								key={review._id}
+								review={review}
+								onDelete={() => deleteReview(review._id)}
+								deleting={isDeleting}
+							/>
+						))}
+					</ul>
+					<Pager
+						page={page}
+						pages={view.pages}
+						total={view.total}
+						limit={view.limit}
+						onPage={setPage}
 					/>
-				))}
-			</ul>
+				</>
+			)}
 		</div>
 	);
 }
 
+function matchText(items, query, read) {
+	const term = String(query || '').trim().toLowerCase();
+	if (!term) return items;
+	return items.filter((item) => read(item).toLowerCase().includes(term));
+}
+
 function MyReviewRow({ review, onDelete, deleting }) {
 	const home = review.property;
-	const title = home?.title || review.propertyTitle || 'Open the listing';
-	const photo = home?.image || '';
+	const title = home?.title || review.propertyTitle || '';
+	const photo = home?.image || review.propertyImage || '';
 	const when = review.createdAt ? moment(review.createdAt).format('LL') : '';
 
 	return (
 		<li className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'>
-			{review.propertyId ? (
-				<Link
-					to={`/all-properties/${review.propertyId}`}
-					className='relative w-2/5 max-w-56 shrink-0 bg-muted'
-				>
-					<FillPhoto src={photo} alt={title} />
-				</Link>
-			) : (
-				<div className='w-2/5 max-w-56 shrink-0 bg-muted' />
-			)}
+			<StripFrame
+				to={review.propertyId ? `/all-properties/${review.propertyId}` : ''}
+				src={photo}
+				alt={title}
+			/>
 			<div className='flex min-w-0 flex-1 flex-col gap-2 p-4'>
-				{review.propertyId ? (
+				{title && review.propertyId ? (
 					<Link
 						to={`/all-properties/${review.propertyId}`}
 						className='truncate font-medium transition-colors duration-200 hover:text-brand'
 					>
 						{title}
 					</Link>
-				) : (
+				) : title ? (
 					<p className='truncate font-medium'>{title}</p>
-				)}
+				) : null}
 				{home?.location ? (
 					<p className='truncate text-sm text-muted-foreground'>{home.location}</p>
 				) : null}
@@ -139,19 +164,6 @@ function MyReviewRow({ review, onDelete, deleting }) {
 				</div>
 			</div>
 		</li>
-	);
-}
-
-function FillPhoto({ src, alt }) {
-	const [failed, setFailed] = useState(false);
-	if (!src || failed) return null;
-	return (
-		<img
-			src={src}
-			alt={alt || ''}
-			className='absolute inset-0 h-full w-full object-cover'
-			onError={() => setFailed(true)}
-		/>
 	);
 }
 

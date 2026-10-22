@@ -8,11 +8,12 @@ import ConfirmActionModal from '@/components/Shared/ConfirmActionModal';
 import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { gateQuery } from '@/lib/queryWait';
 import { cn } from '@/lib/utils';
+import { listParams, viewList } from '@/lib/pageList';
 import {
 	FilterSection,
+	Pager,
 	ResultSummary,
-	ShowMore,
-	usePreview,
+	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 
 const ROLE_LABEL = {
@@ -32,17 +33,24 @@ const ROLE_TONE = {
 
 export default function AdminManageUsers() {
 	const axios = useAxiosSecure();
-	const { filter, choose, visible, showMore } = usePreview('all');
+	const { filter, choose, page, setPage } = useListControls('all');
 
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [modalType, setModalType] = useState(null); // 'admin' | 'agent' | 'fraud' | 'delete'
 
 	const usersQuery = useQuery({
-		queryKey: ['admin-users'],
-		queryFn: () => axios.get('/admin/users').then((r) => r.data),
+		queryKey: ['admin-users', page, filter],
+		queryFn: () =>
+			axios
+				.get('/admin/users', { params: listParams({ page, filter }) })
+				.then((r) => r.data),
 		placeholderData: keepPreviousData,
 	});
-	const { data: users = [], refetch } = usersQuery;
+	const { refetch } = usersQuery;
+	const view = viewList(usersQuery.data, page, (items) =>
+		filter === 'all' ? items : items.filter((person) => person.role === filter),
+	);
+	const rows = view?.items || [];
 	const gate = gateQuery(usersQuery);
 
 	const roleMutation = useMutation({
@@ -72,10 +80,6 @@ export default function AdminManageUsers() {
 		setModalType(type);
 	};
 
-	const filtered =
-		filter === 'all' ? users : users.filter((person) => person.role === filter);
-	const rows = filtered.slice(0, visible);
-
 	return (
 		<div className='w-full space-y-6'>
 			<FilterSection
@@ -101,8 +105,8 @@ export default function AdminManageUsers() {
 				<PeopleSkeleton />
 			) : (
 				<>
-					<ResultSummary label={ROLE_LABEL[filter]} value={filtered.length} />
-					{rows.length === 0 ? (
+					<ResultSummary label={ROLE_LABEL[filter]} value={view?.total || 0} />
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>
 							No people in this role.
 						</p>
@@ -140,10 +144,12 @@ export default function AdminManageUsers() {
 									</li>
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={showMore}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}
@@ -156,21 +162,27 @@ export default function AdminManageUsers() {
 					modalType === 'admin'
 						? 'Make this user an admin?'
 						: modalType === 'agent'
-							? 'Make this user an agent?'
+							? selectedUser?.role === 'fraud'
+								? 'Restore this account as an agent?'
+								: 'Make this user an agent?'
 							: modalType === 'fraud'
 								? 'Mark agent as fraud?'
 								: 'Delete this user?'
 				}
 				description={
 					selectedUser
-						? `${selectedUser.name}, ${selectedUser.email}`
+						? selectedUser.role === 'fraud' && modalType === 'agent'
+							? `${selectedUser.name}, ${selectedUser.email}. Listings removed when the account was flagged do not come back.`
+							: `${selectedUser.name}, ${selectedUser.email}`
 						: 'This action cannot be undone.'
 				}
 				actionLabel={
 					modalType === 'admin'
 						? 'Make admin'
 						: modalType === 'agent'
-							? 'Make agent'
+							? selectedUser?.role === 'fraud'
+								? 'Restore as agent'
+								: 'Make agent'
 							: modalType === 'fraud'
 								? 'Mark as fraud'
 								: 'Delete'
@@ -229,6 +241,15 @@ function PersonActions({ person, onAction }) {
 					onClick={() => onAction(person, 'fraud')}
 				>
 					Mark as fraud
+				</Button>
+			)}
+			{person.role === 'fraud' && (
+				<Button
+					size='sm'
+					variant='accent'
+					onClick={() => onAction(person, 'agent')}
+				>
+					Restore as agent
 				</Button>
 			)}
 			<Button

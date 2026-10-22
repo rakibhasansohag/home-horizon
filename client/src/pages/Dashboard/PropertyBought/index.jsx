@@ -8,7 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
+import { listParams, viewList } from '@/lib/pageList';
 import { cn } from '@/lib/utils';
+import {
+	FilterSection,
+	Pager,
+	useListControls,
+} from '@/pages/Dashboard/Components/DashboardFilter';
 import { toast } from 'react-toastify';
 import ConfirmPaymentModal from '../../../components/Shared/ConfirmPaymentModal';
 
@@ -26,17 +32,23 @@ export default function PropertyBought() {
 	const [selectedOffer, setSelectedOffer] = useState(null);
 
 	const axiosSecure = useAxiosSecure();
+	const { filter, choose, page, setPage } = useListControls('all');
 
 	const offersQuery = useQuery({
-		queryKey: ['offers', user?.email],
+		queryKey: ['offers', user?.email, page, filter],
 		queryFn: async () => {
-			const res = await axiosSecure.get(`/offers?email=${user?.email}`);
+			const res = await axiosSecure.get('/offers', {
+				params: { email: user?.email, ...listParams({ page, filter }) },
+			});
 			return res.data;
 		},
 		enabled: !!user?.email,
 		placeholderData: keepPreviousData,
 	});
-	const offers = offersQuery.data;
+	const view = viewList(offersQuery.data, page, (items) =>
+		filter === 'all' ? items : items.filter((offer) => offer.status === filter),
+	);
+	const offers = view?.items || [];
 
 	const { mutate: initiatePayment, isPending: isPaying } = useMutation({
 		mutationFn: async (offerId) => {
@@ -61,22 +73,35 @@ export default function PropertyBought() {
 		return <p className='text-destructive'>Could not load your offers.</p>;
 	}
 
-	if (!offers?.length) {
-		return (
-			<p className='text-base text-muted-foreground'>
-				You have not made an offer yet.{' '}
-				<Link to='/all-properties' className='font-medium text-brand'>
-					Browse properties
-				</Link>
-			</p>
-		);
-	}
-
 	return (
 		<div className='w-full space-y-6'>
-			<p className='text-sm text-muted-foreground'>
-				{offers.length} {offers.length === 1 ? 'offer' : 'offers'}
-			</p>
+			<FilterSection
+				label='Status'
+				value={filter}
+				onChange={choose}
+				options={[
+					{ value: 'all', label: 'All' },
+					{ value: 'pending', label: 'Pending' },
+					{ value: 'accepted', label: 'Accepted' },
+					{ value: 'bought', label: 'Bought' },
+					{ value: 'rejected', label: 'Rejected' },
+				]}
+			/>
+			{!view?.total ? (
+				<p className='text-base text-muted-foreground'>
+					{filter === 'all' ? (
+						<>
+							You have not made an offer yet.{' '}
+							<Link to='/all-properties' className='font-medium text-brand'>
+								Browse properties
+							</Link>
+						</>
+					) : (
+						'No offers in this status.'
+					)}
+				</p>
+			) : (
+				<>
 			<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 				{offers.map((offer) => (
 					<OfferRow
@@ -90,6 +115,15 @@ export default function PropertyBought() {
 					/>
 				))}
 			</ul>
+			<Pager
+				page={page}
+				pages={view.pages}
+				total={view.total}
+				limit={view.limit}
+				onPage={setPage}
+			/>
+				</>
+			)}
 			<ConfirmPaymentModal
 				open={modalOpen}
 				onCancel={() => {
@@ -117,16 +151,14 @@ function OfferRow({ offer, paying, onPay }) {
 
 	return (
 		<li className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
-			{offer.propertyId ? (
+			{photo && offer.propertyId ? (
 				<Link
 					to={`/all-properties/${offer.propertyId}`}
 					className='relative w-2/5 max-w-72 shrink-0 bg-muted'
 				>
 					<FillPhoto src={photo} alt={title} />
 				</Link>
-			) : (
-				<div className='w-2/5 max-w-72 shrink-0 bg-muted' />
-			)}
+			) : null}
 			<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
 				<div className='flex items-start justify-between gap-3'>
 					{offer.propertyId ? (

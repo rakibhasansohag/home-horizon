@@ -10,29 +10,34 @@ import PersonAvatar from '@/components/Shared/PersonAvatar';
 import ConfirmActionModal from '@/components/shared/ConfirmActionModal';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { gateQuery } from '@/lib/queryWait';
-import {
-	PREVIEW_LIMIT,
-	ShowMore,
-} from '@/pages/Dashboard/Components/DashboardFilter';
+import { listParams, viewList } from '@/lib/pageList';
+import { Pager, useListControls } from '@/pages/Dashboard/Components/DashboardFilter';
+import { StripFrame } from '@/pages/Dashboard/Components/ListingStrip';
 
 export default function AdminManageReviews() {
 	const axiosSecure = useAxiosSecure();
 	const queryClient = useQueryClient();
 
 	const [selectedReview, setSelectedReview] = useState(null);
-	const [query, setQuery] = useState('');
-	const [visible, setVisible] = useState(PREVIEW_LIMIT);
+	const { page, setPage, q, query, search } = useListControls();
 
 	const reviewsQuery = useQuery({
-		queryKey: ['admin-reviews'],
+		queryKey: ['admin-reviews', page, query],
 		queryFn: async () => {
-			const res = await axiosSecure.get('/admin/reviews');
+			const res = await axiosSecure.get('/admin/reviews', {
+				params: listParams({ page, query }),
+			});
 			return res.data;
 		},
 		placeholderData: keepPreviousData,
 	});
-	const { data: reviews = [] } = reviewsQuery;
 	const gate = gateQuery(reviewsQuery);
+	const view = viewList(reviewsQuery.data, page, (items) =>
+		matchText(items, query, (review) =>
+			`${review.userName || ''} ${review.reviewText || ''} ${review.property?.title || review.propertyTitle || ''}`,
+		),
+	);
+	const rows = view?.items || [];
 
 	const deleteMutation = useMutation({
 		mutationFn: async (id) => {
@@ -40,32 +45,19 @@ export default function AdminManageReviews() {
 		},
 		onSuccess: () => {
 			toast.success('Review deleted');
-			queryClient.invalidateQueries(['admin-reviews']);
+			queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
 			setSelectedReview(null);
 		},
 		onError: () => toast.error('Failed to delete review'),
 	});
 
-	const term = query.trim().toLowerCase();
-	const filtered = term
-		? reviews.filter((review) =>
-				`${review.userName || ''} ${review.reviewText || ''} ${review.property?.title || review.propertyTitle || ''}`
-					.toLowerCase()
-					.includes(term),
-			)
-		: reviews;
-	const rows = filtered.slice(0, visible);
-
 	return (
 		<div className='w-full space-y-6'>
 			<Input
-				value={query}
+				value={q}
 				aria-label='Find a review'
 				placeholder='Search by name, home, or review'
-				onChange={(event) => {
-					setQuery(event.target.value);
-					setVisible(PREVIEW_LIMIT);
-				}}
+				onChange={(event) => search(event.target.value)}
 			/>
 			{gate === 'error' ? (
 				<div className='space-y-3'>
@@ -82,10 +74,7 @@ export default function AdminManageReviews() {
 				<ReviewSkeleton />
 			) : (
 				<>
-					<p className='text-sm text-muted-foreground'>
-						{filtered.length} {filtered.length === 1 ? 'review' : 'reviews'}
-					</p>
-					{rows.length === 0 ? (
+					{!view?.total ? (
 						<p className='text-base text-muted-foreground'>No reviews match.</p>
 					) : (
 						<div className='space-y-6'>
@@ -98,10 +87,12 @@ export default function AdminManageReviews() {
 									/>
 								))}
 							</ul>
-							<ShowMore
-								shown={rows.length}
-								total={filtered.length}
-								onMore={() => setVisible((count) => count + PREVIEW_LIMIT)}
+							<Pager
+								page={page}
+								pages={view.pages}
+								total={view.total}
+								limit={view.limit}
+								onPage={setPage}
 							/>
 						</div>
 					)}
@@ -152,26 +143,27 @@ export default function AdminManageReviews() {
 	);
 }
 
+function matchText(items, query, read) {
+	const term = String(query || '').trim().toLowerCase();
+	if (!term) return items;
+	return items.filter((item) => read(item).toLowerCase().includes(term));
+}
+
 function ReviewRow({ review, onDelete }) {
 	const home = review.property;
-	const title = home?.title || review.propertyTitle || 'Open the listing';
-	const photo = home?.image || '';
+	const title = home?.title || review.propertyTitle || '';
+	const photo = home?.image || review.propertyImage || '';
 	const date = reviewDate(review.createdAt);
 
 	return (
 		<li className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'>
-			{review.propertyId ? (
-				<Link
-					to={`/all-properties/${review.propertyId}`}
-					className='relative w-2/5 max-w-56 shrink-0 bg-muted'
-				>
-					<FillPhoto src={photo} />
-				</Link>
-			) : (
-				<div className='w-2/5 max-w-56 shrink-0 bg-muted' />
-			)}
+			<StripFrame
+				to={review.propertyId ? `/all-properties/${review.propertyId}` : ''}
+				src={photo}
+				alt={title}
+			/>
 			<div className='flex min-w-0 flex-1 flex-col gap-2 p-4'>
-				{review.propertyId ? (
+				{title && review.propertyId ? (
 					<Link
 						to={`/all-properties/${review.propertyId}`}
 						className='truncate font-medium transition-colors duration-200 hover:text-brand'
@@ -208,19 +200,6 @@ function ReviewRow({ review, onDelete }) {
 				</div>
 			</div>
 		</li>
-	);
-}
-
-function FillPhoto({ src }) {
-	const [failed, setFailed] = useState(false);
-	if (!src || failed) return null;
-	return (
-		<img
-			src={src}
-			alt=''
-			className='absolute inset-0 h-full w-full object-cover'
-			onError={() => setFailed(true)}
-		/>
 	);
 }
 

@@ -5,6 +5,16 @@ const { getCollection } = require('../config/db');
 
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
+const {
+	wantsPage,
+	readPage,
+	searchPattern,
+	monthBounds,
+	matchingHomeIds,
+	paged,
+	sumField,
+} = require('../utils/pageList');
+const { attachHomes } = require('../utils/attachHomes');
 
 // All routes require agent role
 router.use(verifyFireBaseToken, verifyRole(['agent']));
@@ -14,10 +24,33 @@ router.get('/offers', async (req, res) => {
 	try {
 		const agentId = req.decoded.uid;
 		const Offer = getCollection('offers');
-		const offers = await Offer.find({ agentId })
-			.sort({ createdAt: -1 })
-			.toArray();
-		res.send(offers);
+		const filter = { agentId };
+		const status = String(req.query.filter || 'all');
+		if (['pending', 'accepted', 'rejected', 'bought'].includes(status)) {
+			filter.status = status;
+		}
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			const homeIds = await matchingHomeIds(pattern);
+			filter.$or = [
+				{ buyerName: pattern },
+				{ buyerEmail: pattern },
+				{ propertyTitle: pattern },
+				{ propertyId: { $in: homeIds } },
+			];
+		}
+		if (!wantsPage(req.query)) {
+			const offers = await Offer.find(filter).sort({ createdAt: -1 }).toArray();
+			return res.send(await attachHomes(offers));
+		}
+		const amount = await sumField(Offer, filter, 'offerAmount');
+		const result = await paged(Offer, filter, {
+			...readPage(req.query),
+			sort: { createdAt: -1 },
+		});
+		result.items = await attachHomes(result.items);
+		result.amount = amount;
+		res.send(result);
 	} catch (err) {
 		console.error('agent.offers error', err);
 		res.status(500).send({ error: 'Internal server error' });
@@ -69,28 +102,32 @@ router.get('/sold-properties', async (req, res) => {
 	try {
 		const agentId = req.decoded.uid;
 		const Offer = getCollection('offers');
-		const Properties = getCollection('properties');
-
-		const soldOffers = await Offer.find({ agentId, status: 'bought' })
-			.sort({ paidAt: -1 })
-			.toArray();
-		const propertyIds = soldOffers.map((o) => new ObjectId(o.propertyId));
-		const properties = await Properties.find({
-			_id: { $in: propertyIds },
-		}).toArray();
-
-		const enriched = soldOffers.map((offer) => {
-			const prop = properties.find(
-				(p) => p._id.toString() === offer.propertyId,
-			);
-			return {
-				...offer,
-				propertyTitle: prop?.title || 'N/A',
-				propertyLocation: prop?.location || 'N/A',
-			};
+		const filter = { agentId, status: 'bought' };
+		if (String(req.query.filter || 'all') === 'month') {
+			filter.paidAt = monthBounds();
+		}
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			const homeIds = await matchingHomeIds(pattern);
+			filter.$or = [
+				{ buyerName: pattern },
+				{ buyerEmail: pattern },
+				{ propertyTitle: pattern },
+				{ propertyId: { $in: homeIds } },
+			];
+		}
+		if (!wantsPage(req.query)) {
+			const soldOffers = await Offer.find(filter).sort({ paidAt: -1 }).toArray();
+			return res.send(await attachHomes(soldOffers));
+		}
+		const amount = await sumField(Offer, filter, 'offerAmount');
+		const result = await paged(Offer, filter, {
+			...readPage(req.query),
+			sort: { paidAt: -1 },
 		});
-
-		res.send(enriched);
+		result.items = await attachHomes(result.items);
+		result.amount = amount;
+		res.send(result);
 	} catch (err) {
 		console.error('agent.sold-properties error', err);
 		res.status(500).send({ error: 'Internal server error' });
@@ -101,12 +138,28 @@ router.get('/sold-properties', async (req, res) => {
 router.get('/my-properties', async (req, res) => {
 	try {
 		const agentId = req.decoded.uid;
-
 		const Properties = getCollection('properties');
-		const myProperties = await Properties.find({ agentId })
-			.sort({ createdAt: -1 }) // newest first
-			.toArray();
-		res.send(myProperties);
+		const filter = { agentId };
+		const status = String(req.query.filter || 'all');
+		if (['pending', 'verified', 'rejected'].includes(status)) {
+			filter.verificationStatus = status;
+		}
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			filter.$or = [{ title: pattern }, { location: pattern }];
+		}
+		if (!wantsPage(req.query)) {
+			const myProperties = await Properties.find(filter)
+				.sort({ createdAt: -1 })
+				.toArray();
+			return res.send(myProperties);
+		}
+		res.send(
+			await paged(Properties, filter, {
+				...readPage(req.query),
+				sort: { createdAt: -1 },
+			}),
+		);
 	} catch (error) {
 		console.error('Error fetching my properties:', error);
 		res.status(500).send({ error: 'Internal Server Error' });

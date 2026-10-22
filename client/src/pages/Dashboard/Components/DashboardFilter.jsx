@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { PAGE_SIZE } from '@/lib/pageList';
 
 export const PREVIEW_LIMIT = 6;
 
@@ -55,6 +56,72 @@ export function ResultSummary({ label, value }) {
 			<p className='text-sm text-muted-foreground'>{label}</p>
 			<p className='mt-1 text-2xl font-semibold tabular-nums'>{value}</p>
 		</section>
+	);
+}
+
+export function useListControls(initial = 'all') {
+	const [filter, setFilter] = useState(initial);
+	const [page, setPage] = useState(1);
+	const [q, setQ] = useState('');
+	const [query, setQuery] = useState('');
+
+	useEffect(() => {
+		const id = setTimeout(() => setQuery(q.trim()), 300);
+		return () => clearTimeout(id);
+	}, [q]);
+
+	const choose = (next) => {
+		setFilter(next);
+		setPage(1);
+	};
+
+	const search = (value) => {
+		setQ(value);
+		setPage(1);
+	};
+
+	return { filter, choose, page, setPage, q, query, search };
+}
+
+export function Pager({ page, pages, total, limit = PAGE_SIZE, onPage }) {
+	useEffect(() => {
+		if (pages && page > pages) onPage(pages);
+	}, [page, pages, onPage]);
+
+	if (!total) return null;
+	const start = (page - 1) * limit + 1;
+	const end = Math.min(page * limit, total);
+	return (
+		<div className='flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between'>
+			<p className='text-sm text-muted-foreground'>
+				Showing {start}–{end} of {total}
+			</p>
+			{pages > 1 ? (
+				<div className='flex items-center gap-2'>
+					<Button
+						type='button'
+						variant='outline'
+						size='sm'
+						disabled={page <= 1}
+						onClick={() => onPage(page - 1)}
+					>
+						Previous
+					</Button>
+					<p className='min-w-16 text-center text-sm tabular-nums'>
+						{page} / {pages}
+					</p>
+					<Button
+						type='button'
+						variant='outline'
+						size='sm'
+						disabled={page >= pages}
+						onClick={() => onPage(page + 1)}
+					>
+						Next
+					</Button>
+				</div>
+			) : null}
+		</div>
 	);
 }
 

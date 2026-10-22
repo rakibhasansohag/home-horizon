@@ -4,6 +4,13 @@ const { getCollection } = require('../config/db');
 const { verifyFireBaseToken } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
 const { withReviewCredits } = require('../utils/reviewCredits');
+const {
+	wantsPage,
+	readPage,
+	searchPattern,
+	matchingHomeIds,
+	paged,
+} = require('../utils/pageList');
 
 // POST /api/v1/reviews
 router.post('/', verifyFireBaseToken, async (req, res) => {
@@ -50,17 +57,29 @@ router.post('/', verifyFireBaseToken, async (req, res) => {
 router.get('/my', verifyFireBaseToken, async (req, res) => {
 	try {
 		const { uid } = req.query;
-		console.log(uid);
-
-		// if (!uid) return res.status(400).send({ error: 'Missing uid' });
-
 		const Review = getCollection('reviews');
-
-		console.log(Review);
-
-		const reviews = await Review.find({ userId: uid }).toArray();
-		console.log(reviews);
-		res.send(await withReviewCredits(reviews));
+		const filter = { userId: uid };
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			const homeIds = await matchingHomeIds(pattern);
+			filter.$or = [
+				{ reviewText: pattern },
+				{ propertyTitle: pattern },
+				{ agentName: pattern },
+				{ propertyId: { $in: homeIds } },
+			];
+		}
+		if (!wantsPage(req.query)) {
+			const reviews = await Review.find(filter).sort({ createdAt: -1 }).toArray();
+			return res.send(await withReviewCredits(reviews));
+		}
+		const paging = readPage(req.query);
+		const result = await paged(Review, filter, {
+			...paging,
+			sort: { createdAt: -1 },
+		});
+		result.items = await withReviewCredits(result.items);
+		res.send(result);
 	} catch (err) {
 		console.error('reviews.my error', err);
 		res.status(500).send({ error: 'Internal server error' });

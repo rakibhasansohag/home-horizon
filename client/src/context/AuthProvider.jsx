@@ -10,12 +10,15 @@ import {
 	updateProfile,
 } from 'firebase/auth';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AuthContext } from './AuthContext';
 
 const AuthProvider = ({ children }) => {
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const queryClient = useQueryClient();
+	const lastUid = useRef(null);
 
 	const logOut = () => {
 		setLoading(true);
@@ -51,19 +54,19 @@ const AuthProvider = ({ children }) => {
 	useEffect(() => {
 		setLoading(true);
 		const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+			const uid = currentUser?.uid ?? null;
+			// Cached answers belong to the previous account; drop them on logout or switch.
+			if (lastUid.current && lastUid.current !== uid) queryClient.clear();
+			lastUid.current = uid;
+
 			setUser(currentUser);
 			setLoading(false);
-
-			if (currentUser?.email) {
-				const userData = { email: currentUser.email };
-				console.log(userData);
-			}
 		});
 
 		return () => {
 			unSubscribe();
 		};
-	}, []);
+	}, [queryClient]);
 
 	const userInfo = {
 		createUser,

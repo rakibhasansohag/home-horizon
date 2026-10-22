@@ -4,6 +4,26 @@ import PersonAvatar from '@/components/Shared/PersonAvatar';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import { cn } from '@/lib/utils';
 
+export function StripFrame({ to, src, alt, wide = false }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	const frame = `relative w-2/5 shrink-0 bg-muted ${wide ? 'max-w-72' : 'max-w-56'}`;
+	const image = (
+		<img
+			src={src}
+			alt={alt || ''}
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
+	);
+	if (!to) return <div className={frame}>{image}</div>;
+	return (
+		<Link to={to} className={frame}>
+			{image}
+		</Link>
+	);
+}
+
 export function StripPhoto({ src, alt }) {
 	const [failed, setFailed] = useState(false);
 	if (!src || failed) return null;

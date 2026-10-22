@@ -40,13 +40,13 @@ const groups = [
 				title: 'Home',
 				url: '/dashboard',
 				icon: Home,
-				allowedRoles: ['user', 'agent', 'admin'],
+				allowedRoles: 'everyone',
 			},
 			{
 				title: 'My Profile',
 				url: '/dashboard/profile',
 				icon: Settings,
-				allowedRoles: ['user', 'agent', 'admin'],
+				allowedRoles: 'everyone',
 			},
 			{
 				title: 'My reviews',
@@ -159,7 +159,9 @@ export function AppSidebar() {
 	const visibleGroups = groups
 		.map((group) => ({
 			...group,
-			items: group.items.filter((item) => item.allowedRoles.includes(role)),
+			items: group.items.filter(
+				(item) => item.allowedRoles === 'everyone' || item.allowedRoles.includes(role),
+			),
 		}))
 		.filter((group) => group.items.length > 0);
 

@@ -4,6 +4,13 @@ const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
 const { ObjectId } = require('mongodb');
 const { attachHomes } = require('../utils/attachHomes');
+const {
+	wantsPage,
+	readPage,
+	searchPattern,
+	matchingHomeIds,
+	paged,
+} = require('../utils/pageList');
 
 // POST /api/v1/offers  — submit an offer (user)
 router.post(
@@ -104,8 +111,30 @@ router.get('/', verifyFireBaseToken, verifyRole(['user']), async (req, res) => {
 		if (!email) return res.status(400).send({ error: 'Missing email' });
 
 		const Offer = getCollection('offers');
-		const offers = await Offer.find({ buyerEmail: email }).toArray();
-		res.send(await attachHomes(offers));
+		const filter = { buyerEmail: email };
+		const status = String(req.query.filter || 'all');
+		if (['pending', 'accepted', 'bought', 'rejected'].includes(status)) {
+			filter.status = status;
+		}
+		const pattern = searchPattern(req.query.q);
+		if (pattern) {
+			const homeIds = await matchingHomeIds(pattern);
+			filter.$or = [
+				{ propertyTitle: pattern },
+				{ agentName: pattern },
+				{ propertyId: { $in: homeIds } },
+			];
+		}
+		if (!wantsPage(req.query)) {
+			const offers = await Offer.find(filter).sort({ createdAt: -1 }).toArray();
+			return res.send(await attachHomes(offers));
+		}
+		const result = await paged(Offer, filter, {
+			...readPage(req.query),
+			sort: { createdAt: -1 },
+		});
+		result.items = await attachHomes(result.items);
+		res.send(result);
 	} catch (err) {
 		console.error('offers.get error', err);
 		res.status(500).send({ error: 'Internal server error' });
