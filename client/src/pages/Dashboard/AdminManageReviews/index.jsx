@@ -12,7 +12,6 @@ import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { gateQuery } from '@/lib/queryWait';
 import {
 	PREVIEW_LIMIT,
-	ResultSummary,
 	ShowMore,
 } from '@/pages/Dashboard/Components/DashboardFilter';
 import PropertyPreview from './PropertyPreview';
@@ -36,6 +35,19 @@ export default function AdminManageReviews() {
 	const { data: reviews = [] } = reviewsQuery;
 	const gate = gateQuery(reviewsQuery);
 
+	const homesQuery = useQuery({
+		queryKey: ['admin-properties'],
+		queryFn: async () => {
+			const res = await axiosSecure.get('/admin/properties');
+			return res.data;
+		},
+		placeholderData: keepPreviousData,
+		staleTime: 60 * 1000,
+	});
+	const homes = new Map(
+		(homesQuery.data || []).map((home) => [String(home._id), home]),
+	);
+
 	const deleteMutation = useMutation({
 		mutationFn: async (id) => {
 			await axiosSecure.delete(`/reviews/${id}`);
@@ -50,27 +62,26 @@ export default function AdminManageReviews() {
 
 	const term = query.trim().toLowerCase();
 	const filtered = term
-		? reviews.filter((review) =>
-				`${review.userName || ''} ${review.reviewText || ''}`
+		? reviews.filter((review) => {
+				const home = homes.get(String(review.propertyId));
+				return `${review.userName || ''} ${review.reviewText || ''} ${home?.title || review.propertyTitle || ''}`
 					.toLowerCase()
-					.includes(term),
-			)
+					.includes(term);
+			})
 		: reviews;
 	const rows = filtered.slice(0, visible);
 
 	return (
-		<div className='w-full max-w-7xl space-y-6'>
-			<section className='rounded-lg border border-border bg-surface p-4'>
-				<h2 className='mb-3 text-base font-semibold'>Find a review</h2>
-				<Input
-					value={query}
-					placeholder='Name or review'
-					onChange={(event) => {
-						setQuery(event.target.value);
-						setVisible(PREVIEW_LIMIT);
-					}}
-				/>
-			</section>
+		<div className='w-full space-y-6'>
+			<Input
+				value={query}
+				aria-label='Find a review'
+				placeholder='Search by name, home, or review'
+				onChange={(event) => {
+					setQuery(event.target.value);
+					setVisible(PREVIEW_LIMIT);
+				}}
+			/>
 			{gate === 'error' ? (
 				<div className='space-y-3'>
 					<p className='text-destructive'>Could not load reviews.</p>
@@ -86,62 +97,21 @@ export default function AdminManageReviews() {
 				<ReviewSkeleton />
 			) : (
 				<>
-					<ResultSummary
-						label={term ? 'Matching reviews' : 'All reviews'}
-						value={filtered.length}
-					/>
+					<p className='text-sm text-muted-foreground'>
+						{filtered.length} {filtered.length === 1 ? 'review' : 'reviews'}
+					</p>
 					{rows.length === 0 ? (
 						<p className='text-base text-muted-foreground'>No reviews match.</p>
 					) : (
 						<div className='space-y-6'>
-							<ul className='overflow-hidden rounded-lg border border-border bg-surface'>
+							<ul className='grid grid-cols-1 gap-4 xl:grid-cols-2'>
 								{rows.map((review) => (
-									<li
+									<ReviewRow
 										key={review._id}
-										className='flex flex-col gap-3 border-b border-border p-4 last:border-b-0 sm:flex-row sm:items-start sm:justify-between'
-									>
-										<div className='flex min-w-0 gap-3'>
-											<PersonAvatar
-												name={review.userName}
-												src={review.userImage}
-											/>
-											<div className='min-w-0 space-y-1'>
-												<div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
-													<p className='font-medium'>
-														{review.userName || 'Anonymous'}
-													</p>
-													{reviewDate(review.createdAt) ? (
-														<p className='text-sm text-muted-foreground'>
-															{reviewDate(review.createdAt)}
-														</p>
-													) : null}
-												</div>
-												{review.userEmail ? (
-													<p className='truncate text-sm text-muted-foreground'>
-														{review.userEmail}
-													</p>
-												) : null}
-												<ReviewStars rating={review.rating} />
-												<p className='max-w-2xl text-base'>{review.reviewText}</p>
-												{review.propertyId ? (
-													<Link
-														to={`/all-properties/${review.propertyId}`}
-														className='inline-block text-sm text-brand'
-													>
-														{review.propertyTitle || 'Open the listing'}
-													</Link>
-												) : null}
-											</div>
-										</div>
-										<Button
-											variant='ghost'
-											size='sm'
-											className='self-start text-destructive'
-											onClick={() => setSelectedReview(review)}
-										>
-											Delete
-										</Button>
-									</li>
+										review={review}
+										home={homes.get(String(review.propertyId))}
+										onDelete={() => setSelectedReview(review)}
+									/>
 								))}
 							</ul>
 							<ShowMore
@@ -177,6 +147,77 @@ export default function AdminManageReviews() {
 	);
 }
 
+function ReviewRow({ review, home, onDelete }) {
+	const title = home?.title || review.propertyTitle || 'Open the listing';
+	const photo = home?.images?.[0]?.url;
+	const date = reviewDate(review.createdAt);
+
+	return (
+		<li className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'>
+			{review.propertyId ? (
+				<Link
+					to={`/all-properties/${review.propertyId}`}
+					className='relative w-2/5 max-w-56 shrink-0 bg-muted'
+				>
+					<FillPhoto src={photo} />
+				</Link>
+			) : (
+				<div className='w-2/5 max-w-56 shrink-0 bg-muted' />
+			)}
+			<div className='flex min-w-0 flex-1 flex-col gap-2 p-4'>
+				{review.propertyId ? (
+					<Link
+						to={`/all-properties/${review.propertyId}`}
+						className='truncate font-medium transition-colors duration-200 hover:text-brand'
+					>
+						{title}
+					</Link>
+				) : null}
+				<p className='text-base'>{review.reviewText}</p>
+				<div className='mt-auto flex items-end justify-between gap-3 pt-2'>
+					<div className='flex min-w-0 items-center gap-2'>
+						<PersonAvatar
+							name={review.userName}
+							src={review.userImage}
+							className='size-8'
+						/>
+						<div className='min-w-0'>
+							<p className='truncate text-sm'>
+								{review.userName || 'Anonymous'}
+							</p>
+							<ReviewStars rating={review.rating} />
+							{date ? (
+								<p className='text-sm text-muted-foreground'>{date}</p>
+							) : null}
+						</div>
+					</div>
+					<Button
+						variant='ghost'
+						size='sm'
+						className='shrink-0 text-destructive'
+						onClick={onDelete}
+					>
+						Delete
+					</Button>
+				</div>
+			</div>
+		</li>
+	);
+}
+
+function FillPhoto({ src }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	return (
+		<img
+			src={src}
+			alt=''
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
+	);
+}
+
 function ReviewStars({ rating }) {
 	const value = Number(rating);
 	const known = Number.isInteger(value) && value >= 1 && value <= 5;
@@ -209,20 +250,18 @@ function reviewDate(value) {
 
 function ReviewSkeleton() {
 	return (
-		<div
-			className='overflow-hidden rounded-lg border border-border bg-surface'
-			aria-busy='true'
-		>
+		<div className='grid grid-cols-1 gap-4 xl:grid-cols-2' aria-busy='true'>
 			<span className='sr-only'>Loading reviews</span>
 			{Array.from({ length: 6 }, (_, index) => (
 				<div
 					key={index}
-					className='flex items-center gap-3 border-b border-border p-4 last:border-b-0'
+					className='flex min-h-40 overflow-hidden rounded-lg border border-border bg-surface'
 				>
-					<Skeleton className='size-12 rounded-full' />
-					<div className='space-y-2'>
-						<Skeleton className='h-4 w-40' />
-						<Skeleton className='h-3 w-64' />
+					<Skeleton className='w-2/5 max-w-56 rounded-none' />
+					<div className='flex-1 space-y-2 p-4'>
+						<Skeleton className='h-4 w-2/3' />
+						<Skeleton className='h-3 w-full' />
+						<Skeleton className='h-3 w-1/2' />
 					</div>
 				</div>
 			))}
