@@ -21,7 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '../../components/ui/card';
-import { CalendarClock, Car, Home, Ruler, Tag } from 'lucide-react';
+import { CalendarClock, Car, Home, Tag } from 'lucide-react';
 import { PropertyDetailsSkeleton } from '../../components/Shared/skeletons/propertyDetailsSkeleton';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useAuth from '../../hooks/useAuth';
@@ -71,8 +71,6 @@ export default function PropertyDetails() {
 	});
 
 	const pricePerSqft = Math.floor(property?.minPrice / property?.squareMeters);
-
-	const yearBuilt = Math.floor(Math.random() * 105 + 1900);
 
 	useEffect(() => {
 		if (property?.title) {
@@ -127,27 +125,20 @@ export default function PropertyDetails() {
 
 						<CardContent className='space-y-4 text-base text-muted-foreground'>
 							<p>{property.description}</p>
+							{categoryLabels(property.categories).length ? (
+								<p>{categoryLabels(property.categories).join(' · ')}</p>
+							) : null}
 
-							<div className='grid grid-cols-2 md:grid-cols-3 gap-4 mt-2'>
-								<BadgeDetail
-									icon={CalendarClock}
-									label='Listed Since'
-									value='1 Day'
-								/>
+							<div className='mt-2 grid grid-cols-2 gap-4 md:grid-cols-3'>
 								<BadgeDetail
 									icon={Home}
 									label='Type'
-									value={property?.propertyType}
+									value={property?.propertyType || '—'}
 								/>
 								<BadgeDetail
-									icon={CalendarClock}
-									label='Year Built'
-									value={yearBuilt}
-								/>
-								<BadgeDetail
-									icon={Ruler}
-									label='Area'
-									value={`${property?.squareMeters} sq ft`}
+									icon={Car}
+									label='Parking'
+									value={parkingLabel(property?.parking)}
 								/>
 								<BadgeDetail
 									icon={Tag}
@@ -158,11 +149,13 @@ export default function PropertyDetails() {
 											: '—'
 									}
 								/>
-								<BadgeDetail
-									icon={Car}
-									label='Parking'
-									value={property?.parking ? 'Yes' : 'No'}
-								/>
+								{listedOn(property?.createdAt) ? (
+									<BadgeDetail
+										icon={CalendarClock}
+										label='Listed'
+										value={listedOn(property.createdAt)}
+									/>
+								) : null}
 							</div>
 						</CardContent>
 					</Card>
@@ -230,6 +223,34 @@ export default function PropertyDetails() {
 }
 
 // eslint-disable-next-line no-unused-vars
+function categoryLabels(categories) {
+	if (!Array.isArray(categories)) return [];
+	return categories
+		.map((item) => (typeof item === 'string' ? item : item?.value))
+		.map((item) => (typeof item === 'string' ? item.trim() : ''))
+		.filter(Boolean);
+}
+
+function parkingLabel(value) {
+	if (value === true || value === 'yes' || value === 'Yes') return 'Yes';
+	if (
+		value === false ||
+		value === 'no' ||
+		value === 'No' ||
+		value == null ||
+		value === ''
+	) {
+		return 'No';
+	}
+	return String(value);
+}
+
+function listedOn(value) {
+	const date = value ? new Date(value) : null;
+	if (!date || Number.isNaN(date.getTime())) return '';
+	return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
 function listingFacts(property) {
 	const parts = [];
 	if (property?.bedrooms != null && property.bedrooms !== '') {

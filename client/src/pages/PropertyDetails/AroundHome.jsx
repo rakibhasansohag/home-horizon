@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatMoney } from '@/components/Shared/PropertyCard';
+import { homeFacts } from '@/lib/amenities';
 import { ThemeContext } from '@/context/ThemeContext';
 import useAxios from '@/hooks/useAxios';
 
@@ -170,6 +171,11 @@ export default function AroundHome({ property }) {
 											<p className='truncate text-sm text-muted-foreground'>
 												{item.location}
 											</p>
+											{homeFacts(item) ? (
+												<p className='truncate text-sm text-muted-foreground'>
+													{homeFacts(item)}
+												</p>
+											) : null}
 											<p className='mt-1 text-sm font-semibold tabular-nums'>
 												{formatMoney(item.minPrice)}
 											</p>

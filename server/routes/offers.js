@@ -46,10 +46,13 @@ router.post(
 			if (existingOffer)
 				return res.status(400).send({ error: 'You already made an offer' });
 
-			if (offerAmount < minPrice || offerAmount > maxPrice) {
+			const amount = Number(offerAmount);
+			const low = Number(minPrice);
+			const high = Number(maxPrice);
+			if (!Number.isFinite(amount) || amount < low || amount > high) {
 				return res
 					.status(400)
-					.send({ error: `Offer must be between ${minPrice} and ${maxPrice}` });
+					.send({ error: `Offer must be between ${low} and ${high}` });
 			}
 
 			await Offer.insertOne({
@@ -60,7 +63,7 @@ router.post(
 				agentName,
 				minPrice,
 				maxPrice,
-				offerAmount,
+				offerAmount: amount,
 				buyerId,
 				buyerName,
 				buyerEmail,

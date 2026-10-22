@@ -5,12 +5,13 @@ import useAuth from '@/hooks/useAuth';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { useParams, useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEffect } from 'react';
+import { formatMoney } from '@/components/Shared/PropertyCard';
+import { homeFacts, listedAmenities } from '@/lib/amenities';
 
 export default function MakeOffer() {
 	const { propertyId } = useParams();
@@ -48,7 +49,7 @@ export default function MakeOffer() {
 		formState: { errors },
 	} = useForm();
 
-	const { mutate: submitOffer, isLoading: isSubmitting } = useMutation({
+	const { mutate: submitOffer, isPending: isSubmitting } = useMutation({
 		mutationFn: async (data) => {
 			const res = await axiosSecure.post('/offers', data);
 			return res.data;
@@ -67,16 +68,17 @@ export default function MakeOffer() {
 	}, []);
 
 	const onSubmit = (data) => {
-		const price = parseInt(data.amount);
-		if (price < property.minPrice || price > property.maxPrice) {
-			toast.error(
-				`Amount must be between ৳${property.minPrice} - ৳${property.maxPrice}`,
-			);
+		const price = Number(data.offerAmount);
+		const low = Number(property.minPrice);
+		const high = Number(property.maxPrice);
+		if (!Number.isFinite(price) || price < low || price > high) {
+			toast.error(`Amount must be between ${formatMoney(low)} and ${formatMoney(high)}`);
 			return;
 		}
 
 		const payload = {
 			...data,
+			offerAmount: price,
 			propertyId,
 			propertyTitle: property.title,
 			location: property.location,
@@ -136,77 +138,104 @@ export default function MakeOffer() {
 		return <p className='text-destructive'>Could not load this property.</p>;
 	}
 
+	const facts = homeFacts(property);
+	const offered = listedAmenities(property.amenities).slice(0, 4);
+	const photo = property.images?.[0]?.url || '';
+
 	return (
-		<div className='w-full max-w-3xl'>
-			<Card className='p-6 space-y-4'>
-				<h2 className='text-xl font-semibold'>
-					Make an Offer for "{property.title}"
-				</h2>
-				<form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<div>
-							<Label>Property Title</Label>
-							<Input value={property.title} readOnly />
-						</div>
-						<div>
-							<Label>Location</Label>
-							<Input value={property.location} readOnly />
-						</div>
-						<div>
-							<Label>Agent Name</Label>
-							<Input value={property.agentName} readOnly />
-						</div>
-						<div>
-							<Label>Price Range</Label>
-							<Input
-								value={`৳${property.minPrice} - ৳${property.maxPrice}`}
-								readOnly
-							/>
-						</div>
-						<div>
-							<Label>Your Name</Label>
-							<Input value={user?.displayName} readOnly />
-						</div>
-						<div>
-							<Label>Your Email</Label>
-							<Input value={user?.email} readOnly />
-						</div>
+		<div className='w-full max-w-3xl space-y-6'>
+			<article className='flex min-h-44 overflow-hidden rounded-lg border border-border bg-surface'>
+				<div className='relative w-2/5 max-w-72 shrink-0 bg-muted'>
+					<FillPhoto src={photo} alt={property.title} />
+				</div>
+				<div className='flex min-w-0 flex-1 flex-col gap-1 p-4'>
+					<h2 className='line-clamp-2 text-lg font-medium leading-snug'>
+						{property.title}
+					</h2>
+					{property.location ? (
+						<p className='truncate text-sm text-muted-foreground'>
+							{property.location}
+						</p>
+					) : null}
+					{facts ? (
+						<p className='text-sm text-muted-foreground'>{facts}</p>
+					) : null}
+					<p className='text-base font-medium tabular-nums'>
+						{formatMoney(property.minPrice)} – {formatMoney(property.maxPrice)}
+					</p>
+					{property.agentName ? (
+						<p className='text-sm text-muted-foreground'>{property.agentName}</p>
+					) : null}
+					{offered.length ? (
+						<p className='text-sm text-muted-foreground'>
+							{offered.map((item) => item.label).join(' · ')}
+						</p>
+					) : null}
+				</div>
+			</article>
+
+			<form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+				<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+					<div className='space-y-2'>
+						<Label htmlFor='offer-amount'>Offer amount</Label>
+						<Input
+							id='offer-amount'
+							type='number'
+							placeholder='Enter an amount inside the price range'
+							{...register('offerAmount', {
+								required: 'Offer amount is required',
+							})}
+						/>
+						{errors.offerAmount ? (
+							<p className='text-sm text-destructive'>
+								{errors.offerAmount.message}
+							</p>
+						) : (
+							<p className='text-sm text-muted-foreground'>
+								Between {formatMoney(property.minPrice)} and{' '}
+								{formatMoney(property.maxPrice)}
+							</p>
+						)}
 					</div>
-
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-						<div>
-							<Label>Offer Amount (৳)</Label>
-							<Input
-								type='number'
-								placeholder='Enter amount within price range'
-								{...register('offerAmount', { required: true })}
-							/>
-							{errors.amount && (
-								<p className='text-sm text-destructive mt-1'>
-									Offer amount is required
-								</p>
-							)}
-						</div>
-
-						<div>
-							<Label>Buying Date</Label>
-							<Input
-								type='date'
-								{...register('buyingDate', { required: true })}
-							/>
-							{errors.buyingDate && (
-								<p className='text-sm text-destructive mt-1'>
-									Buying date is required
-								</p>
-							)}
-						</div>
+					<div className='space-y-2'>
+						<Label htmlFor='buying-date'>Buying date</Label>
+						<Input
+							id='buying-date'
+							type='date'
+							{...register('buyingDate', { required: 'Buying date is required' })}
+						/>
+						{errors.buyingDate ? (
+							<p className='text-sm text-destructive'>
+								{errors.buyingDate.message}
+							</p>
+						) : null}
 					</div>
-
-					<Button type='submit' className='w-full' disabled={isSubmitting}>
-						{isSubmitting ? 'Submitting...' : 'Submit Offer'}
-					</Button>
-				</form>
-			</Card>
+					<div className='space-y-2'>
+						<Label>Your name</Label>
+						<Input value={user?.displayName || ''} readOnly className='bg-muted' />
+					</div>
+					<div className='space-y-2'>
+						<Label>Your email</Label>
+						<Input value={user?.email || ''} readOnly className='bg-muted' />
+					</div>
+				</div>
+				<Button type='submit' disabled={isSubmitting}>
+					{isSubmitting ? 'Submitting...' : 'Submit offer'}
+				</Button>
+			</form>
 		</div>
+	);
+}
+
+function FillPhoto({ src, alt }) {
+	const [failed, setFailed] = useState(false);
+	if (!src || failed) return null;
+	return (
+		<img
+			src={src}
+			alt={alt || ''}
+			className='absolute inset-0 h-full w-full object-cover'
+			onError={() => setFailed(true)}
+		/>
 	);
 }

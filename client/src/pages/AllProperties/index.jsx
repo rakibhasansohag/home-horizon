@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/components/Shared/PropertyCard';
-import { homeFacts } from '@/lib/amenities';
+import { homeFacts, listedAmenities } from '@/lib/amenities';
 import { Input } from '@/components/ui/input';
 import { Link, useSearchParams } from 'react-router';
 import { cn } from '@/lib/utils';
@@ -190,6 +190,12 @@ export default function AllProperties() {
 						: shown.map((prop) => {
 								const selected = activeId === prop._id;
 								const image = prop.images?.[0]?.url;
+								const extras = [
+									prop.propertyType,
+									...listedAmenities(prop.amenities)
+										.slice(0, 2)
+										.map((item) => item.label),
+								].filter(Boolean);
 								const price = `${formatMoney(prop.minPrice)}${
 									prop.maxPrice != null &&
 									String(prop.maxPrice) !== String(prop.minPrice)
@@ -209,16 +215,16 @@ export default function AllProperties() {
 												: 'border-border hover:border-brand',
 										)}
 									>
-										{image ? (
-											<img
-												src={image}
-												alt={prop.title || 'Property'}
-												loading='lazy'
-												className='h-20 w-24 shrink-0 rounded-md object-cover'
-											/>
-										) : (
-											<div className='h-20 w-24 shrink-0 rounded-md bg-muted' />
-										)}
+										<div className='relative min-h-24 w-28 shrink-0 self-stretch overflow-hidden rounded-md bg-muted'>
+											{image ? (
+												<img
+													src={image}
+													alt={prop.title || 'Property'}
+													loading='lazy'
+													className='absolute inset-0 h-full w-full object-cover'
+												/>
+											) : null}
+										</div>
 										<div className='flex min-w-0 flex-1 flex-col justify-center gap-0.5 py-1'>
 											<h2 className='truncate text-base font-semibold'>
 												<Link
@@ -237,6 +243,11 @@ export default function AllProperties() {
 											{homeFacts(prop) ? (
 												<p className='truncate text-sm text-muted-foreground'>
 													{homeFacts(prop)}
+												</p>
+											) : null}
+											{extras.length ? (
+												<p className='truncate text-sm capitalize text-muted-foreground'>
+													{extras.join(' · ')}
 												</p>
 											) : null}
 											<div className='mt-1 flex items-center justify-between gap-3'>

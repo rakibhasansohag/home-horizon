@@ -11,6 +11,8 @@ import { useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../context/ThemeContext';
 
 import L from 'leaflet';
+import { formatMoney } from '@/components/Shared/PropertyCard';
+import { homeFacts } from '@/lib/amenities';
 
 function pin(active) {
 	const size = active ? 22 : 12;
@@ -135,8 +137,9 @@ function PropertyMarker({ property, active, onMarkerClick }) {
 		>
 			<Popup autoPan={false}>
 				<strong>{property.title}</strong>
-				<br />
-				{property.location}
+				{property.location ? <div>{property.location}</div> : null}
+				{homeFacts(property) ? <div>{homeFacts(property)}</div> : null}
+				<div>{formatMoney(property.minPrice)}</div>
 			</Popup>
 		</Marker>
 	);
