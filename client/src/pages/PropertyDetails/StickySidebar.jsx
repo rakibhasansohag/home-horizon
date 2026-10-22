@@ -50,15 +50,16 @@ export default function StickySidebar({ propertyId, dealStatus }) {
 		},
 	});
 
+	const closed = dealStatus === 'sold' || dealStatus === 'accepted';
+
 	const handleClick = () => {
+		if (closed && !alreadyWishlisted) return;
 		if (alreadyWishlisted) {
 			navigate('/dashboard/wishlist');
 		} else {
 			handleAddToWishlist();
 		}
 	};
-
-	// TODO : we will check if the proprety status is paid/sold/accipted we will make this property add to wihs list or make an offer it will be disbled or do somehting that user can not make any changes  if it's for sale and also we will make the staus as sold if the user paid the price
 
 	return (
 		<div className='lg:sticky lg:top-20'>
@@ -67,20 +68,23 @@ export default function StickySidebar({ propertyId, dealStatus }) {
 					onClick={handleClick}
 					className='w-full'
 					size='lg'
-					disabled={adding || loadingWishlist}
+					disabled={adding || loadingWishlist || (closed && !alreadyWishlisted)}
 				>
 					{loadingWishlist
 						? 'Checking...'
 						: alreadyWishlisted
 						? 'View in Wishlist'
+						: closed
+						? 'Sold'
 						: adding
 						? 'Adding...'
 						: 'Add to Wishlist'}
 				</Button>
 
 				<p className='text-sm text-muted-foreground'>
-					After adding to Wishlist, you can view all your desired properties in
-					your profile page
+					{closed
+						? 'This home is no longer available.'
+						: 'After adding to Wishlist, you can view all your desired properties in your profile page'}
 				</p>
 
 				<Button
@@ -108,7 +112,9 @@ export default function StickySidebar({ propertyId, dealStatus }) {
 				</Button>
 
 				<p className='text-sm text-muted-foreground'>
-					Make a winning offer with the help of a local agent
+					{closed
+						? 'Offers are closed on this home.'
+						: 'Make a winning offer with the help of a local agent'}
 				</p>
 
 				<Separator />

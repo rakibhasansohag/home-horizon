@@ -88,8 +88,6 @@ export default function PropertyDetails() {
 		return <EmptyProperties />;
 	}
 
-	// TODO : we will check if the proprety status is paid/sold/accipted we will make this property add to wihs list or make an offer it will be disbled or do somehting that user can not make any changes  if it's for sale and also we will make the staus as sold if the user paid the price
-
 	return (
 		<section className='pb-16'>
 			<ImageGallery images={property.images} />

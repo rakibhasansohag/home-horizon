@@ -57,5 +57,6 @@ export function listingSnapshot(list) {
 		coordinates: home?.coordinates,
 		agentName: home?.agentName,
 		agentImage: home?.agentImage,
+		dealStatus: home?.dealStatus,
 	}));
 }

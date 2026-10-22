@@ -263,6 +263,11 @@ export default function AllProperties() {
 											<div className='mt-1 flex items-center justify-between gap-3'>
 												<p className='truncate text-sm font-semibold tabular-nums'>
 													{price}
+													{prop.dealStatus === 'sold' ? (
+														<span className='ml-2 font-medium text-muted-foreground'>
+															Sold
+														</span>
+													) : null}
 												</p>
 												<Link
 													to={`/all-properties/${prop._id}`}

@@ -16,6 +16,17 @@ router.post(
 			if (!userId || !propertyId)
 				return res.status(400).send({ error: 'Missing required fields' });
 
+			const Properties = getCollection('properties');
+			if (ObjectId.isValid(propertyId)) {
+				const home = await Properties.findOne(
+					{ _id: new ObjectId(propertyId) },
+					{ projection: { dealStatus: 1 } },
+				);
+				if (home?.dealStatus === 'sold') {
+					return res.status(400).send({ error: 'This home has been sold' });
+				}
+			}
+
 			const Wishlist = getCollection('wishlist');
 			const existing = await Wishlist.findOne({ userId, propertyId });
 			if (existing)

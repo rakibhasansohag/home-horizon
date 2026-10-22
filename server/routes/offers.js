@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getCollection } = require('../config/db');
 const { verifyFireBaseToken, verifyRole } = require('../middlewares/auth');
+const { ObjectId } = require('mongodb');
 const { attachHomes } = require('../utils/attachHomes');
 
 // POST /api/v1/offers  — submit an offer (user)
@@ -40,6 +41,17 @@ router.post(
 				!propertyLocation
 			) {
 				return res.status(400).send({ error: 'Missing required fields' });
+			}
+
+			const Properties = getCollection('properties');
+			if (ObjectId.isValid(propertyId)) {
+				const home = await Properties.findOne(
+					{ _id: new ObjectId(propertyId) },
+					{ projection: { dealStatus: 1 } },
+				);
+				if (home?.dealStatus === 'sold') {
+					return res.status(400).send({ error: 'This home has been sold' });
+				}
 			}
 
 			const existingOffer = await Offer.findOne({ propertyId, buyerId });

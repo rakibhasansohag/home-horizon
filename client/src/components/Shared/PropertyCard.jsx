@@ -125,6 +125,11 @@ export default function PropertyCard({
 					)}
 				>
 					{price}
+					{property?.dealStatus === 'sold' ? (
+						<span className='ml-2 text-sm font-medium text-muted-foreground'>
+							Sold
+						</span>
+					) : null}
 				</p>
 				{!compact && property?.agentName ? (
 					<div className='flex items-center gap-2 text-sm text-muted-foreground'>
