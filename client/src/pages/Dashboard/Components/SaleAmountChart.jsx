@@ -10,7 +10,20 @@ import {
 
 function shortLabel(value) {
 	const text = String(value || 'Sale');
-	return text.length > 22 ? `${text.slice(0, 20)}…` : text;
+	return text.length > 16 ? `${text.slice(0, 14)}…` : text;
+}
+
+function ChartTip({ active, payload }) {
+	if (!active || !payload?.length) return null;
+	const row = payload[0]?.payload || {};
+	return (
+		<div className='max-w-56 rounded-md border border-border bg-surface px-3 py-2 text-sm shadow-sm'>
+			<p className='font-medium leading-snug text-foreground'>{row.label}</p>
+			<p className='mt-1 tabular-nums text-brand'>
+				৳{Number(row.value || 0).toLocaleString()}
+			</p>
+		</div>
+	);
 }
 
 export default function SaleAmountChart({ sales = [] }) {
@@ -24,7 +37,7 @@ export default function SaleAmountChart({ sales = [] }) {
 			<BarChart
 				data={rows}
 				layout='vertical'
-				margin={{ left: 8, right: 16, top: 4, bottom: 0 }}
+				margin={{ left: 0, right: 8, top: 4, bottom: 0 }}
 			>
 				<CartesianGrid horizontal={false} stroke='var(--line)' />
 				<XAxis
@@ -39,18 +52,16 @@ export default function SaleAmountChart({ sales = [] }) {
 				<YAxis
 					type='category'
 					dataKey='label'
-					width={148}
+					width={108}
 					axisLine={false}
 					tickLine={false}
 					tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
 					tickFormatter={shortLabel}
 				/>
 				<Tooltip
+					content={<ChartTip />}
 					cursor={{ fill: 'var(--paper)' }}
-					formatter={(value) => [
-						`৳${Number(value || 0).toLocaleString()}`,
-						'Amount',
-					]}
+					allowEscapeViewBox={{ x: false, y: false }}
 				/>
 				<Bar
 					dataKey='value'

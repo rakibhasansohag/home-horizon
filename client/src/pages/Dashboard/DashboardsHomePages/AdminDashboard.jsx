@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 	const showListings = focus === 'all' || focus === 'listings';
 
 	return (
-		<div className='space-y-6'>
+		<div className='min-w-0 space-y-6'>
 			<FilterSection
 				label='Show'
 				value={focus}
@@ -152,22 +152,24 @@ export default function AdminDashboard() {
 			) : null}
 
 			{showSales ? (
-				<section className='rounded-lg border border-border bg-surface p-4'>
-					<h3 className='mb-3 font-semibold'>Latest sale amounts</h3>
-					<div className='h-72'>
-						{sales.some((sale) => Number(sale.amount) > 0) ? (
-							<SaleAmountChart sales={sales} />
-						) : (
-							<ChartFallback
-								title='No sale amounts yet'
-								message='This chart fills in once a purchase has a price.'
-							/>
-						)}
-					</div>
-					<div className='mt-6'>
+				<div className='grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2'>
+					<section className='min-w-0 rounded-lg border border-border bg-surface p-4'>
+						<h3 className='mb-3 font-semibold'>Latest sale amounts</h3>
+						<div className='h-72 min-w-0'>
+							{sales.some((sale) => Number(sale.amount) > 0) ? (
+								<SaleAmountChart sales={sales} />
+							) : (
+								<ChartFallback
+									title='No sale amounts yet'
+									message='This chart fills in once a purchase has a price.'
+								/>
+							)}
+						</div>
+					</section>
+					<section className='min-w-0 rounded-lg border border-border bg-surface p-4'>
 						<h3 className='mb-3 font-semibold'>Monthly revenue</h3>
 						{monthlyTotal > 0 ? (
-							<div className='h-48'>
+							<div className='h-72 min-w-0'>
 								<RevenueChart data={revenueSparkline} />
 							</div>
 						) : (
@@ -176,8 +178,8 @@ export default function AdminDashboard() {
 								message='None of the last 6 months has a sale with a payment date, so there is no monthly trend to draw.'
 							/>
 						)}
-					</div>
-				</section>
+					</section>
+				</div>
 			) : null}
 
 			{showSales ? (

@@ -57,7 +57,7 @@ export default function AgentDashboard() {
 	const totalCount = listings?.length ?? 0;
 
 	return (
-		<div className='space-y-6'>
+		<div className='min-w-0 space-y-6'>
 			<div className='flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 sm:flex-row sm:justify-between'>
 				<div className='text-center sm:text-left'>
 					<h1 className='font-display text-3xl text-foreground'>
@@ -122,7 +122,7 @@ export default function AgentDashboard() {
 			</div>
 
 			{/* All Active Listing */}
-			<div className='grid gap-6 xl:grid-cols-[2fr_1fr]'>
+			<div className='grid min-w-0 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]'>
 				{showListings ? (
 				<div className='rounded-lg border border-border bg-surface p-4 order-1 xl:order-none'>
 					<h3 className='font-semibold mb-3'>

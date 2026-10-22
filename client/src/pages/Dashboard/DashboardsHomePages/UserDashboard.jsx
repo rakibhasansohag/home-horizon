@@ -39,7 +39,7 @@ const UserDashboard = () => {
 						];
 
 	return (
-		<div className='space-y-8'>
+		<div className='min-w-0 space-y-8'>
 			<div className='flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 sm:flex-row'>
 				<PersonAvatar
 					name={dashboard.user.name}

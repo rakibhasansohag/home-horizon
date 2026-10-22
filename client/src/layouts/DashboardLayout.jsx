@@ -37,7 +37,7 @@ export default function DashboardLayout() {
 	return (
 		<SidebarProvider>
 			<AppSidebar />
-			<div className='flex min-h-svh w-full min-w-0 flex-col bg-background'>
+			<div className='flex min-h-svh min-w-0 flex-1 basis-0 flex-col bg-background'>
 				<header className='sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-border bg-paper px-4'>
 					<SidebarTrigger />
 					<div>
