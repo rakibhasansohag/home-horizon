@@ -7,6 +7,14 @@ import { homeFacts, listedAmenities } from '@/lib/amenities';
 import { Input } from '@/components/ui/input';
 import { Link, useSearchParams } from 'react-router';
 import { cn } from '@/lib/utils';
+import { List, Map as MapIcon } from 'lucide-react';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import useAxios from '../../hooks/useAxios';
 import useSeo from '@/hooks/useSeo';
 import MapView from './MapView';
@@ -44,6 +52,8 @@ export default function AllProperties() {
 	const [searchParams] = useSearchParams();
 	const [search, setSearch] = useState(() => searchParams.get('search') || '');
 	const [sort, setSort] = useState('desc');
+	const [propertyType, setPropertyType] = useState('all');
+	const [mobileView, setMobileView] = useState('list');
 	const [bounds, setBounds] = useState(null);
 	const [activeId, setActiveId] = useState(null);
 	const [forceFetch, setForceFetch] = useState(false);
@@ -128,6 +138,19 @@ export default function AllProperties() {
 		sort,
 	]);
 
+	const filtered = useMemo(() => {
+		if (propertyType === 'all') return shown;
+		return shown.filter((prop) => {
+			const type = String(prop.propertyType || '').toLowerCase();
+			return type === propertyType.toLowerCase();
+		});
+	}, [shown, propertyType]);
+
+	const activeProperty = useMemo(() => {
+		if (!activeId) return null;
+		return filtered.find((p) => p._id === activeId) || null;
+	}, [filtered, activeId]);
+
 	const handleSearchChange = (e) => {
 		setSearch(e.target.value);
 	};
@@ -190,25 +213,79 @@ export default function AllProperties() {
 				All Verified Properties
 			</h1>
 
-			<div className='flex shrink-0 flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-				<Input
-					placeholder='Search by location...'
-					value={search}
-					onChange={handleSearchChange}
-					className='max-w-md'
-				/>
-				<Button onClick={handleSortToggle} variant='outline'>
-					Sort by Price: {sort === 'asc' ? 'Low to High' : 'High to Low'}
-				</Button>
+			<div className='flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between'>
+				<div className='flex flex-1 flex-col gap-3 sm:flex-row sm:items-center'>
+					<Input
+						placeholder='Search by location...'
+						value={search}
+						onChange={handleSearchChange}
+						className='max-w-md'
+					/>
+					<Select value={propertyType} onValueChange={setPropertyType}>
+						<SelectTrigger className='w-full sm:w-44'>
+							<SelectValue placeholder='Property type' />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value='all'>All Types</SelectItem>
+							<SelectItem value='apartment'>Apartment</SelectItem>
+							<SelectItem value='house'>House</SelectItem>
+							<SelectItem value='villa'>Villa</SelectItem>
+							<SelectItem value='studio'>Studio</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className='flex items-center gap-2.5'>
+					<Button onClick={handleSortToggle} variant='outline' className='flex-1 sm:flex-initial'>
+						Price: {sort === 'asc' ? 'Low to High' : 'High to Low'}
+					</Button>
+
+					{/* Mobile List / Map toggle */}
+					<div className='inline-flex rounded-lg border border-border bg-surface p-1 lg:hidden'>
+						<button
+							type='button'
+							onClick={() => setMobileView('list')}
+							className={cn(
+								'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+								mobileView === 'list'
+									? 'bg-primary text-primary-foreground shadow-xs'
+									: 'text-muted-foreground hover:text-foreground',
+							)}
+							aria-pressed={mobileView === 'list'}
+						>
+							<List className='size-4' />
+							<span>List</span>
+						</button>
+						<button
+							type='button'
+							onClick={() => setMobileView('map')}
+							className={cn(
+								'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+								mobileView === 'map'
+									? 'bg-primary text-primary-foreground shadow-xs'
+									: 'text-muted-foreground hover:text-foreground',
+							)}
+							aria-pressed={mobileView === 'map'}
+						>
+							<MapIcon className='size-4' />
+							<span>Map</span>
+						</button>
+					</div>
+				</div>
 			</div>
 
 			<div className='grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]'>
-				<div className='grid content-start grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:overflow-y-auto lg:pr-1'>
-					{shown.length === 0 && (!bounds || isLoading || isFetching)
+				<div
+					className={cn(
+						'grid content-start grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:overflow-y-auto lg:pr-1',
+						mobileView === 'map' ? 'hidden lg:grid' : 'grid',
+					)}
+				>
+					{filtered.length === 0 && (!bounds || isLoading || isFetching)
 						? [...Array(6)].map((_, i) => (
 								<Skeleton key={i} className='h-28 w-full rounded-lg' />
 						  ))
-						: shown.map((prop) => {
+						: filtered.map((prop) => {
 								const selected = activeId === prop._id;
 								const image = prop.images?.[0]?.url;
 								const extras = [
@@ -292,7 +369,7 @@ export default function AllProperties() {
 									</article>
 								);
 						  })}
-					{bounds && !isLoading && !isFetching && shown.length === 0 && (
+					{bounds && !isLoading && !isFetching && filtered.length === 0 && (
 						<div className='col-span-full text-center text-muted-foreground py-10'>
 							<p className='text-lg'>No properties found in this location.</p>
 							<p className='text-sm'>
@@ -309,17 +386,66 @@ export default function AllProperties() {
 					)}
 				</div>
 
-				{/* Right: Map (hidden on small screens) */}
-				<div className='hidden min-h-0 overflow-hidden rounded-lg border border-border lg:block'>
-					<MapView
-						properties={shown}
-						onBoundsChange={updateBounds}
-						onMarkerClick={(id) => selectProperty(id, true)}
-						activeId={activeId}
-						fitKey={
-							locationSearch ? shown.map((property) => property._id).join(',') : ''
-						}
-					/>
+				{/* Right: Map (split on desktop, toggleable on mobile/tablet) */}
+				<div
+					className={cn(
+						'min-h-0 overflow-hidden rounded-lg border border-border',
+						mobileView === 'list'
+							? 'hidden lg:block'
+							: 'flex flex-col h-[calc(100dvh-17rem)] min-h-[420px] lg:h-auto lg:block',
+					)}
+				>
+					<div className='relative h-full w-full flex-1 min-h-0'>
+						<MapView
+							properties={filtered}
+							onBoundsChange={updateBounds}
+							onMarkerClick={(id) => selectProperty(id, true)}
+							activeId={activeId}
+							fitKey={
+								locationSearch
+									? filtered.map((property) => property._id).join(',')
+									: ''
+							}
+						/>
+					</div>
+
+					{/* Mobile map bottom preview when a pin is selected */}
+					{mobileView === 'map' && activeProperty && (
+						<div className='border-t border-border bg-surface p-3 lg:hidden'>
+							<div className='flex items-center gap-3'>
+								<div className='relative h-16 w-20 shrink-0 overflow-hidden rounded-md bg-muted'>
+									{activeProperty.images?.[0]?.url && (
+										<img
+											src={activeProperty.images[0].url}
+											alt={activeProperty.title}
+											className='h-full w-full object-cover'
+										/>
+									)}
+								</div>
+								<div className='min-w-0 flex-1'>
+									<p className='truncate text-sm font-medium'>
+										{activeProperty.title}
+									</p>
+									<p className='truncate text-xs text-muted-foreground'>
+										{activeProperty.location}
+									</p>
+									<p className='mt-0.5 text-xs font-semibold tabular-nums'>
+										{formatMoney(activeProperty.minPrice)}
+										{activeProperty.maxPrice != null &&
+										String(activeProperty.maxPrice) !==
+											String(activeProperty.minPrice)
+											? ` – ${formatMoney(activeProperty.maxPrice)}`
+											: ''}
+									</p>
+								</div>
+								<Button asChild size='sm' className='shrink-0'>
+									<Link to={`/all-properties/${activeProperty._id}`}>
+										Details
+									</Link>
+								</Button>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
