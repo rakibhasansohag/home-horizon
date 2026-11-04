@@ -47,7 +47,7 @@ function Login() {
 		return signIn(email, password)
 			.then(() => {
 				toast.success('Login successful');
-				navigate(from);
+				navigate(from, { replace: true });
 			})
 			.catch((error) => {
 				toast.error(error.message);
@@ -132,7 +132,8 @@ function Login() {
 								/>
 								<button
 									type='button'
-									className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground'
+									className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground'
+									aria-label={showPassword ? 'Hide password' : 'Show password'}
 									onClick={() => setShowPassword(!showPassword)}
 								>
 									{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -179,7 +180,7 @@ function Login() {
 
 					<p className='text-xs text-muted-foreground text-center mt-4'>
 						By submitting, you accept our{' '}
-						<Link to='/terms' className='underline'>
+						<Link to='/legal/terms-of-service' className='underline hover:text-foreground'>
 							terms of use
 						</Link>
 					</p>

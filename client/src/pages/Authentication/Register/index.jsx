@@ -16,7 +16,7 @@ function Register() {
 	const {
 		register,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isSubmitting },
 	} = useForm();
 
 	const [profilePic, setProfilePic] = useState('');
@@ -29,42 +29,43 @@ function Register() {
 	const navigate = useNavigate();
 	const from = location.state?.from || '/';
 
-	// TODO : After completing the 89% of the project will update this the validation of password and other things
-	const onSubmit = (data) => {
-		createUser(data.email, data.password)
-			.then(async (result) => {
-				const userInfo = {
-					email: data.email,
-					role: 'user',
-					created_at: new Date().toISOString(),
-					last_log_in: new Date().toISOString(),
-					uid: result.user.uid,
-					name: data.name,
-					profilePic: profilePic,
-					age: null,
-					gender: null,
-					address: null,
-					phoneNumber: null,
-					creationTime: result.user?.metadata?.creationTime,
-					lastSignInTime: result.user?.metadata?.lastSignInTime,
-					loginMethod: result.user?.providerData[0]?.providerId,
-					providerId: result.user?.providerData[0]?.providerId,
-					status: null,
-					...result?.metadata?.customClaims,
-				};
+	const onSubmit = async (data) => {
+		try {
+			const result = await createUser(data.email, data.password);
+			const userInfo = {
+				email: data.email,
+				role: 'user',
+				created_at: new Date().toISOString(),
+				last_log_in: new Date().toISOString(),
+				uid: result.user.uid,
+				name: data.name,
+				profilePic: profilePic || result.user?.photoURL || '',
+				age: null,
+				gender: null,
+				address: null,
+				phoneNumber: null,
+				creationTime: result.user?.metadata?.creationTime,
+				lastSignInTime: result.user?.metadata?.lastSignInTime,
+				loginMethod: result.user?.providerData?.[0]?.providerId || 'password',
+				providerId: result.user?.providerData?.[0]?.providerId || 'password',
+				status: null,
+				...result?.metadata?.customClaims,
+			};
 
-				await axiosInstance.post('/users', userInfo);
+			await axiosInstance.post('/users', userInfo);
 
+			if (updateUserProfile) {
 				await updateUserProfile({
 					displayName: data.name,
-					photoURL: profilePic,
+					photoURL: profilePic || '',
 				});
-				console.log(result);
+			}
 
-				toast.success('User created successfully');
-				navigate(from, { replace: true });
-			})
-			.catch((error) => toast.error(error.message));
+			toast.success('User created successfully');
+			navigate(from, { replace: true });
+		} catch (error) {
+			toast.error(error.message || 'Registration failed');
+		}
 	};
 
 	const handleImageUpload = async (e) => {
@@ -105,7 +106,7 @@ function Register() {
 				</Link>
 			</h1>
 
-			<h2 className='text-2xl font-bold'>create an account</h2>
+			<h2 className='text-2xl font-bold'>Create an account</h2>
 			<form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
 				<div className='flex flex-col gap-2'>
 					<Label>Your Name</Label>
@@ -176,6 +177,7 @@ function Register() {
 						type='button'
 						onClick={() => setShowPassword((prev) => !prev)}
 						className='absolute right-3 top-[35px] text-sm text-muted-foreground hover:text-brand'
+						aria-label={showPassword ? 'Hide password' : 'Show password'}
 					>
 						{showPassword ? <EyeClosed /> : <Eye />}
 					</button>
@@ -194,8 +196,8 @@ function Register() {
 					</Link>
 				</p>
 
-				<Button type='submit' className='w-full'>
-					Register
+				<Button type='submit' className='w-full' disabled={uploading || isSubmitting}>
+					{isSubmitting ? 'Creating account...' : 'Register'}
 				</Button>
 
 				<div className='relative my-6'>
@@ -210,7 +212,7 @@ function Register() {
 			<SocialLogin />
 			<p className='text-xs text-muted-foreground text-center mt-4'>
 				By submitting, you accept our{' '}
-				<Link to='/terms' className='underline'>
+				<Link to='/legal/terms-of-service' className='underline hover:text-foreground'>
 					terms of use
 				</Link>
 			</p>
