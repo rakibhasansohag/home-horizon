@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import ConfirmActionModal from '@/components/Shared/ConfirmActionModal';
@@ -24,32 +27,66 @@ const ROLE_LABEL = {
 	fraud: 'Fraud',
 };
 
-const ROLE_TONE = {
-	admin: 'text-brand',
-	agent: 'text-foreground',
-	fraud: 'text-destructive',
-	user: 'text-muted-foreground',
-};
-
 export default function AdminManageUsers() {
 	const axios = useAxiosSecure();
-	const { filter, choose, page, setPage } = useListControls('all');
+	const [searchParams, setSearchParams] = useSearchParams();
+	const { filter, choose, page, setPage, q, query, search } =
+		useListControls('all');
 
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [modalType, setModalType] = useState(null); // 'admin' | 'agent' | 'fraud' | 'delete'
 
+	// Initialize search from URL `?q=` param if provided
+	useEffect(() => {
+		const urlQ = searchParams.get('q');
+		if (urlQ && urlQ !== q) {
+			search(urlQ);
+		}
+	}, []);
+
+	const handleSearchChange = (value) => {
+		search(value);
+		setSearchParams(
+			(prev) => {
+				const next = new URLSearchParams(prev);
+				if (value.trim()) {
+					next.set('q', value.trim());
+				} else {
+					next.delete('q');
+				}
+				return next;
+			},
+			{ replace: true },
+		);
+	};
+
 	const usersQuery = useQuery({
-		queryKey: ['admin-users', page, filter],
+		queryKey: ['admin-users', page, filter, query],
 		queryFn: () =>
 			axios
-				.get('/admin/users', { params: listParams({ page, filter }) })
+				.get('/admin/users', {
+					params: listParams({ page, filter, query }),
+				})
 				.then((r) => r.data),
 		placeholderData: keepPreviousData,
 	});
 	const { refetch } = usersQuery;
-	const view = viewList(usersQuery.data, page, (items) =>
-		filter === 'all' ? items : items.filter((person) => person.role === filter),
-	);
+
+	const view = viewList(usersQuery.data, page, (items) => {
+		let list =
+			filter === 'all'
+				? items
+				: items.filter((person) => person.role === filter);
+		if (query) {
+			const term = query.toLowerCase();
+			list = list.filter((person) =>
+				`${person.name || ''} ${person.email || ''}`
+					.toLowerCase()
+					.includes(term),
+			);
+		}
+		return list;
+	});
 	const rows = view?.items || [];
 	const gate = gateQuery(usersQuery);
 
@@ -82,6 +119,17 @@ export default function AdminManageUsers() {
 
 	return (
 		<div className='w-full space-y-6'>
+			<div className='relative'>
+				<Search className='absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none' />
+				<Input
+					value={q}
+					aria-label='Find user by name or email'
+					placeholder='Search people by name or email...'
+					className='pl-9'
+					onChange={(event) => handleSearchChange(event.target.value)}
+				/>
+			</div>
+
 			<FilterSection
 				label='Role'
 				value={filter}
@@ -107,9 +155,23 @@ export default function AdminManageUsers() {
 				<>
 					<ResultSummary label={ROLE_LABEL[filter]} value={view?.total || 0} />
 					{!view?.total ? (
-						<p className='text-base text-muted-foreground'>
-							No people in this role.
-						</p>
+						<div className='rounded-lg border border-dashed border-line p-8 text-center'>
+							<p className='text-base text-muted-foreground'>
+								{query
+									? `No people found matching "${query}".`
+									: 'No people in this role.'}
+							</p>
+							{query ? (
+								<Button
+									variant='ghost'
+									size='sm'
+									className='mt-2'
+									onClick={() => handleSearchChange('')}
+								>
+									Clear search
+								</Button>
+							) : null}
+						</div>
 					) : (
 						<div className='space-y-6'>
 							<ul className='overflow-hidden rounded-lg border border-border bg-surface'>
@@ -131,14 +193,21 @@ export default function AdminManageUsers() {
 											</div>
 										</div>
 										<div className='flex flex-wrap items-center gap-2 sm:justify-end'>
-											<p
+											<span
 												className={cn(
-													'px-1 text-sm capitalize',
-													ROLE_TONE[person.role] || 'text-muted-foreground',
+													'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
+													person.role === 'admin' &&
+														'bg-brand-soft text-brand ring-1 ring-brand/20',
+													person.role === 'agent' &&
+														'bg-muted text-foreground ring-1 ring-border',
+													person.role === 'fraud' &&
+														'bg-destructive/10 text-destructive ring-1 ring-destructive/20',
+													person.role === 'user' &&
+														'bg-surface text-muted-foreground ring-1 ring-border',
 												)}
 											>
 												{person.role}
-											</p>
+											</span>
 											<PersonActions person={person} onAction={openAction} />
 										</div>
 									</li>

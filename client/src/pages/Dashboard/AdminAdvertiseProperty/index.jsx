@@ -4,7 +4,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import useAxiosSecure from '@/hooks/useAxiosSecure';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import PersonAvatar from '@/components/Shared/PersonAvatar';
 import ConfirmActionModal from '@/components/shared/ConfirmActionModal';
 import { formatMoney } from '@/components/Shared/PropertyCard';
 import { gateQuery } from '@/lib/queryWait';
@@ -16,12 +15,17 @@ import {
 	Pager,
 	useListControls,
 } from '@/pages/Dashboard/Components/DashboardFilter';
+import {
+	AgentHoverTrigger,
+	AgentProfileDialog,
+} from '@/pages/Dashboard/Components/AgentInspection';
 
 export default function AdminAdvertiseProperty() {
 	const axios = useAxiosSecure();
 	const qc = useQueryClient();
 
 	const [selected, setSelected] = useState(null);
+	const [inspectAgent, setInspectAgent] = useState(null);
 	const { filter, choose, page, setPage } = useListControls('all');
 
 	const propertiesQuery = useQuery({
@@ -108,6 +112,7 @@ export default function AdminAdvertiseProperty() {
 										key={property._id}
 										property={property}
 										onAsk={() => ask(property)}
+										onInspectAgent={setInspectAgent}
 									/>
 								))}
 							</ul>
@@ -149,13 +154,19 @@ export default function AdminAdvertiseProperty() {
 					}}
 				/>
 			)}
+
+			<AgentProfileDialog
+				agent={inspectAgent}
+				open={Boolean(inspectAgent)}
+				onOpenChange={(open) => !open && setInspectAgent(null)}
+			/>
 		</div>
 	);
 }
 
 const TAKE_DOWN = 'Un\u2011advertise';
 
-function AdvertiseRow({ property, onAsk }) {
+function AdvertiseRow({ property, onAsk, onInspectAgent }) {
 	const advertised = Boolean(property.isAdvertised);
 	const price = `${formatMoney(property.minPrice)}${
 		property.maxPrice != null &&
@@ -192,16 +203,7 @@ function AdvertiseRow({ property, onAsk }) {
 				<p className='truncate text-sm text-muted-foreground'>{property.location}</p>
 				<p className='text-base font-medium tabular-nums'>{price}</p>
 				<div className='mt-auto flex flex-wrap items-center justify-between gap-2 pt-3'>
-					<div className='flex min-w-0 items-center gap-2'>
-						<PersonAvatar
-							name={property.agentName}
-							src={property.agentImage}
-							className='size-8'
-						/>
-						<p className='truncate text-sm' title={property.agentEmail || undefined}>
-							{property.agentName}
-						</p>
-					</div>
+					<AgentHoverTrigger prop={property} onInspect={onInspectAgent} />
 					<Button
 						size='sm'
 						variant={advertised ? 'outline' : 'accent'}
